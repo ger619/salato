@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  event: one
+  order: one
+  ticket_type: one
+  ticket_number: MyString
+  attendee_name: MyString
+  attendee_email: MyString
+  qr_token: MyString
+  status: MyString
+  checked_in_at: 2026-08-19 23:13:47
+
+two:
+  event: two
+  order: two
+  ticket_type: two
+  ticket_number: MyString
+  attendee_name: MyString
+  attendee_email: MyString
+  qr_token: MyString
+  status: MyString
+  checked_in_at: 2026-08-19 23:13:47

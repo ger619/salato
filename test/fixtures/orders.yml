@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  event: one
+  ticket_type: one
+  references: MyString
+  customer_name: MyString
+  customer_email: MyString
+  customer_phone: MyString
+  quantity: 1
+  unit_price: 9.99
+  total_price: 9.99
+  currency: MyString
+  paid_at: 2026-08-19 23:06:35
+  expire: 2026-08-19 23:06:35
+
+two:
+  event: two
+  ticket_type: two
+  references: MyString
+  customer_name: MyString
+  customer_email: MyString
+  customer_phone: MyString
+  quantity: 1
+  unit_price: 9.99
+  total_price: 9.99
+  currency: MyString
+  paid_at: 2026-08-19 23:06:35
+  expire: 2026-08-19 23:06:35
