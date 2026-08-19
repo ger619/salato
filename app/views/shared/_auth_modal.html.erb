@@ -1,0 +1,64 @@
+<div id="authModal" class="fixed inset-0 z-[60] hidden">
+  <div class="absolute inset-0 bg-ink/55 backdrop-blur-sm" data-close-auth></div>
+
+  <div class="relative min-h-full flex items-center justify-center p-4">
+    <div role="dialog" aria-modal="true" aria-labelledby="authTitle" class="w-full max-w-[440px] rounded-[22px] bg-white shadow-2xl overflow-hidden">
+
+      <div class="grad-bg px-7 py-5 flex items-center justify-between">
+        <span class="mono text-[11px] tracking-[.2em] text-white/95">ORGANISER ACCESS</span>
+        <button type="button" data-close-auth class="text-white/85 hover:text-white transition" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="px-7 pt-7 pb-8">
+        <div class="flex gap-1 p-1 rounded-xl bg-mist" role="tablist">
+          <button type="button" role="tab" id="tabSignin" aria-selected="true"  class="auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition">Sign in</button>
+          <button type="button" role="tab" id="tabSignup" aria-selected="false" class="auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition">Create account</button>
+        </div>
+
+        <h2 id="authTitle" class="mt-7 text-[24px] font-semibold">Welcome back</h2>
+        <p id="authSub" class="mt-1.5 text-[15px] text-ink2">Sign in to see tonight's sales.</p>
+
+        <%# Point form_with at your sessions controller; JS validates before it posts. %>
+        <%= form_with url: session_path, method: :post, id: "authForm",
+                      data: { signup_url: users_path },
+                      html: { novalidate: true }, class: "mt-6 space-y-4" do %>
+          <div id="nameField" class="hidden">
+            <label for="aName" class="block text-[14px] font-medium mb-2">Your name</label>
+            <input id="aName" name="name" type="text" autocomplete="name" class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" placeholder="Wanjiru Kamau">
+            <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+          </div>
+
+          <div>
+            <label for="aEmail" class="block text-[14px] font-medium mb-2">Email</label>
+            <input id="aEmail" name="email_address" type="email" autocomplete="email" class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" placeholder="you@example.com">
+            <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+          </div>
+
+          <div>
+            <div class="flex items-baseline justify-between mb-2">
+              <label for="aPass" class="block text-[14px] font-medium">Password</label>
+              <a href="#" id="forgotLink" class="text-[13px] text-magenta hover:underline">Forgot it?</a>
+            </div>
+            <input id="aPass" name="password" type="password" autocomplete="current-password" class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" placeholder="••••••••">
+            <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+          </div>
+
+          <button type="submit" id="authSubmit" class="w-full py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition">Sign in</button>
+        <% end %>
+
+        <div class="my-5 flex items-center gap-3 text-[13px] text-ink2/60">
+          <span class="h-px flex-1 bg-ink/10"></span>or<span class="h-px flex-1 bg-ink/10"></span>
+        </div>
+
+        <button type="button" class="w-full py-3 rounded-xl font-medium ring-1 ring-ink/15 hover:bg-mist transition flex items-center justify-center gap-2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2a5.3 5.3 0 01-2.3 3.5v2.9h3.7c2.2-2 3.4-5 3.4-8.6z"/><path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3C3.7 21.4 7.6 24 12 24z"/><path fill="#FBBC05" d="M5.6 14.7a7.2 7.2 0 010-4.6v-3H1.8a12 12 0 000 10.6l3.8-3z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.2 15.1 0 12 0 7.6 0 3.7 2.6 1.8 6.1l3.8 3c.9-2.7 3.4-4.3 6.4-4.3z"/></svg>
+          Continue with Google
+        </button>
+
+        <p id="authFoot" class="mt-6 text-[13px] text-ink2/75 leading-relaxed">Buying a ticket? You don't need an account — your ticket arrives by email straight after payment.</p>
+      </div>
+    </div>
+  </div>
+</div>

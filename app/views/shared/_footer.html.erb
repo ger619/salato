@@ -1,0 +1,46 @@
+<footer class="bg-ink text-white pt-16 pb-10">
+  <div class="max-w-shell mx-auto px-5 lg:px-8">
+    <div class="grid md:grid-cols-[1.3fr_1fr_1fr_1fr] gap-10">
+      <div>
+        <%= image_tag "salato_logo/salato-logo-horizontal.png", alt: "Salato", class: "h-9 w-auto" %>
+        <p class="mt-5 text-[15px] text-white/65 max-w-xs leading-relaxed">Ticketing built in Nairobi for the way events actually run here.</p>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Product</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><%= link_to "How it works", nav_anchor("how"),     class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Pricing",      nav_anchor("pricing"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Gate scanner", nav_anchor("pricing"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Refunds",      nav_anchor("pricing"), class: "hover:text-orange transition" %></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Company</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><%= link_to "About us", nav_anchor("about"),   class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Contact",  nav_anchor("contact"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Terms",    "#", class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Privacy",  "#", class: "hover:text-orange transition" %></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Organisers</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><button type="button" data-open-auth="signin" class="hover:text-orange transition">Sign in</button></li>
+          <li><button type="button" data-open-auth="signup" class="hover:text-orange transition">Create account</button></li>
+          <li><%= link_to "Talk to sales", nav_anchor("contact"), class: "hover:text-orange transition" %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 relative"><div class="tear tear-ink"></div></div>
+
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center text-[14px] text-white/50">
+      <p>© <%= Date.current.year %> Salato. Nairobi, Kenya.</p>
+      <p class="mono text-[12px]">Events. Tickets. Experiences.</p>
+    </div>
+  </div>
+</footer>

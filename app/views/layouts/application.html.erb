@@ -1,31 +1,564 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title><%= content_for(:title) || "Salato" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Salato">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#150D3A">
 
-    <%= yield :head %>
+  <title><%= content_for(:title) || "Salato — sell tickets to your event in Kenya" %></title>
+  <meta name="description" content="<%= content_for(:meta_description) || "Salato turns your event into a page people can buy from in minutes. M-Pesa and card payments, QR-coded tickets, and a gate scanner that works offline." %>">
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+  <%# ── Favicons / app icons ───────────────────────────────── %>
+  <link rel="icon" href="<%= asset_path("salato_logo/salato-favicon.ico") %>" sizes="any">
+  <link rel="icon" type="image/png" href="<%= asset_path("salato_logo/salato-favicon.png") %>">
+  <link rel="apple-touch-icon" href="<%= asset_path("salato_logo/salato-icon-180.png") %>">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
-  </head>
+  <%# ── Open Graph ─────────────────────────────────────────── %>
+  <meta property="og:title" content="<%= content_for(:title) || "Salato — sell tickets to your event in Kenya" %>">
+  <meta property="og:description" content="Sell out your event. Get paid the same day.">
+  <meta property="og:image" content="<%= asset_path("salato_logo/salato-icon-512.png") %>">
+  <meta property="og:type" content="website">
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
-      <%= yield %>
-    </main>
-  </body>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <%# Swap the CDN for tailwindcss-rails in production — see README notes %>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      violet:  '#7620B1',
+                      magenta: '#AB2692',
+                      pink:    '#E13765',
+                      coral:   '#F2613F',
+                      orange:  '#FC8027',
+                      ink:     '#150D3A',
+                      ink2:    '#3A3260',
+                      mist:    '#F7F4FB',
+                      paper:   '#FFFFFF'
+                  },
+                  fontFamily: {
+                      display: ['Outfit', 'system-ui', 'sans-serif'],
+                      body: ['Inter Tight', 'system-ui', 'sans-serif'],
+                      mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+                  },
+                  maxWidth: { shell: '1180px' }
+              }
+          }
+      }
+  </script>
+
+  <style>
+      :root{
+          --grad: linear-gradient(105deg,#7620B1 0%,#AB2692 34%,#E13765 62%,#FC8027 100%);
+          --page:#FFFFFF;
+          --shell-x: 1.25rem;
+      }
+      @media (min-width:1024px){ :root{ --shell-x: 2rem } }
+
+      html,body{max-width:100%;overflow-x:clip}
+      body{
+          font-family:'Inter Tight',system-ui,sans-serif;color:#150D3A;background:var(--page);
+          -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+          padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)
+      }
+      h1,h2,h3,.display{font-family:'Outfit',system-ui,sans-serif;letter-spacing:-.022em}
+      .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+      img{max-width:100%;height:auto}
+
+      /* ── fluid type: one scale, no jumps between breakpoints ── */
+      .t-hero{font-size:clamp(2.35rem,1.55rem + 3.6vw,4rem);line-height:1.04}
+      .t-h2{font-size:clamp(2rem,1.5rem + 2.2vw,2.875rem);line-height:1.08}
+      .t-h3{font-size:clamp(1.3rem,1.16rem + .6vw,1.5rem);line-height:1.25}
+      .t-lead{font-size:clamp(1.02rem,.97rem + .3vw,1.1875rem);line-height:1.7}
+      .t-body{font-size:clamp(.97rem,.94rem + .18vw,1.0625rem);line-height:1.75}
+
+      .grad-bg{background:var(--grad)}
+      .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .grad-edge{position:relative;background:var(--page)}
+      .grad-edge::before{content:"";position:absolute;inset:0;padding:1.5px;border-radius:inherit;background:var(--grad);
+          -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+
+      /* ── signature: the perforation ───────────────────────────── */
+      .tear{position:relative;height:2px;background-image:linear-gradient(90deg,rgba(21,13,58,.22) 0 8px,transparent 8px 16px);background-size:16px 2px}
+      .tear::before,.tear::after{content:"";position:absolute;top:-13px;width:26px;height:26px;border-radius:999px;background:var(--page);box-shadow:inset 0 0 0 1px rgba(21,13,58,.08)}
+      .tear::before{left:-13px}
+      .tear::after{right:-13px}
+      .tear-mist::before,.tear-mist::after{background:#F7F4FB}
+      .tear-ink::before,.tear-ink::after{background:#150D3A;box-shadow:none}
+      .tear-ink{background-image:linear-gradient(90deg,rgba(255,255,255,.24) 0 8px,transparent 8px 16px)}
+
+      /* ticket stub: real punched notches */
+      .stub{--ty:50%;
+          -webkit-mask-image:radial-gradient(circle 15px at 0 var(--ty),transparent 97%,#000 100%),radial-gradient(circle 15px at 100% var(--ty),transparent 97%,#000 100%);
+          -webkit-mask-composite:source-in;
+          mask-image:radial-gradient(circle 15px at 0 var(--ty),transparent 97%,#000 100%),radial-gradient(circle 15px at 100% var(--ty),transparent 97%,#000 100%);
+          mask-composite:intersect}
+
+      .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+
+      .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+      .reveal.in{opacity:1;transform:none}
+
+      @keyframes drift{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(-3deg) translateY(-10px)}}
+      .drift{animation:drift 7s ease-in-out infinite}
+
+      .navlink{position:relative;padding-bottom:2px}
+      .navlink::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;background:var(--grad);transition:width .28s ease}
+      .navlink:hover::after,.navlink[aria-current="true"]::after{width:100%}
+
+      /* comfortable tap targets on touch devices */
+      @media (pointer:coarse){
+          a,button,summary,[role="tab"]{min-height:44px}
+          .tap-inline{min-height:0}
+      }
+
+      :focus-visible{outline:2px solid #E13765;outline-offset:3px;border-radius:4px}
+      details[open] .chev{transform:rotate(45deg)}
+      summary::-webkit-details-marker{display:none}
+
+      /* modal is scrollable on short screens */
+      #authModal .modal-scroll{max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+
+      @media (prefers-reduced-motion: reduce){
+          *,*::before,*::after{animation:none!important;transition:none!important}
+          .reveal{opacity:1;transform:none}
+          html{scroll-behavior:auto}
+      }
+  </style>
+
+  <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%= yield :head %>
+</head>
+
+<body class="antialiased"
+      data-auth-open="<%= params[:auth].presence || (flash[:alert].present? ? "signin" : nil) %>">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:bg-ink focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to content</a>
+
+<%# ══════════════ FLASH ══════════════ %>
+<% if flash.any? %>
+  <div class="fixed top-3 inset-x-0 z-[65] px-5 lg:px-8 pointer-events-none">
+    <div class="max-w-shell mx-auto flex flex-col gap-2 items-center">
+      <% flash.each do |type, message| %>
+        <% next if message.blank? %>
+        <div role="status"
+             class="pointer-events-auto w-full sm:w-auto px-5 py-3 rounded-xl text-[14px] font-medium shadow-lg
+                      <%= type.to_s == "notice" ? "bg-ink text-white" : "text-white grad-bg" %>">
+          <%= message %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# ══════════════ NAV ══════════════ %>
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <nav class="mt-3 lg:mt-4 flex items-center justify-between gap-3 rounded-2xl bg-white/85 backdrop-blur-xl ring-1 ring-ink/10 shadow-[0_8px_30px_-12px_rgba(21,13,58,.18)] pl-4 pr-3 py-2.5"
+         aria-label="Main">
+      <%= link_to root_path, class: "shrink-0 tap-inline", "aria-label": "Salato home" do %>
+        <%= image_tag "salato_logo/salato-logo-horizontal.png", alt: "Salato", class: "h-7 sm:h-8 lg:h-9 w-auto" %>
+      <% end %>
+
+      <ul class="hidden lg:flex items-center gap-8 text-[15px] font-medium text-ink2">
+        <li><a href="#hero" class="navlink hover:text-ink transition">Home</a></li>
+        <li><a href="#about" class="navlink hover:text-ink transition">About us</a></li>
+        <li><a href="#how" class="navlink hover:text-ink transition">How it works</a></li>
+        <li><a href="#pricing" class="navlink hover:text-ink transition">Pricing</a></li>
+        <li><a href="#contact" class="navlink hover:text-ink transition">Contact</a></li>
+      </ul>
+
+      <div class="flex items-center gap-2">
+        <% if defined?(user_signed_in?) && user_signed_in? %>
+          <%= link_to "Dashboard", (defined?(dashboard_path) ? dashboard_path : root_path),
+                      class: "hidden sm:inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-ink hover:bg-ink/5 transition" %>
+          <%= button_to "Sign out", destroy_user_session_path, method: :delete,
+                        form: { data: { turbo: false }, class: "hidden sm:block" },
+                        class: "inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_6px_20px_-8px_rgba(225,55,101,.9)]" %>
+        <% else %>
+          <button type="button" data-open-auth="signin"
+                  class="hidden sm:inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-ink hover:bg-ink/5 transition">Sign in</button>
+          <button type="button" data-open-auth="signup"
+                  class="hidden sm:inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_6px_20px_-8px_rgba(225,55,101,.9)]">Start selling</button>
+        <% end %>
+
+        <button type="button" id="menuBtn" class="lg:hidden p-2 rounded-lg hover:bg-ink/5 transition"
+                aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <div id="mobileMenu" class="lg:hidden hidden mt-2 rounded-2xl bg-white ring-1 ring-ink/10 shadow-xl p-4 max-h-[70dvh] overflow-y-auto">
+      <ul class="flex flex-col gap-1 text-[16px] font-medium">
+        <li><a href="#hero" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">Home</a></li>
+        <li><a href="#about" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">About us</a></li>
+        <li><a href="#how" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">How it works</a></li>
+        <li><a href="#pricing" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">Pricing</a></li>
+        <li><a href="#contact" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">Contact</a></li>
+      </ul>
+      <div class="mt-3 pt-3 border-t border-ink/10 flex flex-col xs:flex-row gap-2">
+        <% if defined?(user_signed_in?) && user_signed_in? %>
+          <%= link_to "Dashboard", (defined?(dashboard_path) ? dashboard_path : root_path),
+                      class: "flex-1 text-center px-4 py-2.5 rounded-xl font-medium ring-1 ring-ink/15" %>
+          <%= button_to "Sign out", destroy_user_session_path, method: :delete,
+                        form: { data: { turbo: false }, class: "flex-1" },
+                        class: "w-full px-4 py-2.5 rounded-xl font-medium text-white grad-bg" %>
+        <% else %>
+          <button type="button" data-open-auth="signin" class="flex-1 px-4 py-2.5 rounded-xl font-medium ring-1 ring-ink/15">Sign in</button>
+          <button type="button" data-open-auth="signup" class="flex-1 px-4 py-2.5 rounded-xl font-medium text-white grad-bg">Start selling</button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <%= yield %>
+</main>
+
+<%# ══════════════ FOOTER ══════════════ %>
+<footer class="bg-ink text-white pt-16 pb-10">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
+      <div class="sm:col-span-2 md:col-span-1">
+        <%= image_tag "salato_logo/salato-logo-horizontal-on-dark.png", alt: "Salato", class: "h-8 lg:h-9 w-auto" %>
+        <p class="mt-5 text-[15px] text-white/65 max-w-xs leading-relaxed">Ticketing built in Nairobi for the way events actually run here.</p>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Product</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><a href="#how" class="hover:text-orange transition">How it works</a></li>
+          <li><a href="#pricing" class="hover:text-orange transition">Pricing</a></li>
+          <li><a href="#pricing" class="hover:text-orange transition">Gate scanner</a></li>
+          <li><a href="#pricing" class="hover:text-orange transition">Refunds</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Company</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><a href="#about" class="hover:text-orange transition">About us</a></li>
+          <li><a href="#contact" class="hover:text-orange transition">Contact</a></li>
+          <li><a href="#" class="hover:text-orange transition">Terms</a></li>
+          <li><a href="#" class="hover:text-orange transition">Privacy</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Organisers</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <% if defined?(user_signed_in?) && user_signed_in? %>
+            <li><%= link_to "Dashboard", (defined?(dashboard_path) ? dashboard_path : root_path), class: "hover:text-orange transition" %></li>
+            <li><%= button_to "Sign out", destroy_user_session_path, method: :delete,
+                              form: { data: { turbo: false } }, class: "hover:text-orange transition" %></li>
+          <% else %>
+            <li><button type="button" data-open-auth="signin" class="hover:text-orange transition">Sign in</button></li>
+            <li><button type="button" data-open-auth="signup" class="hover:text-orange transition">Create account</button></li>
+          <% end %>
+          <li><a href="#contact" class="hover:text-orange transition">Talk to sales</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 relative"><div class="tear tear-ink"></div></div>
+
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left text-[14px] text-white/50">
+      <p>&copy; <%= Date.current.year %> Salato. Nairobi, Kenya.</p>
+      <p class="mono text-[12px]">Events. Tickets. Experiences.</p>
+    </div>
+  </div>
+</footer>
+
+<%# ══════════════ SIGN IN / SIGN UP (Devise) ══════════════ %>
+<% unless defined?(user_signed_in?) && user_signed_in? %>
+  <div id="authModal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-ink/55 backdrop-blur-sm" data-close-auth></div>
+
+    <div class="relative modal-scroll min-h-full flex items-center justify-center p-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="authTitle"
+           class="w-full max-w-[440px] my-auto rounded-[22px] bg-white shadow-2xl overflow-hidden">
+
+        <div class="grad-bg px-6 sm:px-7 py-5 flex items-center justify-between">
+          <span class="mono text-[11px] tracking-[.2em] text-white/95">ORGANISER ACCESS</span>
+          <button type="button" data-close-auth class="text-white/85 hover:text-white transition p-1 -m-1" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+
+        <div class="px-6 sm:px-7 pt-7 pb-8">
+          <div class="flex gap-1 p-1 rounded-xl bg-mist" role="tablist">
+            <button type="button" role="tab" id="tabSignin" aria-selected="true"  aria-controls="signinPane" class="auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition">Sign in</button>
+            <button type="button" role="tab" id="tabSignup" aria-selected="false" aria-controls="signupPane" class="auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition">Create account</button>
+          </div>
+
+          <h2 id="authTitle" class="mt-7 text-[24px] font-semibold">Welcome back</h2>
+          <p id="authSub" class="mt-1.5 text-[15px] text-ink2">Sign in to see tonight's sales.</p>
+
+          <%# ── SIGN IN → Devise SessionsController#create ── %>
+          <div id="signinPane" role="tabpanel" aria-labelledby="tabSignin">
+            <%= form_with url: user_session_path, method: :post, scope: :user,
+                          html: { id: "signinForm", novalidate: true, class: "mt-6 space-y-4",
+                                  data: { turbo: false } } do |f| %>
+              <div>
+                <%= f.label :email, "Email", for: "signin_email", class: "block text-[14px] font-medium mb-2" %>
+                <%= f.email_field :email, id: "signin_email", autocomplete: "email", inputmode: "email",
+                                  placeholder: "you@example.com",
+                                  class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+              </div>
+
+              <div>
+                <div class="flex items-baseline justify-between mb-2">
+                  <%= f.label :password, "Password", for: "signin_password", class: "block text-[14px] font-medium" %>
+                  <%= link_to "Forgot it?", new_user_password_path, class: "text-[13px] text-magenta hover:underline tap-inline" %>
+                </div>
+                <%= f.password_field :password, id: "signin_password", autocomplete: "current-password",
+                                     placeholder: "••••••••",
+                                     class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+              </div>
+
+              <label class="flex items-center gap-2.5 text-[14px] text-ink2 select-none tap-inline">
+                <%= f.check_box :remember_me, class: "w-4 h-4 rounded border-ink/25 text-pink focus:ring-pink" %>
+                Keep me signed in
+              </label>
+
+              <%= f.submit "Sign in",
+                           class: "w-full py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition cursor-pointer" %>
+            <% end %>
+          </div>
+
+          <%# ── SIGN UP → Devise RegistrationsController#create ── %>
+          <div id="signupPane" role="tabpanel" aria-labelledby="tabSignup" class="hidden">
+            <%= form_with url: user_registration_path, method: :post, scope: :user,
+                          html: { id: "signupForm", novalidate: true, class: "mt-6 space-y-4",
+                                  data: { turbo: false } } do |f| %>
+              <div>
+                <%= f.label :name, "Your name", for: "signup_name", class: "block text-[14px] font-medium mb-2" %>
+                <%= f.text_field :name, id: "signup_name", autocomplete: "name", placeholder: "Wanjiru Kamau",
+                                 class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+              </div>
+
+              <div>
+                <%= f.label :email, "Email", for: "signup_email", class: "block text-[14px] font-medium mb-2" %>
+                <%= f.email_field :email, id: "signup_email", autocomplete: "email", inputmode: "email",
+                                  placeholder: "you@example.com",
+                                  class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+              </div>
+
+              <div>
+                <%= f.label :password, "Password", for: "signup_password", class: "block text-[14px] font-medium mb-2" %>
+                <%= f.password_field :password, id: "signup_password", autocomplete: "new-password",
+                                     placeholder: "At least 8 characters",
+                                     class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+              </div>
+
+              <div>
+                <%= f.label :password_confirmation, "Confirm password", for: "signup_password_confirmation", class: "block text-[14px] font-medium mb-2" %>
+                <%= f.password_field :password_confirmation, id: "signup_password_confirmation", autocomplete: "new-password",
+                                     placeholder: "Type it once more",
+                                     class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+              </div>
+
+              <%= f.submit "Create account",
+                           class: "w-full py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition cursor-pointer" %>
+            <% end %>
+          </div>
+
+          <% if defined?(user_omniauth_authorize_path) %>
+            <div class="my-5 flex items-center gap-3 text-[13px] text-ink2/60">
+              <span class="h-px flex-1 bg-ink/10"></span>or<span class="h-px flex-1 bg-ink/10"></span>
+            </div>
+
+            <%= button_to user_omniauth_authorize_path(:google_oauth2), method: :post,
+                          form: { data: { turbo: false } },
+                          class: "w-full py-3 rounded-xl font-medium ring-1 ring-ink/15 hover:bg-mist transition flex items-center justify-center gap-2.5" do %>
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2a5.3 5.3 0 01-2.3 3.5v2.9h3.7c2.2-2 3.4-5 3.4-8.6z"/><path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3C3.7 21.4 7.6 24 12 24z"/><path fill="#FBBC05" d="M5.6 14.7a7.2 7.2 0 010-4.6v-3H1.8a12 12 0 000 10.6l3.8-3z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.2 15.1 0 12 0 7.6 0 3.7 2.6 1.8 6.1l3.8 3c.9-2.7 3.4-4.3 6.4-4.3z"/></svg>
+              Continue with Google
+            <% end %>
+          <% end %>
+
+          <p id="authFoot" class="mt-6 text-[13px] text-ink2/75 leading-relaxed">Buying a ticket? You don't need an account — your ticket arrives by email straight after payment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+    (function(){
+        const boot = () => {
+            const $  = (s,c=document)=>c.querySelector(s);
+            const $$ = (s,c=document)=>[...c.querySelectorAll(s)];
+
+            /* ── nav lift on scroll ── */
+            const nav = $('#nav');
+            if(nav){
+                const onScroll = ()=> nav.classList.toggle('translate-y-[-2px]', window.scrollY > 20);
+                window.addEventListener('scroll', onScroll, {passive:true});
+                onScroll();
+            }
+
+            /* ── mobile menu ── */
+            const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu');
+            if(menuBtn && mobileMenu){
+                menuBtn.addEventListener('click', ()=>{
+                    const open = !mobileMenu.classList.toggle('hidden');
+                    menuBtn.setAttribute('aria-expanded', String(open));
+                });
+                $$('#mobileMenu a, #mobileMenu button').forEach(el=>el.addEventListener('click', ()=>{
+                    mobileMenu.classList.add('hidden');
+                    menuBtn.setAttribute('aria-expanded','false');
+                }));
+                // close the menu if the viewport grows past the lg breakpoint
+                window.addEventListener('resize', ()=>{
+                    if(window.innerWidth >= 1024){
+                        mobileMenu.classList.add('hidden');
+                        menuBtn.setAttribute('aria-expanded','false');
+                    }
+                }, {passive:true});
+            }
+
+            /* ── scroll reveal ── */
+            const io = new IntersectionObserver((entries)=>{
+                entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+            }, {rootMargin:'0px 0px -8% 0px', threshold:.08});
+            $$('.reveal').forEach((el,i)=>{ el.style.transitionDelay = (i%4)*70 + 'ms'; io.observe(el); });
+
+            /* ── active nav link ── */
+            const links = $$('#nav ul a[href^="#"]');
+            const sections = links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+            if(sections.length){
+                const spy = new IntersectionObserver((entries)=>{
+                    entries.forEach(e=>{
+                        if(e.isIntersecting){
+                            links.forEach(a=>a.removeAttribute('aria-current'));
+                            const active = links.find(a=>a.getAttribute('href') === '#'+e.target.id);
+                            if(active) active.setAttribute('aria-current','true');
+                        }
+                    });
+                }, {rootMargin:'-45% 0px -50% 0px'});
+                sections.forEach(s=>spy.observe(s));
+            }
+
+            /* ── shared field validation helpers ── */
+            const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+            function setError(input, msg){
+                const p = input.closest('div').querySelector('.err');
+                if(p){ p.textContent = msg; p.classList.remove('hidden'); }
+                input.classList.add('ring-pink'); input.classList.remove('ring-ink/12');
+                input.setAttribute('aria-invalid','true');
+            }
+            function clearError(input){
+                const p = input.closest('div')?.querySelector('.err');
+                if(p) p.classList.add('hidden');
+                input.classList.remove('ring-pink'); input.classList.add('ring-ink/12');
+                input.removeAttribute('aria-invalid');
+            }
+            function clearErrors(scope){ $$('input, textarea', scope).forEach(clearError); }
+            $$('input, textarea').forEach(el=>el.addEventListener('input', ()=>clearError(el)));
+
+            window.SalatoForms = { emailOk, setError, clearError, clearErrors };
+
+            /* ── auth modal ── */
+            const modal = $('#authModal');
+            if(modal){
+                const tabIn = $('#tabSignin'), tabUp = $('#tabSignup');
+                const paneIn = $('#signinPane'), paneUp = $('#signupPane');
+                let lastFocus = null, mode = 'signin';
+
+                const paint = ()=>{
+                    const up = mode === 'signup';
+                    const base = 'auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition ';
+                    tabIn.className = base + (up ? 'text-ink2 hover:text-ink' : 'bg-white shadow-sm text-ink');
+                    tabUp.className = base + (up ? 'bg-white shadow-sm text-ink' : 'text-ink2 hover:text-ink');
+                    tabIn.setAttribute('aria-selected', String(!up));
+                    tabUp.setAttribute('aria-selected', String(up));
+                    paneIn.classList.toggle('hidden', up);
+                    paneUp.classList.toggle('hidden', !up);
+                    $('#authTitle').textContent = up ? 'Start selling tickets' : 'Welcome back';
+                    $('#authSub').textContent   = up ? 'Free to set up. You pay only when a ticket sells.' : "Sign in to see tonight's sales.";
+                    clearErrors(modal);
+                };
+
+                const openModal = (m)=>{
+                    mode = (m === 'signup') ? 'signup' : 'signin';
+                    paint();
+                    lastFocus = document.activeElement;
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                    setTimeout(()=> (mode === 'signup' ? $('#signup_name') : $('#signin_email'))?.focus(), 40);
+                };
+                const closeModal = ()=>{
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    if(lastFocus) lastFocus.focus();
+                };
+
+                $$('[data-open-auth]').forEach(b=>b.addEventListener('click', ()=>openModal(b.dataset.openAuth)));
+                $$('[data-close-auth]').forEach(b=>b.addEventListener('click', closeModal));
+                tabIn.addEventListener('click', ()=>{ mode='signin'; paint(); $('#signin_email')?.focus(); });
+                tabUp.addEventListener('click', ()=>{ mode='signup'; paint(); $('#signup_name')?.focus(); });
+
+                document.addEventListener('keydown', (e)=>{
+                    if(modal.classList.contains('hidden')) return;
+                    if(e.key === 'Escape') closeModal();
+                    if(e.key === 'Tab'){
+                        const f = $$('button, input, a[href], [tabindex]:not([tabindex="-1"])', modal)
+                          .filter(el => el.offsetParent !== null && !el.disabled);
+                        if(!f.length) return;
+                        const first = f[0], last = f[f.length-1];
+                        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+                        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+                    }
+                });
+
+                /* client-side guard — Devise still does the real validation server-side */
+                $('#signinForm')?.addEventListener('submit', (e)=>{
+                    const email = $('#signin_email'), pass = $('#signin_password');
+                    let bad = null;
+                    if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
+                    if(!pass.value){ setError(pass, 'Enter your password'); bad ||= pass; }
+                    if(bad){ e.preventDefault(); bad.focus(); }
+                });
+
+                $('#signupForm')?.addEventListener('submit', (e)=>{
+                    const name = $('#signup_name'), email = $('#signup_email'),
+                      pass = $('#signup_password'), conf = $('#signup_password_confirmation');
+                    let bad = null;
+                    if(!name.value.trim()){ setError(name, 'Enter your name'); bad ||= name; }
+                    if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
+                    if(pass.value.length < 8){ setError(pass, pass.value ? 'Use at least 8 characters' : 'Choose a password'); bad ||= pass; }
+                    if(conf.value !== pass.value){ setError(conf, 'The two passwords do not match'); bad ||= conf; }
+                    if(bad){ e.preventDefault(); bad.focus(); }
+                });
+
+                /* reopen after a failed Devise attempt, or via ?auth=signup */
+                const want = document.body.dataset.authOpen;
+                if(want) openModal(want);
+
+                paint();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', boot);
+        document.addEventListener('turbo:load', boot);
+    })();
+</script>
+</body>
 </html>
