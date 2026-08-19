@@ -14,7 +14,8 @@ Rails.application.routes.draw do
   # root "posts#index"
   root "home#index"
   # config/routes.rb
-  resource :session, only: [:new, :create, :destroy]
-  resources :users, only: [:new, :create, :show]
+  resource :session, only: %w[new create destroy]
+  resources :users, only: %w[new create show]
+  resources :events, only: %w[index show new create]
 
 end
