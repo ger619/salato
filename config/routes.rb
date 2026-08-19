@@ -17,5 +17,9 @@ Rails.application.routes.draw do
   resource :session, only: %w[new create destroy]
   resources :users, only: %w[new create show]
   resources :events, only: %w[index show new create]
+  resources :dashboard, only: %w[index]
+  resources :orders, only: %w[new create]
+  resources :tickets, only: %w[new create]
+  resources :ticket_types, only: %w[index show]
 
 end
