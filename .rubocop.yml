@@ -67,6 +67,8 @@ Lint/NonLocalExitFromIterator:
   Enabled: false
 Lint/SelfAssignment:
   Enabled: false
+Lint/DuplicateBranch:
+  Enabled: false
 Style/HashEachMethods:
   Enabled: false
 Style/HashTransformKeys:
@@ -75,4 +77,5 @@ Style/HashTransformValues:
   Enabled: false
 Style/SafeNavigationChainLength:
   Enabled: false
+
 

@@ -5,7 +5,6 @@ class Ticket < ApplicationRecord
 
   has_one_attached :qr_token
 
-
   STATUSES = %w[valid checked_in cancelled].freeze
 
   validates :ticket_number, presence: true, uniqueness: true

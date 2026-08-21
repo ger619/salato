@@ -1,53 +1,264 @@
+<%#
+  Organiser sidebar.
 
+  Desktop  — fixed rail, toggles between 16rem and a 4.75rem icon-only strip.
+             The collapsed state is remembered in localStorage.
+  Mobile   — off-canvas drawer behind an overlay, opened from the top bar.
 
-<button data-drawer-target="cta-button-sidebar" data-drawer-toggle="cta-button-sidebar" aria-controls="cta-button-sidebar" type="button" class="text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base ms-3 mt-3 text-sm p-2 focus:outline-none inline-flex sm:hidden">
-    <span class="sr-only">Open sidebar</span>
-    <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10"/>
-    </svg>
-</button>
+  Page content sits inside <div class="app-main"> which is offset by the
+  --sidebar-w custom property, so it reflows when the rail collapses.
+%>
 
-<aside id="cta-button-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
-    <div class="h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft border-e border-default">
-        <ul class="space-y-2 font-medium">
-            <li>
-                <a href="#" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                    <svg class="w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6.025A7.5 7.5 0 1 0 17.975 14H10V6.025Z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 3c-.169 0-.334.014-.5.025V11h7.975c.011-.166.025-.331.025-.5A7.5 7.5 0 0 0 13.5 3Z"/></svg>
-                    <span class="ms-3">Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                    <svg class="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v14M9 5v14M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>
-                    <span class="flex-1 ms-3 whitespace-nowrap">Events</span>
-                    <span class="bg-neutral-secondary-medium border border-default-medium text-heading text-xs font-medium px-1.5 py-0.5 rounded-sm">Pro</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                    <svg class="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13h3.439a.991.991 0 0 1 .908.6 3.978 3.978 0 0 0 7.306 0 .99.99 0 0 1 .908-.6H20M4 13v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6M4 13l2-9h12l2 9M9 7h6m-7 3h8"/></svg>
-                    <span class="flex-1 ms-3 whitespace-nowrap">Reports</span>
-                    <span class="inline-flex items-center justify-center w-4.5 h-4.5 ms-2 text-xs font-medium text-fg-danger-strong bg-danger-soft border border-danger-subtle rounded-full">2</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                    <svg class="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 19h4a1 1 0 0 0 1-1v-1a3 3 0 0 0-3-3h-2m-2.236-4a3 3 0 1 0 0-4M3 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    <span class="flex-1 ms-3 whitespace-nowrap">Users</span>
-                </a>
-            </li>
+<% nav_items = [
+     { label: "Dashboard", icon: :dashboard,
+       path: (defined?(dashboard_index_path) ? dashboard_index_path : "#"),
+       active: controller_name == "dashboard" },
 
-            <li>
-              <%= button_to destroy_user_session_path,
-                            method: :delete,
-                            data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-                            class: "flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50" do %>
-                <svg class="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"/></svg>
+     { label: "Events", icon: :events,
+       path: (defined?(events_path) ? events_path : "#"),
+       active: controller_name == "events" },
 
-                Sign Out
-              <% end %>
-            </li>
-        </ul>
+     { label: "Orders", icon: :orders,
+       path: "#", active: controller_name == "orders" },
+
+     { label: "Tickets", icon: :tickets,
+       path: (defined?(tickets_path) ? tickets_path : "#"),
+       active: controller_name == "tickets" },
+
+     { label: "Gate scanner", icon: :scanner,
+       path: "#", active: controller_name == "ticket_verifications" },
+
+     { label: "Customers", icon: :users,
+       path: (defined?(users_path) ? users_path : "#"),
+       active: controller_name == "users" },
+
+     { label: "Settings", icon: :settings,
+       path: "#", active: controller_name == "settings" }
+   ] %>
+
+<style>
+  :root { --sidebar-w: 16rem; }
+  body[data-sidebar="collapsed"] { --sidebar-w: 4.75rem; }
+
+  .app-main {
+    padding-left: var(--sidebar-w);
+    transition: padding-left .28s cubic-bezier(.2,.7,.3,1);
+  }
+
+  /* Below lg the rail is a drawer, so content never gets offset. */
+  @media (max-width: 1023.98px) {
+    .app-main { padding-left: 0; }
+  }
+
+  /* Hide labels when collapsed, but only on desktop — the mobile drawer
+     always shows them at full width. */
+  @media (min-width: 1024px) {
+    body[data-sidebar="collapsed"] .rail-label,
+    body[data-sidebar="collapsed"] .rail-badge,
+    body[data-sidebar="collapsed"] .rail-wordmark { display: none; }
+    body[data-sidebar="collapsed"] .rail-item { justify-content: center; padding-left: 0; padding-right: 0; }
+    body[data-sidebar="collapsed"] .rail-mark { display: block; }
+    body[data-sidebar="collapsed"] .rail-collapse svg { transform: rotate(180deg); }
+    body[data-sidebar="collapsed"] .rail-item:hover .rail-tip { opacity: 1; transform: translateX(0); }
+  }
+  .rail-mark { display: none; }
+
+  .rail-tip {
+    position: absolute; left: calc(100% + 10px); white-space: nowrap;
+    background: #150D3A; color: #fff; font-size: 13px; padding: 6px 10px;
+    border-radius: 8px; box-shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    opacity: 0; transform: translateX(-6px); transition: opacity .18s ease, transform .18s ease;
+    pointer-events: none; z-index: 60;
+  }
+
+  /* Active item: gradient spine on the leading edge. */
+  .rail-item[aria-current="page"]::before {
+    content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+    border-radius: 0 3px 3px 0; background: var(--grad);
+  }
+  body[data-sidebar="collapsed"] .rail-item[aria-current="page"]::before { top: 6px; bottom: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-main, .rail-tip, #sidebar, #sidebarOverlay { transition: none !important; }
+  }
+</style>
+
+<%# ══════════════ MOBILE TOP BAR ══════════════ %>
+<div class="lg:hidden sticky top-0 z-30 flex items-center gap-3 bg-ink text-white px-4 py-3 border-b border-white/10">
+  <button type="button" data-sidebar-open
+          class="p-2 -ms-2 rounded-lg hover:bg-white/10 transition"
+          aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
+    <%= render "shared/sidebar_icon", name: :menu, class_name: "w-6 h-6" %>
+  </button>
+
+  <%= link_to (defined?(dashboard_index_path) ? dashboard_index_path : root_path), class: "shrink-0" do %>
+    <%= image_tag "salato_logo/salato-logo-horizontal-on-dark.png", alt: "Salato", class: "h-7 w-auto" %>
+  <% end %>
+</div>
+
+<%# ══════════════ OVERLAY (mobile only) ══════════════ %>
+<div id="sidebarOverlay" data-sidebar-close
+     class="lg:hidden fixed inset-0 z-40 bg-ink/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"
+     aria-hidden="true"></div>
+
+<%# ══════════════ SIDEBAR ══════════════ %>
+<aside id="sidebar" aria-label="Organiser navigation"
+       class="fixed top-0 left-0 z-50 h-dvh w-64 lg:w-[var(--sidebar-w)]
+              -translate-x-full lg:translate-x-0
+              transition-transform duration-300 ease-[cubic-bezier(.2,.7,.3,1)]
+              lg:transition-[width] lg:duration-300">
+
+  <div class="h-full flex flex-col bg-ink text-white border-e border-white/10 overflow-y-auto overscroll-contain">
+
+    <%# ── Brand ── %>
+    <div class="flex items-center justify-between gap-2 px-4 py-4 border-b border-white/10">
+      <%= link_to (defined?(dashboard_index_path) ? dashboard_index_path : root_path),
+                  class: "shrink-0 min-w-0", "aria-label": "Salato" do %>
+        <%= image_tag "salato_logo/salato-logo-horizontal-on-dark.png", alt: "Salato",
+              class: "rail-wordmark h-8 w-auto" %>
+        <%= image_tag "salato_logo/salato-icon-192.png", alt: "Salato",
+              class: "rail-mark h-8 w-8 mx-auto" %>
+      <% end %>
+
+      <%# Desktop collapse toggle %>
+      <button type="button" data-sidebar-collapse
+              class="rail-collapse hidden lg:grid place-items-center w-8 h-8 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
+              aria-label="Collapse sidebar">
+        <%= render "shared/sidebar_icon", name: :collapse, class_name: "w-4 h-4 transition-transform" %>
+      </button>
+
+      <%# Mobile close %>
+      <button type="button" data-sidebar-close
+              class="lg:hidden grid place-items-center w-9 h-9 shrink-0 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition"
+              aria-label="Close menu">
+        <%= render "shared/sidebar_icon", name: :close, class_name: "w-5 h-5" %>
+      </button>
     </div>
+
+    <%# ── Nav ── %>
+    <nav class="flex-1 px-3 py-4">
+      <ul class="space-y-1">
+        <% nav_items.each do |item| %>
+          <li>
+            <%= link_to item[:path],
+                  class: "rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition
+                          #{item[:active] ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:text-white hover:bg-white/[.07]'}",
+                  aria: { current: (item[:active] ? "page" : nil) } do %>
+              <%= render "shared/sidebar_icon", name: item[:icon],
+                    class_name: "w-5 h-5 shrink-0 #{item[:active] ? 'text-ember' : 'text-white/55 group-hover:text-white/90'} transition" %>
+              <span class="rail-label flex-1 whitespace-nowrap"><%= item[:label] %></span>
+              <span class="rail-tip lg:block hidden"><%= item[:label] %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <%# Example of a counted item — wire the number to a real scope %>
+      <% if local_assigns[:pending_payouts].to_i.positive? %>
+        <div class="mt-6 pt-4 border-t border-white/10">
+          <a href="#" class="rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] text-white/70 hover:text-white hover:bg-white/[.07] transition">
+            <%= render "shared/sidebar_icon", name: :orders, class_name: "w-5 h-5 shrink-0 text-white/55 group-hover:text-white/90 transition" %>
+            <span class="rail-label flex-1 whitespace-nowrap">Payouts</span>
+            <span class="rail-badge grad-bg text-white text-[11px] font-medium px-2 py-0.5 rounded-full"><%= pending_payouts %></span>
+            <span class="rail-tip lg:block hidden">Payouts</span>
+          </a>
+        </div>
+      <% end %>
+    </nav>
+
+    <%# ── Account ── %>
+    <div class="px-3 py-4 border-t border-white/10">
+      <% if defined?(current_user) && current_user %>
+        <div class="rail-item flex items-center gap-3 px-3 py-2 mb-1">
+          <span class="grid place-items-center w-8 h-8 shrink-0 rounded-full grad-bg text-[13px] font-semibold">
+            <%= current_user.email.to_s.first&.upcase %>
+          </span>
+          <span class="rail-label min-w-0">
+            <span class="block text-[13px] text-white/90 truncate"><%= current_user.email %></span>
+            <span class="block text-[11px] text-white/45">Organiser</span>
+          </span>
+        </div>
+      <% end %>
+
+      <%= button_to destroy_user_session_path, method: :delete,
+            form: { data: { turbo: false } },
+            data: { turbo_confirm: "Sign out of Salato?" },
+            class: "rail-item group relative flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] text-white/70 hover:text-white hover:bg-flare/20 transition" do %>
+        <%= render "shared/sidebar_icon", name: :signout, class_name: "w-5 h-5 shrink-0 text-white/55 group-hover:text-flare transition" %>
+        <span class="rail-label flex-1 text-left whitespace-nowrap">Sign out</span>
+        <span class="rail-tip lg:block hidden">Sign out</span>
+      <% end %>
+    </div>
+  </div>
 </aside>
 
+<script>
+    /* Same de-dup pattern as the main nav: bound once at parse time,
+       delegated off document, and each click marked so a duplicate copy
+       of this script can't double-toggle. */
+    (function(){
+        if(window.__salatoSidebarBound) return;
+        window.__salatoSidebarBound = true;
+
+        const RAIL_KEY = 'salato:sidebar';
+        const el = (s)=>document.querySelector(s);
+
+        const openDrawer = ()=>{
+            const bar = el('#sidebar'), veil = el('#sidebarOverlay');
+            if(!bar) return;
+            bar.classList.remove('-translate-x-full');
+            veil?.classList.remove('opacity-0','pointer-events-none');
+            document.body.style.overflow = 'hidden';
+            document.querySelector('[data-sidebar-open]')?.setAttribute('aria-expanded','true');
+        };
+
+        const closeDrawer = ()=>{
+            const bar = el('#sidebar'), veil = el('#sidebarOverlay');
+            if(!bar) return;
+            bar.classList.add('-translate-x-full');
+            veil?.classList.add('opacity-0','pointer-events-none');
+            document.body.style.overflow = '';
+            document.querySelector('[data-sidebar-open]')?.setAttribute('aria-expanded','false');
+        };
+
+        const setCollapsed = (collapsed)=>{
+            document.body.dataset.sidebar = collapsed ? 'collapsed' : 'expanded';
+            try { localStorage.setItem(RAIL_KEY, collapsed ? '1' : '0'); } catch(_){}
+            const btn = document.querySelector('[data-sidebar-collapse]');
+            btn?.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        };
+
+        document.addEventListener('click', (e)=>{
+            if(e.__salatoSidebar) return;
+            e.__salatoSidebar = true;
+
+            if(e.target.closest('[data-sidebar-open]'))     return openDrawer();
+            if(e.target.closest('[data-sidebar-close]'))    return closeDrawer();
+            if(e.target.closest('[data-sidebar-collapse]')) {
+                return setCollapsed(document.body.dataset.sidebar !== 'collapsed');
+            }
+
+            /* tapping a nav link inside the mobile drawer dismisses it */
+            if(window.innerWidth < 1024 && e.target.closest('#sidebar a')) closeDrawer();
+        });
+
+        document.addEventListener('keydown', (e)=>{
+            if(e.key === 'Escape') closeDrawer();
+        });
+
+        window.addEventListener('resize', ()=>{
+            if(window.innerWidth >= 1024) closeDrawer();
+        }, {passive:true});
+
+        /* Restore the collapsed preference before first paint where possible. */
+        const restore = ()=>{
+            let saved = '0';
+            try { saved = localStorage.getItem(RAIL_KEY) || '0'; } catch(_){}
+            setCollapsed(saved === '1');
+            closeDrawer();
+        };
+
+        restore();
+        document.addEventListener('turbo:load', restore);
+    })();
+</script>

@@ -40,8 +40,8 @@ class OrdersController < ApplicationController
 
     ActiveRecord::Base.transaction do
       locked_ticket_type = TicketType
-                             .lock
-                             .find(@ticket_type.id)
+        .lock
+        .find(@ticket_type.id)
 
       if locked_ticket_type.available_quantity < quantity
         @order = Order.new(order_params)
@@ -83,6 +83,7 @@ class OrdersController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
+
   def initialize_payment
     @order = Order.find(params[:id])
 

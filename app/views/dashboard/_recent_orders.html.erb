@@ -1,0 +1,84 @@
+<%# locals: orders %>
+<div class="rounded-[18px] bg-white ring-1 ring-ink/10 overflow-hidden">
+  <div class="flex items-center justify-between gap-4 px-5 sm:px-6 py-5 border-b border-ink/8">
+    <div>
+      <h2 class="text-[18px] font-semibold">Recent orders</h2>
+      <p class="mt-1 text-[13px] text-ink-soft/70">Paid orders, newest first</p>
+    </div>
+    <a href="#" class="shrink-0 text-[14px] font-medium text-magenta hover:underline">View all</a>
+  </div>
+
+  <% if orders.blank? %>
+    <p class="px-5 sm:px-6 py-12 text-center text-[15px] text-ink-soft">
+      No orders yet. They'll appear here the moment someone buys.
+    </p>
+  <% else %>
+    <%# Desktop: a real table. Below md it becomes stacked cards, because a
+        5-column table on a phone is unreadable at any font size. %>
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-ink-soft/60">
+            <th class="eyebrow font-normal px-6 py-3">Buyer</th>
+            <th class="eyebrow font-normal px-6 py-3">Event</th>
+            <th class="eyebrow font-normal px-6 py-3">Qty</th>
+            <th class="eyebrow font-normal px-6 py-3">Total</th>
+            <th class="eyebrow font-normal px-6 py-3">When</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-ink/8">
+          <% orders.each do |order| %>
+            <tr class="hover:bg-mist/60 transition">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <span class="grid place-items-center w-8 h-8 shrink-0 rounded-full grad-bg text-white text-[11px] font-semibold">
+                    <%= initials_for(order.customer_name) %>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-[14px] font-medium truncate"><%= order.customer_name %></p>
+                    <p class="font-mono text-[11px] text-ink-soft/65 truncate"><%= order.reference %></p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <p class="text-[14px] truncate max-w-[16rem]"><%= order.event&.name %></p>
+                <p class="text-[12px] text-ink-soft/65 truncate"><%= order.ticket_type&.name %></p>
+              </td>
+              <td class="px-6 py-4 font-mono text-[14px]"><%= order.quantity %></td>
+              <td class="px-6 py-4 font-mono text-[14px] font-medium"><%= kes(order.total_price) %></td>
+              <td class="px-6 py-4 text-[13px] text-ink-soft/75 whitespace-nowrap">
+                <%= time_ago_in_words(order.created_at) %> ago
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="md:hidden divide-y divide-ink/8">
+      <% orders.each do |order| %>
+        <li class="px-5 py-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="grid place-items-center w-9 h-9 shrink-0 rounded-full grad-bg text-white text-[12px] font-semibold">
+                <%= initials_for(order.customer_name) %>
+              </span>
+              <div class="min-w-0">
+                <p class="text-[15px] font-medium truncate"><%= order.customer_name %></p>
+                <p class="text-[13px] text-ink-soft/75 truncate"><%= order.event&.name %></p>
+              </div>
+            </div>
+            <p class="shrink-0 font-mono text-[14px] font-medium"><%= kes(order.total_price) %></p>
+          </div>
+          <div class="mt-2.5 flex items-center gap-3 text-[12px] text-ink-soft/65">
+            <span class="font-mono"><%= order.reference %></span>
+            <span aria-hidden="true">·</span>
+            <span><%= order.quantity %> <%= "ticket".pluralize(order.quantity) %></span>
+            <span aria-hidden="true">·</span>
+            <span><%= time_ago_in_words(order.created_at) %> ago</span>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
