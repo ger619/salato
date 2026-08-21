@@ -16,9 +16,10 @@ Rails.application.routes.draw do
   # config/routes.rb
   resource :session, only: %w[new create destroy]
   resources :users, only: %w[new create show]
-  resources :events, only: %w[index show new create]
+  resources :events, only: %w[index show new create], param: :slug do
+    resources :orders, only: %w[new create]
+  end
   resources :dashboard, only: %w[index]
-  resources :orders, only: %w[new create]
   resources :tickets, only: %w[new create]
   resources :ticket_types, only: %w[index show]
 
