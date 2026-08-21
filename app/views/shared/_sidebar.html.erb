@@ -2,85 +2,120 @@
   Organiser sidebar.
 
   Desktop  — fixed rail, toggles between 16rem and a 4.75rem icon-only strip.
-             The collapsed state is remembered in localStorage.
+             Content reflows because .app-main is padded by --sidebar-w, so
+             collapsing genuinely widens the working area rather than leaving
+             an empty gutter.
   Mobile   — off-canvas drawer behind an overlay, opened from the top bar.
 
-  Page content sits inside <div class="app-main"> which is offset by the
-  --sidebar-w custom property, so it reflows when the rail collapses.
+  The collapsed flag lives on <html> (not <body>) so the no-flash snippet in
+  the layout head can set it before first paint.
 %>
 
 <% nav_items = [
-     { label: "Dashboard", icon: :dashboard,
-       path: (defined?(dashboard_index_path) ? dashboard_index_path : "#"),
-       active: controller_name == "dashboard" },
+  { label: "Dashboard", icon: :dashboard,
+    path: (defined?(dashboard_index_path) ? dashboard_index_path : "#"),
+    active: controller_name == "dashboard" },
 
-     { label: "Events", icon: :events,
-       path: (defined?(events_path) ? events_path : "#"),
-       active: controller_name == "events" },
+  { label: "Events", icon: :events,
+    path: (defined?(events_path) ? events_path : "#"),
+    active: controller_name == "events" },
 
-     { label: "Orders", icon: :orders,
-       path: "#", active: controller_name == "orders" },
+  { label: "Orders", icon: :orders,
+    path: "#", active: controller_name == "orders" },
 
-     { label: "Tickets", icon: :tickets,
-       path: (defined?(tickets_path) ? tickets_path : "#"),
-       active: controller_name == "tickets" },
+  { label: "Tickets", icon: :tickets,
+    path: (defined?(tickets_path) ? tickets_path : "#"),
+    active: controller_name == "tickets" },
 
-     { label: "Gate scanner", icon: :scanner,
-       path: "#", active: controller_name == "ticket_verifications" },
+  { label: "Gate scanner", icon: :scanner,
+    path: "#", active: controller_name == "ticket_verifications" },
 
-     { label: "Customers", icon: :users,
-       path: (defined?(users_path) ? users_path : "#"),
-       active: controller_name == "users" },
+  { label: "Customers", icon: :users,
+    path: (defined?(users_path) ? users_path : "#"),
+    active: controller_name == "users" },
 
-     { label: "Settings", icon: :settings,
-       path: "#", active: controller_name == "settings" }
-   ] %>
+  { label: "Settings", icon: :settings,
+    path: "#", active: controller_name == "settings" }
+] %>
 
 <style>
-  :root { --sidebar-w: 16rem; }
-  body[data-sidebar="collapsed"] { --sidebar-w: 4.75rem; }
+    /* ── The one number everything keys off ───────────────────────────── */
+    :root {
+        --rail-open: 16rem;
+        --rail-shut: 4.75rem;
+        --sidebar-w: var(--rail-open);
+        --rail-ease: cubic-bezier(.2,.7,.3,1);
+    }
 
-  .app-main {
-    padding-left: var(--sidebar-w);
-    transition: padding-left .28s cubic-bezier(.2,.7,.3,1);
-  }
+    html[data-sidebar="collapsed"] { --sidebar-w: var(--rail-shut); }
 
-  /* Below lg the rail is a drawer, so content never gets offset. */
-  @media (max-width: 1023.98px) {
-    .app-main { padding-left: 0; }
-  }
+    /* Below lg the rail is a drawer floating over the page, so content is
+       never offset — regardless of the collapsed flag. */
+    @media (max-width: 1023.98px) {
+        :root,
+        html[data-sidebar="collapsed"] { --sidebar-w: 0rem; }
+    }
 
-  /* Hide labels when collapsed, but only on desktop — the mobile drawer
-     always shows them at full width. */
-  @media (min-width: 1024px) {
-    body[data-sidebar="collapsed"] .rail-label,
-    body[data-sidebar="collapsed"] .rail-badge,
-    body[data-sidebar="collapsed"] .rail-wordmark { display: none; }
-    body[data-sidebar="collapsed"] .rail-item { justify-content: center; padding-left: 0; padding-right: 0; }
-    body[data-sidebar="collapsed"] .rail-mark { display: block; }
-    body[data-sidebar="collapsed"] .rail-collapse svg { transform: rotate(180deg); }
-    body[data-sidebar="collapsed"] .rail-item:hover .rail-tip { opacity: 1; transform: translateX(0); }
-  }
-  .rail-mark { display: none; }
+    /* ── Content area ─────────────────────────────────────────────────── */
+    .app-main {
+        padding-inline-start: var(--sidebar-w);
+        transition: padding-inline-start .28s var(--rail-ease);
+        min-width: 0;
+    }
 
-  .rail-tip {
-    position: absolute; left: calc(100% + 10px); white-space: nowrap;
-    background: #150D3A; color: #fff; font-size: 13px; padding: 6px 10px;
-    border-radius: 8px; box-shadow: 0 10px 30px -12px rgba(0,0,0,.6);
-    opacity: 0; transform: translateX(-6px); transition: opacity .18s ease, transform .18s ease;
-    pointer-events: none; z-index: 60;
-  }
+    /* Generous ceiling so collapsing buys usable width instead of just wider
+       margins. Lower the max-width if you prefer a tighter measure. */
+    .app-inner {
+        max-width: 1600px;
+        margin-inline: auto;
+        min-width: 0;
+        padding-inline: 1rem;
+        padding-block: 1.25rem;
+    }
+    @media (min-width: 640px)  { .app-inner { padding-inline: 1.5rem; padding-block: 1.75rem; } }
+    @media (min-width: 1280px) { .app-inner { padding-inline: 2rem;   padding-block: 2rem; } }
 
-  /* Active item: gradient spine on the leading edge. */
-  .rail-item[aria-current="page"]::before {
-    content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
-    border-radius: 0 3px 3px 0; background: var(--grad);
-  }
-  body[data-sidebar="collapsed"] .rail-item[aria-current="page"]::before { top: 6px; bottom: 6px; }
+    /* Grid children default to min-width:auto and refuse to shrink below their
+       content — which is what makes wide tables and charts blow past the rail. */
+    .app-main :where(.grid) > * { min-width: 0; }
 
-  @media (prefers-reduced-motion: reduce) {
-    .app-main, .rail-tip, #sidebar, #sidebarOverlay { transition: none !important; }
-  }
+    /* ── Collapsed rail presentation (desktop only) ───────────────────── */
+    @media (min-width: 1024px) {
+        html[data-sidebar="collapsed"] .rail-label,
+        html[data-sidebar="collapsed"] .rail-badge,
+        html[data-sidebar="collapsed"] .rail-wordmark { display: none; }
+
+        html[data-sidebar="collapsed"] .rail-item {
+            justify-content: center;
+            padding-inline: 0;
+        }
+        html[data-sidebar="collapsed"] .rail-mark  { display: block; }
+        html[data-sidebar="collapsed"] .rail-brand { justify-content: center; }
+        html[data-sidebar="collapsed"] .rail-item:hover .rail-tip,
+        html[data-sidebar="collapsed"] .rail-item:focus-visible .rail-tip {
+            opacity: 1; transform: translateX(0);
+        }
+    }
+    .rail-mark { display: none; }
+
+    .rail-tip {
+        position: absolute; left: calc(100% + 10px); white-space: nowrap;
+        background: #150D3A; color: #fff; font-size: 13px; padding: 6px 10px;
+        border-radius: 8px; box-shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+        opacity: 0; transform: translateX(-6px);
+        transition: opacity .18s ease, transform .18s ease;
+        pointer-events: none; z-index: 60;
+    }
+
+    /* Active item: gradient spine on the leading edge. */
+    .rail-item[aria-current="page"]::before {
+        content: ""; position: absolute; inset-inline-start: 0; top: 8px; bottom: 8px;
+        width: 3px; border-radius: 0 3px 3px 0; background: var(--grad);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .app-main, .rail-tip, #sidebar, #sidebarOverlay { transition: none !important; }
+    }
 </style>
 
 <%# ══════════════ MOBILE TOP BAR ══════════════ %>
@@ -106,25 +141,25 @@
        class="fixed top-0 left-0 z-50 h-dvh w-64 lg:w-[var(--sidebar-w)]
               -translate-x-full lg:translate-x-0
               transition-transform duration-300 ease-[cubic-bezier(.2,.7,.3,1)]
-              lg:transition-[width] lg:duration-300">
+              lg:transition-[width] lg:duration-300 lg:ease-[cubic-bezier(.2,.7,.3,1)]">
 
-  <div class="h-full flex flex-col bg-ink text-white border-e border-white/10 overflow-y-auto overscroll-contain">
+  <div class="h-full flex flex-col bg-ink text-white border-e border-white/10 overflow-y-auto overflow-x-hidden overscroll-contain">
 
     <%# ── Brand ── %>
-    <div class="flex items-center justify-between gap-2 px-4 py-4 border-b border-white/10">
+    <div class="rail-brand flex items-center justify-between gap-2 px-4 py-4 border-b border-white/10">
       <%= link_to (defined?(dashboard_index_path) ? dashboard_index_path : root_path),
                   class: "shrink-0 min-w-0", "aria-label": "Salato" do %>
         <%= image_tag "salato_logo/salato-logo-horizontal-on-dark.png", alt: "Salato",
-              class: "rail-wordmark h-8 w-auto" %>
+                      class: "rail-wordmark h-8 w-auto max-w-none" %>
         <%= image_tag "salato_logo/salato-icon-192.png", alt: "Salato",
-              class: "rail-mark h-8 w-8 mx-auto" %>
+                      class: "rail-mark h-8 w-8 mx-auto" %>
       <% end %>
 
-      <%# Desktop collapse toggle %>
+      <%# Collapse control — hidden while collapsed so the rail stays clean %>
       <button type="button" data-sidebar-collapse
-              class="rail-collapse hidden lg:grid place-items-center w-8 h-8 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
+              class="rail-label hidden lg:grid place-items-center w-8 h-8 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
               aria-label="Collapse sidebar">
-        <%= render "shared/sidebar_icon", name: :collapse, class_name: "w-4 h-4 transition-transform" %>
+        <%= render "shared/sidebar_icon", name: :collapse, class_name: "w-4 h-4" %>
       </button>
 
       <%# Mobile close %>
@@ -135,32 +170,42 @@
       </button>
     </div>
 
+    <%# Expand handle — only visible while collapsed %>
+    <button type="button" data-sidebar-collapse
+            class="rail-mark w-full py-2 text-white/45 hover:text-white hover:bg-white/[.07] transition"
+            aria-label="Expand sidebar">
+      <svg class="w-4 h-4 mx-auto rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6"/>
+      </svg>
+    </button>
+
     <%# ── Nav ── %>
     <nav class="flex-1 px-3 py-4">
       <ul class="space-y-1">
         <% nav_items.each do |item| %>
           <li>
             <%= link_to item[:path],
-                  class: "rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition
+                        class: "rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition
                           #{item[:active] ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:text-white hover:bg-white/[.07]'}",
-                  aria: { current: (item[:active] ? "page" : nil) } do %>
+                        aria: { current: (item[:active] ? "page" : nil) } do %>
               <%= render "shared/sidebar_icon", name: item[:icon],
-                    class_name: "w-5 h-5 shrink-0 #{item[:active] ? 'text-ember' : 'text-white/55 group-hover:text-white/90'} transition" %>
+                         class_name: "w-5 h-5 shrink-0 #{item[:active] ? 'text-ember' : 'text-white/55 group-hover:text-white/90'} transition" %>
               <span class="rail-label flex-1 whitespace-nowrap"><%= item[:label] %></span>
-              <span class="rail-tip lg:block hidden"><%= item[:label] %></span>
+              <span class="rail-tip hidden lg:block"><%= item[:label] %></span>
             <% end %>
           </li>
         <% end %>
       </ul>
 
-      <%# Example of a counted item — wire the number to a real scope %>
+      <%# Counted item — only renders when a number is passed in %>
       <% if local_assigns[:pending_payouts].to_i.positive? %>
         <div class="mt-6 pt-4 border-t border-white/10">
           <a href="#" class="rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] text-white/70 hover:text-white hover:bg-white/[.07] transition">
             <%= render "shared/sidebar_icon", name: :orders, class_name: "w-5 h-5 shrink-0 text-white/55 group-hover:text-white/90 transition" %>
             <span class="rail-label flex-1 whitespace-nowrap">Payouts</span>
             <span class="rail-badge grad-bg text-white text-[11px] font-medium px-2 py-0.5 rounded-full"><%= pending_payouts %></span>
-            <span class="rail-tip lg:block hidden">Payouts</span>
+            <span class="rail-tip hidden lg:block">Payouts</span>
           </a>
         </div>
       <% end %>
@@ -181,26 +226,26 @@
       <% end %>
 
       <%= button_to destroy_user_session_path, method: :delete,
-            form: { data: { turbo: false } },
-            data: { turbo_confirm: "Sign out of Salato?" },
-            class: "rail-item group relative flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] text-white/70 hover:text-white hover:bg-flare/20 transition" do %>
+                    form: { data: { turbo: false } },
+                    data: { turbo_confirm: "Sign out of Salato?" },
+                    class: "rail-item group relative flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] text-white/70 hover:text-white hover:bg-flare/20 transition" do %>
         <%= render "shared/sidebar_icon", name: :signout, class_name: "w-5 h-5 shrink-0 text-white/55 group-hover:text-flare transition" %>
         <span class="rail-label flex-1 text-left whitespace-nowrap">Sign out</span>
-        <span class="rail-tip lg:block hidden">Sign out</span>
+        <span class="rail-tip hidden lg:block">Sign out</span>
       <% end %>
     </div>
   </div>
 </aside>
 
 <script>
-    /* Same de-dup pattern as the main nav: bound once at parse time,
-       delegated off document, and each click marked so a duplicate copy
-       of this script can't double-toggle. */
+    /* Bound once at parse time, delegated off document, each click marked —
+       so a duplicate copy of this script can't double-toggle anything. */
     (function(){
         if(window.__salatoSidebarBound) return;
         window.__salatoSidebarBound = true;
 
         const RAIL_KEY = 'salato:sidebar';
+        const root = document.documentElement;
         const el = (s)=>document.querySelector(s);
 
         const openDrawer = ()=>{
@@ -209,7 +254,7 @@
             bar.classList.remove('-translate-x-full');
             veil?.classList.remove('opacity-0','pointer-events-none');
             document.body.style.overflow = 'hidden';
-            document.querySelector('[data-sidebar-open]')?.setAttribute('aria-expanded','true');
+            el('[data-sidebar-open]')?.setAttribute('aria-expanded','true');
         };
 
         const closeDrawer = ()=>{
@@ -218,14 +263,17 @@
             bar.classList.add('-translate-x-full');
             veil?.classList.add('opacity-0','pointer-events-none');
             document.body.style.overflow = '';
-            document.querySelector('[data-sidebar-open]')?.setAttribute('aria-expanded','false');
+            el('[data-sidebar-open]')?.setAttribute('aria-expanded','false');
         };
 
         const setCollapsed = (collapsed)=>{
-            document.body.dataset.sidebar = collapsed ? 'collapsed' : 'expanded';
+            root.dataset.sidebar = collapsed ? 'collapsed' : 'expanded';
             try { localStorage.setItem(RAIL_KEY, collapsed ? '1' : '0'); } catch(_){}
-            const btn = document.querySelector('[data-sidebar-collapse]');
-            btn?.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+
+            /* Anything that measured its own width — a canvas, a sticky table
+               header, a future charting library — gets a chance to re-measure
+               once the rail has finished moving. */
+            setTimeout(()=>window.dispatchEvent(new Event('resize')), 320);
         };
 
         document.addEventListener('click', (e)=>{
@@ -235,26 +283,28 @@
             if(e.target.closest('[data-sidebar-open]'))     return openDrawer();
             if(e.target.closest('[data-sidebar-close]'))    return closeDrawer();
             if(e.target.closest('[data-sidebar-collapse]')) {
-                return setCollapsed(document.body.dataset.sidebar !== 'collapsed');
+                return setCollapsed(root.dataset.sidebar !== 'collapsed');
             }
 
-            /* tapping a nav link inside the mobile drawer dismisses it */
             if(window.innerWidth < 1024 && e.target.closest('#sidebar a')) closeDrawer();
         });
 
         document.addEventListener('keydown', (e)=>{
             if(e.key === 'Escape') closeDrawer();
+            /* "[" toggles the rail — useful when you live in this screen */
+            if(e.key === '[' && !/input|textarea|select/i.test(e.target.tagName)){
+                setCollapsed(root.dataset.sidebar !== 'collapsed');
+            }
         });
 
         window.addEventListener('resize', ()=>{
             if(window.innerWidth >= 1024) closeDrawer();
         }, {passive:true});
 
-        /* Restore the collapsed preference before first paint where possible. */
         const restore = ()=>{
             let saved = '0';
             try { saved = localStorage.getItem(RAIL_KEY) || '0'; } catch(_){}
-            setCollapsed(saved === '1');
+            root.dataset.sidebar = saved === '1' ? 'collapsed' : 'expanded';
             closeDrawer();
         };
 
