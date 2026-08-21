@@ -8,12 +8,20 @@
       <% end %>
 
       <ul class="hidden lg:flex items-center gap-8 text-[15px] font-medium text-ink2">
-        <li><a href="#hero" class="navlink hover:text-ink transition">Home</a></li>
-        <li><%= link_to "Events",    events_path,    class: "navlink hover:text-ink transition" %></li>
-        <li><a href="#about" class="navlink hover:text-ink transition">About us</a></li>
-        <li><a href="#how" class="navlink hover:text-ink transition">How it works</a></li>
-        <li><a href="#pricing" class="navlink hover:text-ink transition">Pricing</a></li>
-        <li><a href="#contact" class="navlink hover:text-ink transition">Contact</a></li>
+        <li><%= link_to "Home", nav_anchor_path("hero"),
+                        class: "navlink hover:text-ink transition",
+                        data: { nav_spy_target: "link", section: "hero" } %></li>
+
+        <li><%= link_to "Events", events_path,
+                        class: "navlink hover:text-ink transition",
+                        aria: { current: ("true" if controller_name == "events") } %></li>
+
+        <% { "about" => "About us", "how" => "How it works",
+             "pricing" => "Pricing", "contact" => "Contact" }.each do |anchor, label| %>
+          <li><%= link_to label, nav_anchor_path(anchor),
+                          class: "navlink hover:text-ink transition",
+                          data: { nav_spy_target: "link", section: anchor } %></li>
+        <% end %>
       </ul>
 
       <div class="flex items-center gap-2">
@@ -45,6 +53,25 @@
         <li><a href="#pricing" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">Pricing</a></li>
         <li><a href="#contact" class="flex items-center px-3 py-2.5 rounded-lg hover:bg-mist">Contact</a></li>
       </ul>
+
+      <ul class="flex flex-col gap-1 text-[16px] font-medium">
+        <li><%= link_to "Home", nav_anchor_path("hero"),
+                        class: "flex items-center px-3 py-2.5 rounded-lg hover:bg-mist",
+                        data: { nav_spy_target: "link", section: "hero" } %></li>
+
+        <li><%= link_to "Events", events_path,
+                        class: "flex items-center px-3 py-2.5 rounded-lg hover:bg-mist",
+                        aria: { current: ("true" if controller_name == "events") } %></li>
+
+        <% { "about" => "About us", "how" => "How it works",
+             "pricing" => "Pricing", "contact" => "Contact" }.each do |anchor, label| %>
+          <li>
+            <%= link_to label, nav_anchor_path(anchor),
+                          class: "flex items-center px-3 py-2.5 rounded-lg hover:bg-mist",
+                          data: { nav_spy_target: "link", section: anchor } %></li>
+        <% end %>
+      </ul>
+
       <div class="mt-3 pt-3 border-t border-ink/10 flex flex-col xs:flex-row gap-2">
         <% if defined?(user_signed_in?) && user_signed_in? %>
           <%= link_to "Dashboard", (defined?(dashboard_index_path) ? dashboard_index_path : root_path),

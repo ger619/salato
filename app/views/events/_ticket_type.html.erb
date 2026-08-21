@@ -1,10 +1,4 @@
-<%#
-  One ticket type, drawn as a stub. The notch pair sits level with the tear
-  line above the price row (--ty). Masking clips box-shadows, so the card
-  uses a ring for definition rather than a shadow.
 
-  locals: ticket_type, event
-%>
 <% available = ticket_type.available_quantity.to_i %>
 <% sold_out  = available.zero? %>
 

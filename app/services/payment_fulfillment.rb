@@ -48,7 +48,7 @@ class PaymentFulfillment
 
   def validate_payment_amount!(order)
     expected = Paystack::Money.to_subunit(
-      order.total_amount
+      order.total_price
     )
 
     actual = @transaction.fetch('amount').to_i

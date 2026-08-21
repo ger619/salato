@@ -6,7 +6,7 @@ class Order < ApplicationRecord
 
   STATUSES = %w[pending paid failed cancelled expired].freeze
 
-  validates :references, presence: true, uniqueness: true
+  validates :reference, presence: true, uniqueness: true
   validates :customer_name, presence: true
   validates :customer_email, presence: true
   validates :customer_phone, presence: true

@@ -8,4 +8,8 @@ class Event < ApplicationRecord
   validates :slug, presence: true
 
   scope :active, -> { where(active: true) }
+
+  def to_param
+    slug
+  end
 end
