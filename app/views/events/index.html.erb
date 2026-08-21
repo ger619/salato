@@ -1,0 +1,29 @@
+<h1>Upcoming Events</h1>
+
+<% if @events.empty? %>
+  <p>No events available.</p>
+<% end %>
+
+<% @events.each do |event| %>
+  <article>
+    <h2>
+      <%= link_to event.name, event_path(event.slug) %>
+    </h2>
+
+    <p>
+      <%= event.description %>
+    </p>
+
+    <p>
+      <strong>Venue:</strong>
+      <%= event.venue %>
+    </p>
+
+    <p>
+      <strong>Date:</strong>
+      <%= event.start_at.strftime("%d %B %Y, %I:%M %p") %>
+    </p>
+
+    <%= link_to "Buy Tickets", event_path(event.slug) %>
+  </article>
+<% end %>

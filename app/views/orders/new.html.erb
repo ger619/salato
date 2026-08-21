@@ -1,0 +1,76 @@
+<h1>Buy Tickets</h1>
+
+<h2><%= @event.name %></h2>
+
+<h3>
+  <%= @ticket_type.name %>
+</h3>
+
+<p>
+  Price:
+  KSh <%= number_with_delimiter(@ticket_type.price.to_i) %>
+</p>
+
+<%= form_with model: [@event, @order], local: true do |form| %>
+
+  <% if @order.errors.any? %>
+    <div>
+      <h3>
+        <%= pluralize(@order.errors.count, "error") %>
+        prevented your purchase:
+      </h3>
+
+      <ul>
+        <% @order.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :customer_name, "Full Name" %>
+
+    <%= form.text_field(
+          :customer_name,
+          required: true,
+          autocomplete: "name"
+        ) %>
+  </div>
+
+  <div>
+    <%= form.label :customer_email, "Email Address" %>
+
+    <%= form.email_field(
+          :customer_email,
+          required: true,
+          autocomplete: "email"
+        ) %>
+  </div>
+
+  <div>
+    <%= form.label :customer_phone, "Phone Number" %>
+
+    <%= form.telephone_field(
+          :customer_phone,
+          autocomplete: "tel"
+        ) %>
+  </div>
+
+  <div>
+    <%= form.label :quantity, "Number of Tickets" %>
+
+    <%= form.number_field(
+          :quantity,
+          min: 1,
+          max: [@ticket_type.available_quantity, 10].min,
+          value: 1,
+          required: true
+        ) %>
+  </div>
+
+  <div>
+    <%= form.submit "Continue to Payment" %>
+  </div>
+
+<% end %>

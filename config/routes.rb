@@ -16,11 +16,38 @@ Rails.application.routes.draw do
   # config/routes.rb
   resource :session, only: %w[new create destroy]
   resources :users, only: %w[new create show]
-  resources :events, only: %w[index show new create], param: :slug do
-    resources :orders, only: %w[new create]
-  end
   resources :dashboard, only: %w[index]
-  resources :tickets, only: %w[new create]
   resources :ticket_types, only: %w[index show]
+
+
+  resources :events, only: [:index, :show], param: :slug do
+    resources :orders, only: [:new, :create] do
+      member do
+        get :initialize_payment
+      end
+    end
+  end
+
+  get "/payments/:reference/callback",
+      to: "payments#callback",
+      as: :payment_callback
+
+  post "/payments/paystack/webhook",
+       to: "payments#webhook"
+
+  resources :tickets, only: [:show] do
+    member do
+      get :download
+    end
+  end
+
+  get "/verify/:token",
+      to: "ticket_verifications#show",
+      as: :verify_ticket
+
+  post "/verify/:token/check_in",
+       to: "ticket_verifications#check_in",
+       as: :check_in_ticket
+
 
 end

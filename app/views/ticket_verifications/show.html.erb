@@ -1,0 +1,61 @@
+<h1>Ticket Verification</h1>
+
+<% if @ticket.valid_ticket? %>
+
+  <h2>VALID TICKET</h2>
+
+<% elsif @ticket.checked_in? %>
+
+  <h2>ALREADY CHECKED IN</h2>
+
+<% else %>
+
+  <h2>INVALID TICKET</h2>
+
+<% end %>
+
+<hr>
+
+<p>
+  <strong>Event:</strong>
+  <%= @ticket.event.name %>
+</p>
+
+<p>
+  <strong>Attendee:</strong>
+  <%= @ticket.attendee_name %>
+</p>
+
+<p>
+  <strong>Ticket:</strong>
+  <%= @ticket.ticket_number %>
+</p>
+
+<p>
+  <strong>Ticket Type:</strong>
+  <%= @ticket.ticket_type.name %>
+</p>
+
+<p>
+  <strong>Status:</strong>
+  <%= @ticket.status %>
+</p>
+
+<% if @ticket.checked_in? %>
+
+  <p>
+    Checked in at:
+    <%= @ticket.checked_in_at.strftime(
+          "%d %B %Y %I:%M %p"
+        ) %>
+  </p>
+
+<% elsif @ticket.valid_ticket? %>
+
+  <%= button_to(
+        "Check In Attendee",
+        check_in_ticket_path(@ticket.qr_token),
+        method: :post
+      ) %>
+
+<% end %>

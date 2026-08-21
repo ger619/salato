@@ -1,0 +1,43 @@
+<h1>Your Ticket</h1>
+
+<h2>
+  <%= @ticket.event.name %>
+</h2>
+
+<p>
+  <strong>Name:</strong>
+  <%= @ticket.attendee_name %>
+</p>
+
+<p>
+  <strong>Ticket Number:</strong>
+  <%= @ticket.ticket_number %>
+</p>
+
+<p>
+  <strong>Ticket Type:</strong>
+  <%= @ticket.ticket_type.name %>
+</p>
+
+<p>
+  <strong>Venue:</strong>
+  <%= @ticket.event.venue %>
+</p>
+
+<p>
+  <strong>Date:</strong>
+  <%= @ticket.event.starts_at.strftime(
+        "%d %B %Y at %I:%M %p"
+      ) %>
+</p>
+
+<p>
+  <strong>Status:</strong>
+  <%= @ticket.status %>
+</p>
+
+<%= link_to(
+      "Download PDF Ticket",
+      download_ticket_path(@ticket),
+      target: "_blank"
+    ) %>

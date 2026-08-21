@@ -1,0 +1,53 @@
+<h1><%= @event.name %></h1>
+
+<p>
+  <%= @event.description %>
+</p>
+
+<p>
+  <strong>Venue:</strong>
+  <%= @event.venue %>
+</p>
+
+<p>
+  <strong>Date:</strong>
+  <%= @event.start_at.strftime("%d %B %Y, %I:%M %p") %>
+</p>
+
+<hr>
+
+<h2>Tickets</h2>
+
+<% @ticket_types.each do |ticket_type| %>
+  <div>
+    <h3>
+      <%= ticket_type.name %>
+    </h3>
+
+    <p>
+      <%= ticket_type.description %>
+    </p>
+
+    <p>
+      <strong>
+        KSh <%= number_with_delimiter(ticket_type.price.to_i) %>
+      </strong>
+    </p>
+
+    <p>
+      Available:
+      <%= ticket_type.available_quantity %>
+    </p>
+
+    <% if ticket_type.available_quantity > 0 %>
+      <%= link_to(
+            "Buy #{ticket_type.name}",
+            new_event_order_path(@event.slug, ticket_type_id: ticket_type.id)
+          ) %>
+    <% else %>
+      <strong>Sold out</strong>
+    <% end %>
+  </div>
+
+  <hr>
+<% end %>
