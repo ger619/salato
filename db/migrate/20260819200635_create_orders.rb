@@ -16,11 +16,14 @@ class CreateOrders < ActiveRecord::Migration[8.1]
       t.decimal :total_price, precision: 12, scale: 2, null: false
 
       t.string :currency, null: false, default: "KES"
+      t.string :status, null: false, default: "pending"
 
       t.datetime :paid_at
       t.datetime :expire
 
       t.timestamps
     end
+    add_index :orders, :references, unique: true
+    add_index :orders, :status
   end
 end
