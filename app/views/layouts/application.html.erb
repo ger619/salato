@@ -182,18 +182,18 @@
       <div>
         <p class="eyebrow text-white/40">Product</p>
         <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
-          <li><a href="#how" class="hover:text-orange transition">How it works</a></li>
-          <li><a href="#pricing" class="hover:text-orange transition">Pricing</a></li>
-          <li><a href="#pricing" class="hover:text-orange transition">Gate scanner</a></li>
-          <li><a href="#pricing" class="hover:text-orange transition">Refunds</a></li>
+          <li><%= link_to "How it works", nav_anchor_path("how"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Pricing", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Gate scanner", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Refunds", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
         </ul>
       </div>
 
       <div>
         <p class="eyebrow text-white/40">Company</p>
         <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
-          <li><a href="#about" class="hover:text-orange transition">About us</a></li>
-          <li><a href="#contact" class="hover:text-orange transition">Contact</a></li>
+          <li><%= link_to "About us", nav_anchor_path("about"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Contact", nav_anchor_path("contact"), class: "hover:text-orange transition" %></li>
           <li><a href="#" class="hover:text-orange transition">Terms</a></li>
           <li><a href="#" class="hover:text-orange transition">Privacy</a></li>
         </ul>
@@ -210,7 +210,7 @@
             <li><button type="button" data-open-auth="signin" class="hover:text-orange transition">Sign in</button></li>
             <li><button type="button" data-open-auth="signup" class="hover:text-orange transition">Create account</button></li>
           <% end %>
-          <li><a href="#contact" class="hover:text-orange transition">Talk to sales</a></li>
+          <li><%= link_to "Talk to sales", nav_anchor_path("contact"), class: "hover:text-orange transition" %></li>
         </ul>
       </div>
     </div>
@@ -226,165 +226,229 @@
 
 <%# ══════════════ SIGN IN / SIGN UP (Devise) ══════════════ %>
 <%= render 'shared/auth_modal' %>
+
 <script>
+    /* ══════════════════════════════════════════════════════════════
+       MENU + MODAL — delegated, bound once, per-event de-duped.
+
+       Every handler below lives on `document` and is registered inside an
+       IIFE that runs at parse time, not on DOMContentLoaded/turbo:load. A
+       second copy of this script (or a leftover inline script in a view)
+       therefore cannot double-toggle anything: both copies see the SAME
+       Event object, the first marks it, the second bails.
+       ══════════════════════════════════════════════════════════════ */
     (function(){
-        const boot = () => {
-            const $  = (s,c=document)=>c.querySelector(s);
-            const $$ = (s,c=document)=>[...c.querySelectorAll(s)];
+        if(window.__salatoNavBound) return;
+        window.__salatoNavBound = true;
 
-            /* ── nav lift on scroll ── */
+        const $  = (s,c=document)=>c.querySelector(s);
+        const $$ = (s,c=document)=>[...c.querySelectorAll(s)];
+
+        const closeAllMenus = ()=>{
+            $$('[data-menu-panel]').forEach(p=>p.classList.add('hidden'));
+            $$('[data-menu-toggle]').forEach(t=>t.setAttribute('aria-expanded','false'));
+        };
+
+        /* ── one click listener runs the mobile menu AND the auth modal ── */
+        document.addEventListener('click', (e)=>{
+            if(e.__salatoHandled) return;
+            e.__salatoHandled = true;
+
+            /* hamburger */
+            const toggle = e.target.closest('[data-menu-toggle]');
+            if(toggle){
+                const panel = toggle.closest('header')?.querySelector('[data-menu-panel]');
+                if(panel){
+                    const open = panel.classList.contains('hidden');
+                    panel.classList.toggle('hidden', !open);
+                    toggle.setAttribute('aria-expanded', String(open));
+                }
+                return;
+            }
+
+            /* open the auth modal — works from nav, menu, footer, anywhere */
+            const opener = e.target.closest('[data-open-auth]');
+            if(opener){
+                closeAllMenus();
+                window.SalatoAuth?.open(opener.dataset.openAuth);
+                return;
+            }
+
+            /* close the auth modal */
+            if(e.target.closest('[data-close-auth]')){
+                window.SalatoAuth?.close();
+                return;
+            }
+
+            /* tapping a link inside the open menu closes it */
+            const openPanel = $('[data-menu-panel]:not(.hidden)');
+            if(openPanel){
+                if(openPanel.contains(e.target)){
+                    if(e.target.closest('a, button')) closeAllMenus();
+                } else {
+                    closeAllMenus();   // tapped outside
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (e)=>{
+            if(e.key !== 'Escape') return;
+            closeAllMenus();
+            window.SalatoAuth?.close();
+        });
+
+        window.addEventListener('resize', ()=>{
+            if(window.innerWidth >= 1024) closeAllMenus();
+        }, {passive:true});
+
+        /* ── nav lift on scroll ── */
+        const onScroll = ()=>{
             const nav = $('#nav');
-            if(nav){
-                const onScroll = ()=> nav.classList.toggle('translate-y-[-2px]', window.scrollY > 20);
-                window.addEventListener('scroll', onScroll, {passive:true});
-                onScroll();
+            if(nav) nav.classList.toggle('translate-y-[-2px]', window.scrollY > 20);
+        };
+        window.addEventListener('scroll', onScroll, {passive:true});
+
+        /* ── shared field validation helpers ── */
+        const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+        function setError(input, msg){
+            const p = input.closest('div')?.querySelector('.err');
+            if(p){ p.textContent = msg; p.classList.remove('hidden'); }
+            input.classList.add('ring-pink'); input.classList.remove('ring-ink/12');
+            input.setAttribute('aria-invalid','true');
+        }
+        function clearError(input){
+            const p = input.closest('div')?.querySelector('.err');
+            if(p) p.classList.add('hidden');
+            input.classList.remove('ring-pink'); input.classList.add('ring-ink/12');
+            input.removeAttribute('aria-invalid');
+        }
+        function clearErrors(scope){ $$('input, textarea', scope).forEach(clearError); }
+
+        /* delegated, so it covers fields rendered after load too */
+        document.addEventListener('input', (e)=>{
+            if(e.target.matches('input, textarea')) clearError(e.target);
+        });
+
+        window.SalatoForms = { emailOk, setError, clearError, clearErrors };
+
+        /* ── auth modal ── */
+        let lastFocus = null, mode = 'signin';
+
+        const paint = ()=>{
+            const modal = $('#authModal');
+            if(!modal) return;
+            const up = mode === 'signup';
+            const base = 'auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition ';
+            const tabIn = $('#tabSignin'), tabUp = $('#tabSignup');
+            if(tabIn && tabUp){
+                tabIn.className = base + (up ? 'text-ink2 hover:text-ink' : 'bg-white shadow-sm text-ink');
+                tabUp.className = base + (up ? 'bg-white shadow-sm text-ink' : 'text-ink2 hover:text-ink');
+                tabIn.setAttribute('aria-selected', String(!up));
+                tabUp.setAttribute('aria-selected', String(up));
+            }
+            $('#signinPane')?.classList.toggle('hidden', up);
+            $('#signupPane')?.classList.toggle('hidden', !up);
+            const t = $('#authTitle'), s = $('#authSub');
+            if(t) t.textContent = up ? 'Start selling tickets' : 'Welcome back';
+            if(s) s.textContent = up ? 'Free to set up. You pay only when a ticket sells.' : "Sign in to see tonight's sales.";
+            clearErrors(modal);
+        };
+
+        window.SalatoAuth = {
+            open(m){
+                const modal = $('#authModal');
+                if(!modal) return;
+                mode = (m === 'signup') ? 'signup' : 'signin';
+                paint();
+                lastFocus = document.activeElement;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                setTimeout(()=> (mode === 'signup' ? $('#signup_name') : $('#signin_email'))?.focus(), 40);
+            },
+            close(){
+                const modal = $('#authModal');
+                if(!modal || modal.classList.contains('hidden')) return;
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+                lastFocus?.focus();
+            },
+            setMode(m){ mode = m; paint(); }
+        };
+
+        /* tab switching + focus trap */
+        document.addEventListener('click', (e)=>{
+            if(e.target.closest('#tabSignin')){ SalatoAuth.setMode('signin'); $('#signin_email')?.focus(); }
+            if(e.target.closest('#tabSignup')){ SalatoAuth.setMode('signup'); $('#signup_name')?.focus(); }
+        });
+
+        document.addEventListener('keydown', (e)=>{
+            const modal = $('#authModal');
+            if(!modal || modal.classList.contains('hidden') || e.key !== 'Tab') return;
+            const f = $$('button, input, a[href], [tabindex]:not([tabindex="-1"])', modal)
+              .filter(el => el.offsetParent !== null && !el.disabled);
+            if(!f.length) return;
+            const first = f[0], last = f[f.length-1];
+            if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+            else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        });
+
+        /* client-side guard — Devise still does the real validation server-side */
+        document.addEventListener('submit', (e)=>{
+            const form = e.target;
+            let bad = null;
+
+            if(form.id === 'signinForm'){
+                const email = $('#signin_email'), pass = $('#signin_password');
+                if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
+                if(!pass.value){ setError(pass, 'Enter your password'); bad ||= pass; }
             }
 
-            /* ── mobile menu ── */
-            const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu');
-            if(menuBtn && mobileMenu){
-                menuBtn.addEventListener('click', ()=>{
-                    const open = !mobileMenu.classList.toggle('hidden');
-                    menuBtn.setAttribute('aria-expanded', String(open));
-                });
-                $$('#mobileMenu a, #mobileMenu button').forEach(el=>el.addEventListener('click', ()=>{
-                    mobileMenu.classList.add('hidden');
-                    menuBtn.setAttribute('aria-expanded','false');
-                }));
-                // close the menu if the viewport grows past the lg breakpoint
-                window.addEventListener('resize', ()=>{
-                    if(window.innerWidth >= 1024){
-                        mobileMenu.classList.add('hidden');
-                        menuBtn.setAttribute('aria-expanded','false');
-                    }
-                }, {passive:true});
+            if(form.id === 'signupForm'){
+                const name = $('#signup_name'), email = $('#signup_email'),
+                  pass = $('#signup_password'), conf = $('#signup_password_confirmation');
+                if(!name.value.trim()){ setError(name, 'Enter your name'); bad ||= name; }
+                if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
+                if(pass.value.length < 8){ setError(pass, pass.value ? 'Use at least 8 characters' : 'Choose a password'); bad ||= pass; }
+                if(conf.value !== pass.value){ setError(conf, 'The two passwords do not match'); bad ||= conf; }
             }
 
-            /* ── scroll reveal ── */
+            if(bad){ e.preventDefault(); bad.focus(); }
+        });
+
+        /* ── per-page setup: scroll reveal, nav spy, modal auto-open ── */
+        const setupPage = ()=>{
+            onScroll();
+            closeAllMenus();
+
             const io = new IntersectionObserver((entries)=>{
-                entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+                entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
             }, {rootMargin:'0px 0px -8% 0px', threshold:.08});
-            $$('.reveal').forEach((el,i)=>{ el.style.transitionDelay = (i%4)*70 + 'ms'; io.observe(el); });
+            $$('.reveal:not(.in)').forEach((el,i)=>{ el.style.transitionDelay = (i%4)*70 + 'ms'; io.observe(el); });
 
-            /* ── active nav link ── */
-            const links = $$('#nav ul a[href^="#"]');
-            const sections = links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+            const links = $$('#nav ul a[href*="#"]');
+            const sections = links
+              .map(a=>{ const h = a.getAttribute('href').split('#')[1]; return h ? document.getElementById(h) : null; })
+              .filter(Boolean);
             if(sections.length){
                 const spy = new IntersectionObserver((entries)=>{
-                    entries.forEach(e=>{
-                        if(e.isIntersecting){
-                            links.forEach(a=>a.removeAttribute('aria-current'));
-                            const active = links.find(a=>a.getAttribute('href') === '#'+e.target.id);
-                            if(active) active.setAttribute('aria-current','true');
-                        }
+                    entries.forEach(en=>{
+                        if(!en.isIntersecting) return;
+                        links.forEach(a=>a.removeAttribute('aria-current'));
+                        links.find(a=>a.getAttribute('href').split('#')[1] === en.target.id)
+                          ?.setAttribute('aria-current','true');
                     });
                 }, {rootMargin:'-45% 0px -50% 0px'});
                 sections.forEach(s=>spy.observe(s));
             }
 
-            /* ── shared field validation helpers ── */
-            const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
-
-            function setError(input, msg){
-                const p = input.closest('div').querySelector('.err');
-                if(p){ p.textContent = msg; p.classList.remove('hidden'); }
-                input.classList.add('ring-pink'); input.classList.remove('ring-ink/12');
-                input.setAttribute('aria-invalid','true');
-            }
-            function clearError(input){
-                const p = input.closest('div')?.querySelector('.err');
-                if(p) p.classList.add('hidden');
-                input.classList.remove('ring-pink'); input.classList.add('ring-ink/12');
-                input.removeAttribute('aria-invalid');
-            }
-            function clearErrors(scope){ $$('input, textarea', scope).forEach(clearError); }
-            $$('input, textarea').forEach(el=>el.addEventListener('input', ()=>clearError(el)));
-
-            window.SalatoForms = { emailOk, setError, clearError, clearErrors };
-
-            /* ── auth modal ── */
-            const modal = $('#authModal');
-            if(modal){
-                const tabIn = $('#tabSignin'), tabUp = $('#tabSignup');
-                const paneIn = $('#signinPane'), paneUp = $('#signupPane');
-                let lastFocus = null, mode = 'signin';
-
-                const paint = ()=>{
-                    const up = mode === 'signup';
-                    const base = 'auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition ';
-                    tabIn.className = base + (up ? 'text-ink2 hover:text-ink' : 'bg-white shadow-sm text-ink');
-                    tabUp.className = base + (up ? 'bg-white shadow-sm text-ink' : 'text-ink2 hover:text-ink');
-                    tabIn.setAttribute('aria-selected', String(!up));
-                    tabUp.setAttribute('aria-selected', String(up));
-                    paneIn.classList.toggle('hidden', up);
-                    paneUp.classList.toggle('hidden', !up);
-                    $('#authTitle').textContent = up ? 'Start selling tickets' : 'Welcome back';
-                    $('#authSub').textContent   = up ? 'Free to set up. You pay only when a ticket sells.' : "Sign in to see tonight's sales.";
-                    clearErrors(modal);
-                };
-
-                const openModal = (m)=>{
-                    mode = (m === 'signup') ? 'signup' : 'signin';
-                    paint();
-                    lastFocus = document.activeElement;
-                    modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                    setTimeout(()=> (mode === 'signup' ? $('#signup_name') : $('#signin_email'))?.focus(), 40);
-                };
-                const closeModal = ()=>{
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                    if(lastFocus) lastFocus.focus();
-                };
-
-                $$('[data-open-auth]').forEach(b=>b.addEventListener('click', ()=>openModal(b.dataset.openAuth)));
-                $$('[data-close-auth]').forEach(b=>b.addEventListener('click', closeModal));
-                tabIn.addEventListener('click', ()=>{ mode='signin'; paint(); $('#signin_email')?.focus(); });
-                tabUp.addEventListener('click', ()=>{ mode='signup'; paint(); $('#signup_name')?.focus(); });
-
-                document.addEventListener('keydown', (e)=>{
-                    if(modal.classList.contains('hidden')) return;
-                    if(e.key === 'Escape') closeModal();
-                    if(e.key === 'Tab'){
-                        const f = $$('button, input, a[href], [tabindex]:not([tabindex="-1"])', modal)
-                          .filter(el => el.offsetParent !== null && !el.disabled);
-                        if(!f.length) return;
-                        const first = f[0], last = f[f.length-1];
-                        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-                        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-                    }
-                });
-
-                /* client-side guard — Devise still does the real validation server-side */
-                $('#signinForm')?.addEventListener('submit', (e)=>{
-                    const email = $('#signin_email'), pass = $('#signin_password');
-                    let bad = null;
-                    if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
-                    if(!pass.value){ setError(pass, 'Enter your password'); bad ||= pass; }
-                    if(bad){ e.preventDefault(); bad.focus(); }
-                });
-
-                $('#signupForm')?.addEventListener('submit', (e)=>{
-                    const name = $('#signup_name'), email = $('#signup_email'),
-                      pass = $('#signup_password'), conf = $('#signup_password_confirmation');
-                    let bad = null;
-                    if(!name.value.trim()){ setError(name, 'Enter your name'); bad ||= name; }
-                    if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
-                    if(pass.value.length < 8){ setError(pass, pass.value ? 'Use at least 8 characters' : 'Choose a password'); bad ||= pass; }
-                    if(conf.value !== pass.value){ setError(conf, 'The two passwords do not match'); bad ||= conf; }
-                    if(bad){ e.preventDefault(); bad.focus(); }
-                });
-
-                /* reopen after a failed Devise attempt, or via ?auth=signup */
-                const want = document.body.dataset.authOpen;
-                if(want) openModal(want);
-
-                paint();
-            }
+            /* reopen after a failed Devise attempt, or via ?auth=signup */
+            const want = document.body.dataset.authOpen;
+            if(want) SalatoAuth.open(want);
         };
 
-        document.addEventListener('DOMContentLoaded', boot);
-        document.addEventListener('turbo:load', boot);
+        document.addEventListener('DOMContentLoaded', setupPage);
+        document.addEventListener('turbo:load', setupPage);
     })();
 </script>
 </body>
