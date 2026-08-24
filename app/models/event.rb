@@ -37,7 +37,7 @@ class Event < ApplicationRecord
   validate :poster_is_a_usable_image
 
   before_save :note_poster_purge
-  after_save  :purge_poster_if_noted
+  after_save :purge_poster_if_noted
 
   scope :live, -> { where(active: true) }
   scope :upcoming, -> { where(start_at: Time.current..).order(:start_at) }
@@ -55,10 +55,10 @@ class Event < ApplicationRecord
 
   # Falls back to the original when image_processing isn't available for this
   # format, so a missing variant processor never takes down the page.
-  def poster_variant(**options)
+  def poster_variant(**)
     return nil unless poster_previewable?
 
-    poster.variable? ? poster.variant(**options) : poster
+    poster.variable? ? poster.variant(**) : poster
   end
 
   private
@@ -97,9 +97,7 @@ class Event < ApplicationRecord
     blob = poster.blob
     return if blob.blank?
 
-    unless POSTER_TYPES.include?(blob.content_type)
-      errors.add(:poster, 'must be a JPG, PNG or WebP image')
-    end
+    errors.add(:poster, 'must be a JPG, PNG or WebP image') unless POSTER_TYPES.include?(blob.content_type)
 
     return unless blob.byte_size.to_i > POSTER_MAX_BYTES
 

@@ -78,4 +78,5 @@ Style/HashTransformValues:
 Style/SafeNavigationChainLength:
   Enabled: false
 
-
+Naming/PredicateMethod:
+  Enabled: false
