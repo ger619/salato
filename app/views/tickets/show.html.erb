@@ -1,109 +1,24 @@
 <% content_for :title, "#{@ticket.ticket_number} — #{@ticket.event.name} — Salato" %>
-
-<style>
-    /* The gate is the only thing this page exists for, so make it print clean. */
-    @media print {
-        header, footer, nav, .no-print { display: none !important }
-        body { background: #fff }
-        .ticket-shell { padding: 0 !important }
-        .ticket-card { box-shadow: none !important; break-inside: avoid }
-    }
-</style>
+<%= render "shared/ticket_print_styles" %>
 
 <section class="ticket-shell bg-mist min-h-screen pt-28 lg:pt-32 pb-20">
   <div class="max-w-shell mx-auto px-5 lg:px-8">
 
-    <%= link_to event_path(@ticket.event.slug),
+    <%= link_to event_order_path(@ticket.event, @ticket.order),
                 class: "no-print inline-flex items-center gap-2 text-[14px] text-ink2/70 hover:text-ink transition
                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet rounded" do %>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H6M11 18l-6-6 6-6"/></svg>
-      Back to event
+      <%= @order_size > 1 ? "All #{@order_size} tickets" : "Back to order" %>
     <% end %>
 
     <div class="mt-8 mx-auto max-w-[440px]">
 
-      <%# ══════════════ THE TICKET ══════════════ %>
-      <article class="ticket-card rounded-[22px] bg-white overflow-hidden
-                      shadow-[0_30px_70px_-25px_rgba(21,13,58,.38)] ring-1 ring-ink/10">
+      <%= render "tickets/ticket",
+                 ticket: @ticket,
+                 position: @position,
+                 total: @order_size %>
 
-        <div class="grad-bg px-6 py-4 flex items-center justify-between gap-3">
-          <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/95">ADMIT ONE</span>
-          <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/80 truncate">
-            <%= @ticket.ticket_type.name.to_s.upcase %>
-          </span>
-        </div>
-
-        <%# ── event ── %>
-        <div class="px-6 pt-6 pb-5">
-          <p class="eyebrow text-magenta">
-            <%= @ticket.event.start_at.strftime("%A %-d %B") %>
-          </p>
-
-          <h1 class="mt-2 text-[26px] sm:text-[29px] leading-tight font-semibold">
-            <%= @ticket.event.name %>
-          </h1>
-
-          <p class="mt-1.5 text-[15px] text-ink2">
-            <%= @ticket.event.venue.presence || "Venue to be announced" %>
-            &middot;
-            <%= @ticket.event.start_at.strftime("%-l:%M %p").downcase %>
-          </p>
-
-          <dl class="mt-6 grid grid-cols-2 gap-y-4 gap-x-4 text-[14px]">
-            <div class="min-w-0">
-              <dt class="text-ink2/70">Holder</dt>
-              <dd class="font-medium mt-0.5 truncate"><%= @ticket.attendee_name %></dd>
-            </div>
-            <div class="min-w-0">
-              <dt class="text-ink2/70">Paid</dt>
-              <dd class="font-medium mt-0.5">
-                <%= @ticket.order.currency %>
-                <%= number_with_delimiter(@ticket.order.unit_price.to_i) %>
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <%# ── the perforation ── %>
-        <div class="relative px-6"><div class="tear tear-mist"></div></div>
-
-        <%# ── the stub: what the gate actually reads ── %>
-        <div class="px-6 pt-7 pb-7 flex items-start gap-5">
-          <div class="shrink-0 p-2.5 rounded-xl ring-1 ring-ink/10 bg-white">
-            <%= ticket_qr_svg(@ticket, px: 104) %>
-          </div>
-
-          <div class="min-w-0 pt-0.5">
-            <p class="eyebrow text-ink2/60">Ticket number</p>
-            <p class="mono text-[16px] font-medium mt-1 break-all"><%= @ticket.ticket_number %></p>
-
-            <% pill = ticket_status_pill(@ticket) %>
-            <span class="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1
-                         text-[12px] font-medium <%= pill[:classes] %>">
-              <% if @ticket.status == "valid" %>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
-                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <% end %>
-              <%= pill[:label] %>
-            </span>
-
-            <% if @ticket.checked_in? && @ticket.checked_in_at %>
-              <p class="mt-2 text-[12px] text-ink2/70">
-                <%= @ticket.checked_in_at.strftime("%-d %b, %-l:%M %p") %>
-              </p>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="px-6 pb-5 pt-1 border-t border-ink/8">
-          <p class="mono text-[10px] tracking-[.14em] text-ink2/50 pt-4 break-all">
-            REF <%= @ticket.order.reference %>
-          </p>
-        </div>
-      </article>
-
-      <%# ══════════════ ACTIONS ══════════════ %>
       <div class="no-print mt-7 flex flex-col sm:flex-row gap-3">
         <%= link_to download_ticket_path(@ticket),
                     class: "grad-bg text-white rounded-xl px-5 py-3.5 text-[15px] font-medium
@@ -114,7 +29,7 @@
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12M7 11l5 5 5-5M4 20h16"/>
           </svg>
-          Download PDF ticket
+          Download this ticket
         <% end %>
 
         <button type="button" onclick="window.print()"
@@ -125,18 +40,14 @@
         </button>
       </div>
 
-      <div class="no-print mt-5 grad-edge rounded-2xl p-4 flex items-start gap-3">
-        <span class="shrink-0 w-9 h-9 rounded-full grad-bg grid place-items-center mt-0.5">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 7V5a1 1 0 011-1h3M20 7V5a1 1 0 00-1-1h-3M4 17v2a1 1 0 001 1h3M20 17v2a1 1 0 01-1 1h-3M8 8v8M12 8v8M16 8v8"/>
-          </svg>
-        </span>
-        <p class="text-[14px] text-ink2 leading-snug">
-          <span class="font-medium text-ink">Show this code at the gate.</span>
-          It scans once. A screenshot of a code that has already been used will be turned away.
+      <% if @order_size > 1 %>
+        <p class="no-print mt-5 text-[14px] text-ink2">
+          This is ticket <%= @position %> of <%= @order_size %> in the order.
+          <%= link_to "See all of them",
+                      event_order_path(@ticket.event, @ticket.order),
+                      class: "font-medium text-violet hover:text-magenta underline underline-offset-2" %>.
         </p>
-      </div>
+      <% end %>
 
     </div>
   </div>

@@ -1,0 +1,95 @@
+<%#
+  Renders one ticket stub.
+    ticket   — required
+    position — optional, 1-based index within the order
+    total    — optional, ticket count in the order
+%>
+<% position = local_assigns[:position] %>
+<% total    = local_assigns[:total].to_i %>
+<% pill     = ticket_status_pill(ticket) %>
+
+<article class="ticket-card rounded-[22px] bg-white overflow-hidden
+                shadow-[0_30px_70px_-25px_rgba(21,13,58,.38)] ring-1 ring-ink/10">
+
+  <div class="grad-bg px-6 py-4 flex items-center justify-between gap-3">
+    <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/95">
+      ADMIT ONE<% if total > 1 && position %> &middot; <%= position %> OF <%= total %><% end %>
+    </span>
+    <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/80 truncate">
+      <%= ticket.ticket_type.name.to_s.upcase %>
+    </span>
+  </div>
+
+  <%# ── event ── %>
+  <div class="px-6 pt-6 pb-5">
+    <p class="eyebrow text-magenta">
+      <%= ticket.event.start_at.strftime("%A %-d %B") %>
+    </p>
+
+    <p class="mt-2 text-[26px] sm:text-[29px] leading-tight font-semibold">
+      <%= ticket.event.name %>
+    </p>
+
+    <p class="mt-1.5 text-[15px] text-ink2">
+      <%= ticket.event.venue.presence || "Venue to be announced" %>
+      &middot;
+      <%= ticket.event.start_at.strftime("%-l:%M %p").downcase %>
+    </p>
+
+    <dl class="mt-6 grid grid-cols-2 gap-y-4 gap-x-4 text-[14px]">
+      <div class="min-w-0">
+        <dt class="text-ink2/70">Holder</dt>
+        <dd class="font-medium mt-0.5 truncate"><%= ticket.attendee_name %></dd>
+      </div>
+      <div class="min-w-0">
+        <dt class="text-ink2/70">Paid</dt>
+        <dd class="font-medium mt-0.5">
+          <%= ticket.order.currency %>
+          <%= number_with_delimiter(ticket.order.unit_price.to_i) %>
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <%# ── the perforation ── %>
+  <div class="relative px-6"><div class="tear tear-mist"></div></div>
+
+  <%# ── the stub: what the gate actually reads ── %>
+  <div class="px-6 pt-7 pb-7 flex items-start gap-5">
+    <div class="shrink-0 p-2.5 rounded-xl ring-1 ring-ink/10 bg-white">
+      <%= ticket_qr_svg(ticket, px: 104) %>
+    </div>
+
+    <div class="min-w-0 pt-0.5">
+      <p class="eyebrow text-ink2/60">Ticket number</p>
+      <p class="mono text-[15px] font-medium mt-1 break-all"><%= ticket.ticket_number %></p>
+
+      <span class="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1
+                   text-[12px] font-medium <%= pill[:classes] %>">
+        <% if ticket.status == "valid" %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        <% end %>
+        <%= pill[:label] %>
+      </span>
+
+      <% if ticket.checked_in? && ticket.checked_in_at %>
+        <p class="mt-2 text-[12px] text-ink2/70">
+          <%= ticket.checked_in_at.strftime("%-d %b, %-l:%M %p") %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="px-6 pb-5 pt-1 border-t border-ink/8 flex items-center justify-between gap-4">
+    <p class="mono text-[10px] tracking-[.14em] text-ink2/50 pt-4 break-all">
+      REF <%= ticket.order.reference %>
+    </p>
+
+    <%= link_to "PDF",
+                download_ticket_path(ticket),
+                class: "no-print shrink-0 mt-4 mono text-[10px] tracking-[.14em] text-violet
+                        hover:text-magenta transition focus-visible:outline-none
+                        focus-visible:ring-2 focus-visible:ring-violet rounded px-1" %>
+  </div>
+</article>

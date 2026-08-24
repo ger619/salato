@@ -26,9 +26,10 @@ Rails.application.routes.draw do
     member do
       get :organiser_show # show → /events/:slug/organiser_show
     end
-    resources :orders, only: [:new, :create] do
+    resources :orders, only: [:new, :create, :show] do
       member do
         get :initialize_payment
+        get :download
       end
     end
   end

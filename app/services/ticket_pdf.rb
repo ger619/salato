@@ -2,6 +2,7 @@ require 'prawn'
 require 'rqrcode'
 
 # A6 portrait (297.6 x 419.5pt) — same 0.71 aspect as the web ticket card.
+# One ticket per page; generate_batch puts a whole order in one file.
 #
 # NOTE ON PRAWN: text_box silently ignores :color and :font. Prawn only
 # validates options when Prawn.debug or $DEBUG is on, so unknown keys are
@@ -33,28 +34,51 @@ class TicketPdf
   BAND_H = 42 # gradient header
   STUB_H = 180 # everything below the perforation
 
+  # ── public API — everything here must stay above `private` ──────────────
+
   def self.generate(ticket)
-    new(ticket).generate
+    generate_batch([ticket])
   end
 
-  def initialize(ticket)
+  # One page per ticket, in the order given. Pass the order's tickets and
+  # the buyer gets a single file they can print or forward.
+  def self.generate_batch(tickets)
+    list = Array(tickets)
+
+    raise ArgumentError, 'TicketPdf needs at least one ticket' if list.empty?
+
+    document = Prawn::Document.new(page_size: 'A6', margin: 0)
+
+    list.each_with_index do |ticket, index|
+      document.start_new_page if index.positive?
+
+      new(ticket, position: index + 1, total: list.size).draw_on(document)
+    end
+
+    document.render
+  end
+
+  def initialize(ticket, position: 1, total: 1)
     @ticket = ticket
+    @position = position
+    @total = total
   end
 
-  def generate
-    Prawn::Document.new(page_size: 'A6', margin: 0) do |pdf|
-      @pdf = pdf
+  # Called by generate_batch on a fresh instance, so it MUST be public.
+  def draw_on(pdf)
+    @pdf = pdf
 
-      register_fonts
-      measure
+    register_fonts
+    measure
 
-      draw_page
-      draw_band
-      draw_event_block
-      draw_perforation
-      draw_stub
-      draw_footer
-    end.render
+    draw_page
+    draw_band
+    draw_event_block
+    draw_perforation
+    draw_stub
+    draw_footer
+
+    self
   end
 
   private
@@ -122,17 +146,23 @@ class TicketPdf
     y = @card_top - 15
     half = @inner_w / 2
 
-    text 'ADMIT ONE',
+    text admit_label,
          color: PAPER, font: mono_font,
          at: [@inner_x, y], width: half, height: 14,
          size: 7.5, style: :bold, character_spacing: 1.7,
-         single_line: true
+         overflow: :shrink_to_fit, single_line: true
 
     text ticket.ticket_type.name.to_s.upcase,
          color: PAPER, font: mono_font,
          at: [@inner_x + half, y], width: half, height: 14,
          size: 7.5, character_spacing: 1.7, align: :right,
          overflow: :shrink_to_fit, single_line: true
+  end
+
+  def admit_label
+    return 'ADMIT ONE' if @total <= 1
+
+    "ADMIT ONE  ·  #{@position} OF #{@total}"
   end
 
   def draw_event_block
