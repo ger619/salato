@@ -86,7 +86,7 @@ class TicketPdf
       )
 
       pdf.text(
-        @ticket.event.starts_at.strftime(
+        @ticket.event.start_at.strftime(
           '%A, %d %B %Y at %I:%M %p'
         ),
         size: 14
