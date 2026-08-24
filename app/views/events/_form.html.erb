@@ -10,12 +10,18 @@
 <% eyebrow    = "font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7620B1]" %>
 
 <%= form_with model: event,
+              html: { multipart: true },
               data: {
                 controller: "event-form",
                 event_form_slug_touched_value: event.slug.present?,
                 action: "ticket-tiers:changed->event-form#tiersChanged"
               },
-              class: "grid grid-cols-1 gap-8 lg:grid-cols-5 lg:items-start" do |f| %>
+              class: "space-y-8" do |f| %>
+
+  <%# ─────────────────────── Poster, up top ─────────────────────── %>
+  <%= render "poster_field", f: f, event: event %>
+
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:items-start">
 
   <%# ───────────────────────── Form card ───────────────────────── %>
   <div class="lg:col-span-3">
@@ -228,7 +234,7 @@
             </svg>
           <% end %>
         </div>
-      </div>x
+      </div>
     </div>
   </div>
 
@@ -296,4 +302,5 @@
       Every buyer gets this as a PDF with their name, ticket number and a scannable code.
     </p>
   </aside>
+  </div>
 <% end %>

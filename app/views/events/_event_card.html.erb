@@ -12,11 +12,12 @@
 
   <%# ── Poster / gradient header ── %>
   <div class="relative h-40 overflow-hidden rounded-t-[20px] grad-bg">
-    <% if event.respond_to?(:poster) && event.poster.attached? %>
-      <%= image_tag event.poster.variant(resize_to_fill: [800, 320]),
-            alt: "",
+    <% if (poster = event.poster_variant(resize_to_fill: [800, 320])) %>
+      <%= image_tag poster,
+            alt: "No Poster",
             loading: "lazy",
-            class: "absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105" %>
+            style: "max-width:100%;",
+            class: "absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100" %>
       <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"></div>
     <% end %>
 

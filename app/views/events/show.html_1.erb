@@ -9,8 +9,8 @@
   <% if poster %>
     <%# The poster's own colours, blurred, standing in for the gradient blobs. %>
     <%= image_tag poster,
-                  alt: "", aria: { hidden: true },
-                  class: "pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-30" %>
+          alt: "", aria: { hidden: true },
+          class: "pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-30" %>
     <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-b from-ink/75 via-ink/85 to-ink"></div>
   <% else %>
     <div aria-hidden="true" class="pointer-events-none absolute -top-32 -right-24 w-[560px] h-[560px] rounded-full blur-3xl opacity-40 grad-bg"></div>
@@ -28,9 +28,9 @@
     <% if poster %>
       <figure class="mt-6 overflow-hidden rounded-[24px] ring-1 ring-white/15 shadow-[0_40px_70px_-40px_rgba(0,0,0,.9)]">
         <%= image_tag poster,
-                      alt: "Poster for #{@event.name}",
-                      style: "max-width:100%;height:40vh;object-fit:cover;",
-                      class: "block w-full" %>
+              alt: "Poster for #{@event.name}",
+              style: "max-width:100%;height:40vh;object-fit:cover;",
+              class: "block w-full" %>
       </figure>
     <% end %>
 
@@ -123,9 +123,9 @@
           <span data-clipboard-target="label">Copy link</span>
         </button>
         <%= link_to "WhatsApp",
-                    "https://wa.me/?text=#{CGI.escape("#{@event.name} — #{event_url(@event.slug)}")}",
-                    target: "_blank", rel: "noopener",
-                    class: "inline-flex items-center px-4 py-2.5 rounded-xl text-[14px] font-medium ring-1 ring-ink/15 hover:bg-mist transition" %>
+              "https://wa.me/?text=#{CGI.escape("#{@event.name} — #{event_url(@event.slug)}")}",
+              target: "_blank", rel: "noopener",
+              class: "inline-flex items-center px-4 py-2.5 rounded-xl text-[14px] font-medium ring-1 ring-ink/15 hover:bg-mist transition" %>
       </div>
     </div>
 
