@@ -1,6 +1,6 @@
 class EventsController < ApplicationController
-  before_action :authenticate_user!, only: %i[new create edit update destroy]
-  before_action :set_owned_event, only: %i[edit update destroy]
+  before_action :authenticate_user!, only: %i[new create edit update organiser organiser_show]
+  before_action :set_owned_event, only: %i[edit update organiser_show]
   before_action :set_visible_event, only: %i[show]
 
   # Organisers see their own events; everyone else sees what's on sale.
@@ -45,9 +45,21 @@ class EventsController < ApplicationController
     end
   end
 
-  def destroy
-    @event.destroy
-    redirect_to events_path, notice: 'Event deleted.', status: :see_other
+  def organiser
+    @events = current_user.events
+      .includes(:ticket_types)
+      .with_attached_poster
+      .order(start_at: :desc)
+  end
+
+  def organiser_show
+    # This is to show the details of the event the number of tickets sold and the total amount of tickets sold
+    # The type of ticket sold is also shown in the organiser details page
+    # Amount sold, Amount remaining, and ticket type sold are shown in the organiser details page
+    # The organiser can also see the total amount of tickets sold for each ticket type
+    # This is to show the total amount of tickets sold for each ticket type
+    @tickets = @event.tickets.includes(:ticket_type)
+    @ticket_types = @event.ticket_types.order(:price)
   end
 
   private
@@ -70,18 +82,15 @@ class EventsController < ApplicationController
 
   def visible_ticket_types
     scope = @event.ticket_types
-    scope = scope.where(active: true) unless organiser?
+    scope = scope.where(active: true)
     scope.order(:price)
   end
 
-  def organiser?
-    user_signed_in? && @event.user_id == current_user.id
-  end
   helper_method :organiser?
 
   def event_params
     params.require(:event).permit(
-      :name, :slug, :description, :venue, :start_at, :end_at, :active, :event_poster,
+      :name, :slug, :description, :venue, :start_at, :end_at, :active, :poster,
       ticket_types_attributes: %i[id name description price quantity active _destroy]
     )
   end

@@ -26,7 +26,7 @@
 
     <%# The poster leads the page — everything else reads under it. %>
     <% if poster %>
-      <figure class="mt-6 overflow-hidden rounded-[24px] ring-1 ring-white/15 shadow-[0_40px_70px_-40px_rgba(0,0,0,.9)]">
+      <figure class="mt-6 overflow-hidden rounded-3xl ring-1 ring-white/15 shadow-[0_40px_70px_-40px_rgba(0,0,0,.9)]">
         <%= image_tag poster,
                       alt: "Poster for #{@event.name}",
                       style: "max-width:100%;height:40vh;object-fit:cover;",

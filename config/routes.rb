@@ -19,8 +19,13 @@ Rails.application.routes.draw do
   resources :dashboard, only: %w[index]
   resources :ticket_types, only: %w[index show]
 
-
-  resources :events, only: %w[index show new create edit], param: :slug do
+  resources :events, param: :slug do
+    collection do
+      get :organiser          # index  → /events/organiser
+    end
+    member do
+      get :organiser_show # show → /events/:slug/organiser_show
+    end
     resources :orders, only: [:new, :create] do
       member do
         get :initialize_payment

@@ -17,7 +17,7 @@
     active: controller_name == "dashboard" },
 
   { label: "Events", icon: :events,
-    path: (defined?(events_path) ? events_path : "#"),
+    path: organiser_events_path,
     active: controller_name == "events" },
 
   { label: "Orders", icon: :orders,
