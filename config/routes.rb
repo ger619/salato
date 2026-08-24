@@ -20,7 +20,7 @@ Rails.application.routes.draw do
   resources :ticket_types, only: %w[index show]
 
 
-  resources :events, only: [:index, :show], param: :slug do
+  resources :events, only: %w[index show new create edit], param: :slug do
     resources :orders, only: [:new, :create] do
       member do
         get :initialize_payment

@@ -12,19 +12,26 @@
       <% end %>
 
       <ul class="hidden lg:flex items-center gap-8 text-[15px] font-medium text-ink2">
-        <li><%= link_to "Home", nav_anchor_path("hero"),
+        <li>
+          <%= link_to "Home", nav_anchor_path("hero"),
                         class: "navlink hover:text-ink transition",
-                        data: { nav_spy_target: "link", section: "hero" } %></li>
+                        data: { nav_spy_target: "link", section: "hero" } %>
+        </li>
 
-        <li><%= link_to "Events", events_path,
+        <li>
+          <%= link_to "Events", events_path,
                         class: "navlink hover:text-ink transition",
-                        aria: { current: ("true" if controller_name == "events") } %></li>
+                        aria: { current: ("true" if controller_name == "events") } %>
+        </li>
+
 
         <% { "about" => "About us", "how" => "How it works",
              "pricing" => "Pricing", "contact" => "Contact" }.each do |anchor, label| %>
-          <li><%= link_to label, nav_anchor_path(anchor),
+          <li>
+            <%= link_to label, nav_anchor_path(anchor),
                           class: "navlink hover:text-ink transition",
-                          data: { nav_spy_target: "link", section: anchor } %></li>
+                          data: { nav_spy_target: "link", section: anchor } %>
+          </li>
         <% end %>
       </ul>
 

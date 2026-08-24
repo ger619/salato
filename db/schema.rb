@@ -52,7 +52,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_21_202117) do
     t.string "slug"
     t.datetime "start_at"
     t.datetime "updated_at", null: false
-    t.uuid "user_id"
+    t.uuid "user_id", null: false
     t.string "venue"
     t.index ["slug"], name: "index_events_on_slug", unique: true
     t.index ["user_id"], name: "index_events_on_user_id"
