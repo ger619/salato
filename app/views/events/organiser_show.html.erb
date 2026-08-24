@@ -1,3 +1,271 @@
 <% content_for :title, "#{@event.name} — Salato" %>
 
 <%= render "shared/sidebar" %>
+<%# app/views/events/organiser_show.html.erb %>
+<%
+  # ── Field-name adapters ────────────────────────────────────────────
+  # Rename here once if your columns differ; nothing below touches
+  # column names directly.
+  ticket_code   = ->(t) { t.try(:code) || t.try(:ticket_number) || t.try(:reference) || "##{t.id}" }
+  ticket_holder = ->(t) { t.try(:name) || t.try(:holder_name) || t.try(:buyer_name) ||
+    t.try(:order)&.try(:name) || t.try(:order)&.try(:buyer_name) || "—" }
+  verified      = ->(t) { t.try(:checked_in_at).present? || t.try(:verified_at).present? ||
+    t.try(:scanned_at).present? || t.try(:checked_in) == true }
+  order_ref     = ->(o) { o.try(:reference) || o.try(:paystack_reference) || o.try(:code) || "##{o.id}" }
+  order_buyer   = ->(o) { o.try(:name) || o.try(:buyer_name) || o.try(:customer_name) || o.try(:email) || "—" }
+  order_paid    = ->(o) { %w[paid confirmed completed success successful].include?(o.try(:status).to_s.downcase) }
+  money         = ->(v) { number_to_currency(v.to_f, unit: "KES ", precision: 0) }
+
+  tickets  = (@tickets  || []).to_a
+  orders   = (@orders   || []).to_a
+  types    = (@ticket_types || @event.ticket_types).to_a
+
+  checked_in    = tickets.count { |t| verified.call(t) }
+  gross         = tickets.sum { |t| t.ticket_type&.price.to_f }
+  sold_by_type  = tickets.group_by { |t| t.ticket_type_id }
+  paid_orders   = orders.count { |o| order_paid.call(o) }
+%>
+
+<section class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+
+  <%# ── Header ────────────────────────────────────────────────────── %>
+  <%= link_to organiser_events_path,
+              class: "inline-flex items-center gap-1.5 text-sm text-[#150D3A]/55 transition hover:text-[#7620B1]" do %>
+    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M12.7 4.3a1 1 0 0 1 0 1.4L8.4 10l4.3 4.3a1 1 0 1 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0Z" clip-rule="evenodd"/>
+    </svg>
+    All events
+  <% end %>
+
+  <header class="mt-4 flex flex-col gap-5 border-b border-[#150D3A]/10 pb-7 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-[JetBrains_Mono] text-[10px] font-medium uppercase tracking-[0.14em] text-[#150D3A] ring-1 ring-[#150D3A]/10">
+          <span class="h-1.5 w-1.5 rounded-full <%= @event.active? ? 'bg-emerald-500' : 'bg-[#FC8027]' %>"></span>
+          <%= @event.active? ? "On sale" : "Draft" %>
+        </span>
+        <span class="font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.16em] text-[#7620B1]">
+          <%= @event.start_at ? @event.start_at.strftime("%a %-d %b %Y · %H:%M") : "Date not set" %>
+        </span>
+      </div>
+
+      <h1 class="mt-3 font-[Outfit] text-3xl font-semibold tracking-tight text-[#150D3A] sm:text-4xl">
+        <%= @event.name %>
+      </h1>
+
+      <% if @event.venue.present? %>
+        <p class="mt-1.5 text-sm text-[#150D3A]/60"><%= @event.venue %></p>
+      <% end %>
+    </div>
+
+    <div class="flex shrink-0 items-center gap-2.5">
+      <%= link_to "View public page", @event,
+                  class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8" %>
+      <%= link_to "Edit event", edit_event_path(@event),
+                  class: "rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110" %>
+    </div>
+  </header>
+
+  <%# ── Headline numbers ──────────────────────────────────────────── %>
+  <div class="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <%
+      cards = [
+        ["Tickets sold",  tickets.size,          "across #{pluralize(types.size, 'tier')}",             "#7620B1"],
+        ["Checked in",    checked_in,            "#{tickets.any? ? (100.0 * checked_in / tickets.size).round : 0}% of tickets sold", "#FC8027"],
+        ["Orders",        orders.size,           "#{paid_orders} confirmed",                            "#7620B1"],
+        ["Gross sales",   money.call(gross),     "before fees",                                         "#150D3A"],
+      ]
+    %>
+    <% cards.each do |label, value, sub, colour| %>
+      <div class="rounded-2xl bg-white p-5 ring-1 ring-[#150D3A]/10">
+        <p class="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.16em] text-[#150D3A]/45">
+          <%= label %>
+        </p>
+        <p class="mt-2 font-[Outfit] text-3xl font-semibold" style="color: <%= colour %>">
+          <%= value %>
+        </p>
+        <p class="mt-1 text-xs text-[#150D3A]/50"><%= sub %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ── Sales by ticket type ──────────────────────────────────────── %>
+  <div class="mt-8 overflow-hidden rounded-2xl bg-white ring-1 ring-[#150D3A]/10">
+    <div class="flex items-center justify-between px-6 py-5">
+      <h2 class="font-[Outfit] text-lg font-semibold text-[#150D3A]">Sales by ticket type</h2>
+      <span class="font-[JetBrains_Mono] text-[11px] text-[#150D3A]/45"><%= pluralize(types.size, "tier") %></span>
+    </div>
+
+    <div class="relative">
+      <span class="absolute -left-2 top-0 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]" aria-hidden="true"></span>
+      <span class="absolute -right-2 top-0 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]" aria-hidden="true"></span>
+      <div class="border-t border-dashed border-[#150D3A]/15"></div>
+    </div>
+
+    <% if types.any? %>
+      <div class="divide-y divide-[#150D3A]/6">
+        <% types.each do |type| %>
+          <%
+            sold      = (sold_by_type[type.id] || []).size
+            scanned   = (sold_by_type[type.id] || []).count { |t| verified.call(t) }
+            capacity  = type.try(:quantity).to_i
+            pct       = capacity.positive? ? [(100.0 * sold / capacity).round, 100].min : nil
+          %>
+          <div class="grid gap-4 px-6 py-5 sm:grid-cols-12 sm:items-center">
+            <div class="sm:col-span-4">
+              <p class="font-[Outfit] font-semibold text-[#150D3A]"><%= type.name %></p>
+              <p class="mt-0.5 font-[JetBrains_Mono] text-xs text-[#150D3A]/50">
+                <%= money.call(type.price) %>
+                <% unless type.try(:active) %>
+                  <span class="ml-1 rounded bg-[#150D3A]/6 px-1.5 py-0.5 text-[10px] uppercase tracking-wider">off sale</span>
+                <% end %>
+              </p>
+            </div>
+
+            <div class="sm:col-span-5">
+              <div class="flex items-baseline justify-between text-xs text-[#150D3A]/55">
+                <span><strong class="font-[Outfit] text-sm text-[#150D3A]"><%= sold %></strong> sold<%= " of #{capacity}" if capacity.positive? %></span>
+                <% if pct %><span class="font-[JetBrains_Mono]"><%= pct %>%</span><% end %>
+              </div>
+              <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#150D3A]/8">
+                <div class="h-full rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027]"
+                     style="width: <%= pct || (sold.positive? ? 100 : 0) %>%"></div>
+              </div>
+            </div>
+
+            <div class="text-sm text-[#150D3A]/60 sm:col-span-3 sm:text-right">
+              <span class="font-[Outfit] font-semibold text-[#150D3A]"><%= scanned %></span> checked in
+              <p class="mt-0.5 font-[JetBrains_Mono] text-xs text-[#150D3A]/45">
+                <%= money.call(sold * type.price.to_f) %>
+              </p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="px-6 py-10 text-center text-sm text-[#150D3A]/55">
+        No ticket types yet. <%= link_to "Add one", edit_event_path(@event), class: "font-medium text-[#7620B1] hover:underline" %>.
+      </p>
+    <% end %>
+  </div>
+
+  <%# ── Orders ────────────────────────────────────────────────────── %>
+  <div class="mt-8 overflow-hidden rounded-2xl bg-white ring-1 ring-[#150D3A]/10">
+    <div class="flex items-center justify-between px-6 py-5">
+      <h2 class="font-[Outfit] text-lg font-semibold text-[#150D3A]">Orders</h2>
+      <span class="font-[JetBrains_Mono] text-[11px] text-[#150D3A]/45">
+        <%= paid_orders %> confirmed / <%= orders.size %>
+      </span>
+    </div>
+
+    <% if orders.any? %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-[#F7F4FB] font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.14em] text-[#150D3A]/50">
+          <tr>
+            <th class="px-6 py-3 font-medium">Reference</th>
+            <th class="px-6 py-3 font-medium">Buyer</th>
+            <th class="px-6 py-3 font-medium">Tickets</th>
+            <th class="px-6 py-3 font-medium">Placed</th>
+            <th class="px-6 py-3 font-medium text-right">Status</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-[#150D3A]/6">
+          <% orders.first(50).each do |order| %>
+            <tr class="transition hover:bg-[#F7F4FB]/60">
+              <td class="whitespace-nowrap px-6 py-4 font-[JetBrains_Mono] text-xs text-[#150D3A]">
+                <%= order_ref.call(order) %>
+              </td>
+              <td class="px-6 py-4 text-[#150D3A]"><%= order_buyer.call(order) %></td>
+              <td class="px-6 py-4 text-[#150D3A]/70">
+                <%= order.try(:tickets)&.size || order.try(:quantity) || "—" %>
+              </td>
+              <td class="whitespace-nowrap px-6 py-4 text-[#150D3A]/55">
+                <%= order.created_at&.strftime("%-d %b, %H:%M") %>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <% if order_paid.call(order) %>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Confirmed
+                    </span>
+                <% else %>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FC8027]/10 px-2.5 py-1 text-xs font-medium text-[#B4530F]">
+                      <span class="h-1.5 w-1.5 rounded-full bg-[#FC8027]"></span>
+                      <%= order.try(:status).to_s.titleize.presence || "Pending" %>
+                    </span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+      <% if orders.size > 50 %>
+        <p class="border-t border-[#150D3A]/6 px-6 py-3 text-xs text-[#150D3A]/45">
+          Showing the 50 most recent of <%= orders.size %> orders.
+        </p>
+      <% end %>
+    <% else %>
+      <p class="px-6 py-10 text-center text-sm text-[#150D3A]/55">
+        No orders yet. Share your event link and they'll appear here as they come in.
+      </p>
+    <% end %>
+  </div>
+
+  <%# ── Tickets ───────────────────────────────────────────────────── %>
+  <div class="mt-8 overflow-hidden rounded-2xl bg-white ring-1 ring-[#150D3A]/10">
+    <div class="flex items-center justify-between px-6 py-5">
+      <h2 class="font-[Outfit] text-lg font-semibold text-[#150D3A]">Tickets issued</h2>
+      <span class="font-[JetBrains_Mono] text-[11px] text-[#150D3A]/45">
+        <%= checked_in %> checked in / <%= tickets.size %>
+      </span>
+    </div>
+
+    <% if tickets.any? %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-[#F7F4FB] font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.14em] text-[#150D3A]/50">
+          <tr>
+            <th class="px-6 py-3 font-medium">Ticket no.</th>
+            <th class="px-6 py-3 font-medium">Guest</th>
+            <th class="px-6 py-3 font-medium">Type</th>
+            <th class="px-6 py-3 font-medium text-right">At the door</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-[#150D3A]/6">
+          <% tickets.first(100).each do |ticket| %>
+            <tr class="transition hover:bg-[#F7F4FB]/60">
+              <td class="whitespace-nowrap px-6 py-4 font-[JetBrains_Mono] text-xs font-medium text-[#150D3A]">
+                <%= ticket_code.call(ticket) %>
+              </td>
+              <td class="px-6 py-4 text-[#150D3A]"><%= ticket_holder.call(ticket) %></td>
+              <td class="px-6 py-4 text-[#150D3A]/70"><%= ticket.ticket_type&.name || "—" %></td>
+              <td class="px-6 py-4 text-right">
+                <% if verified.call(ticket) %>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-[#7620B1]/10 px-2.5 py-1 text-xs font-medium text-[#7620B1]">
+                      <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.8 6.8-6.8a1 1 0 0 1 1.4 0Z" clip-rule="evenodd"/>
+                      </svg>
+                      Verified
+                    </span>
+                <% else %>
+                  <span class="text-xs text-[#150D3A]/40">Not scanned</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+      <% if tickets.size > 100 %>
+        <p class="border-t border-[#150D3A]/6 px-6 py-3 text-xs text-[#150D3A]/45">
+          Showing 100 of <%= tickets.size %> tickets.
+        </p>
+      <% end %>
+    <% else %>
+      <p class="px-6 py-10 text-center text-sm text-[#150D3A]/55">
+        No tickets issued yet.
+      </p>
+    <% end %>
+  </div>
+</section>

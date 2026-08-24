@@ -53,13 +53,9 @@ class EventsController < ApplicationController
   end
 
   def organiser_show
-    # This is to show the details of the event the number of tickets sold and the total amount of tickets sold
-    # The type of ticket sold is also shown in the organiser details page
-    # Amount sold, Amount remaining, and ticket type sold are shown in the organiser details page
-    # The organiser can also see the total amount of tickets sold for each ticket type
-    # This is to show the total amount of tickets sold for each ticket type
-    @tickets = @event.tickets.includes(:ticket_type)
     @ticket_types = @event.ticket_types.order(:price)
+    @tickets = @event.tickets.includes(:ticket_type, :order)
+    @orders = @event.orders.order(created_at: :desc)
   end
 
   private
