@@ -77,6 +77,10 @@ Style/HashTransformValues:
   Enabled: false
 Style/SafeNavigationChainLength:
   Enabled: false
+Style/FormatStringToken:
+  Enabled: false
 
 Naming/PredicateMethod:
+  Enabled: false
+Naming/MethodParameterName:
   Enabled: false
