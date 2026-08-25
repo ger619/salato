@@ -1,6 +1,8 @@
 <% content_for :title, "Your tickets — #{@order.event.name} — Salato" %>
 <%= render "shared/ticket_print_styles" %>
 
+<% multiple = @tickets.size > 1 %>
+
 <section class="ticket-shell bg-mist min-h-screen pt-28 lg:pt-32 pb-20">
   <div class="max-w-shell mx-auto px-5 lg:px-8">
 
@@ -12,69 +14,78 @@
       Back to event
     <% end %>
 
-    <div class="mt-8 mx-auto max-w-[440px]">
+    <%# ══════════════ SUMMARY ══════════════ %>
+    <div class="no-print mt-8 max-w-[560px]">
+      <p class="eyebrow text-magenta">Order confirmed</p>
 
-      <%# ══════════════ SUMMARY ══════════════ %>
-      <div class="no-print">
-        <p class="eyebrow text-magenta">Order confirmed</p>
+      <h1 class="mt-2 text-[30px] leading-tight font-semibold">
+        <%= pluralize(@tickets.size, "ticket") %> for
+        <%= @order.event.name %>
+      </h1>
 
-        <h1 class="mt-2 text-[30px] leading-tight font-semibold">
-          <%= pluralize(@tickets.size, "ticket") %> for
-          <%= @order.event.name %>
-        </h1>
+      <p class="mt-2 text-[15px] text-ink2">
+        Sent to <span class="font-medium text-ink"><%= @order.customer_email %></span>.
+        <% if multiple %>
+          Each code below scans separately — hand one to each person.
+        <% end %>
+      </p>
 
-        <p class="mt-2 text-[15px] text-ink2">
-          Sent to <span class="font-medium text-ink"><%= @order.customer_email %></span>.
-          <% if @tickets.size > 1 %>
-            Each code below scans separately — hand one to each person.
-          <% end %>
-        </p>
+      <div class="mt-6 flex flex-col sm:flex-row gap-3">
+        <%= link_to download_event_order_path(@order.event, @order),
+                    class: "grad-bg text-white rounded-xl px-5 py-3.5 text-[15px] font-medium
+                            inline-flex items-center justify-center gap-2
+                            hover:opacity-90 transition focus-visible:outline-none
+                            focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2" do %>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12M7 11l5 5 5-5M4 20h16"/>
+          </svg>
+          <%= multiple ? "Download all #{@tickets.size} tickets" : "Download PDF ticket" %>
+        <% end %>
 
-        <div class="mt-6 flex flex-col sm:flex-row gap-3">
-          <%= link_to download_event_order_path(@order.event, @order),
-                      class: "grad-bg text-white rounded-xl px-5 py-3.5 text-[15px] font-medium
-                              flex-1 inline-flex items-center justify-center gap-2
-                              hover:opacity-90 transition focus-visible:outline-none
-                              focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2" do %>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3v12M7 11l5 5 5-5M4 20h16"/>
-            </svg>
-            <%= @tickets.size > 1 ? "Download all #{@tickets.size} tickets" : "Download PDF ticket" %>
-          <% end %>
-
-          <button type="button" onclick="window.print()"
-                  class="rounded-xl px-5 py-3.5 text-[15px] font-medium bg-white ring-1 ring-ink/12
-                         text-ink hover:ring-ink/25 transition focus-visible:outline-none
-                         focus-visible:ring-2 focus-visible:ring-violet">
-            Print
-          </button>
-        </div>
+        <button type="button" onclick="window.print()"
+                class="rounded-xl px-5 py-3.5 text-[15px] font-medium bg-white ring-1 ring-ink/12
+                       text-ink hover:ring-ink/25 transition focus-visible:outline-none
+                       focus-visible:ring-2 focus-visible:ring-violet">
+          Print
+        </button>
       </div>
+    </div>
 
-      <%# ══════════════ THE TICKETS ══════════════ %>
-      <div class="mt-8 space-y-8">
+    <%# ══════════════ THE TICKETS ══════════════ %>
+    <% if multiple %>
+
+      <div class="ticket-grid mt-10 grid gap-4 sm:gap-5
+                  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <% @tickets.each_with_index do |ticket, i| %>
           <%= render "tickets/ticket",
                      ticket: ticket,
                      position: i + 1,
-                     total: @tickets.size %>
+                     total: @tickets.size,
+                     compact: true %>
         <% end %>
       </div>
 
-      <div class="no-print mt-8 grad-edge rounded-2xl p-4 flex items-start gap-3">
-        <span class="shrink-0 w-9 h-9 rounded-full grad-bg grid place-items-center mt-0.5">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 7V5a1 1 0 011-1h3M20 7V5a1 1 0 00-1-1h-3M4 17v2a1 1 0 001 1h3M20 17v2a1 1 0 01-1 1h-3M8 8v8M12 8v8M16 8v8"/>
-          </svg>
-        </span>
-        <p class="text-[14px] text-ink2 leading-snug">
-          <span class="font-medium text-ink">Each code scans once.</span>
-          Bookmark this page — it stays available, and a code that has already been used will be turned away at the gate.
-        </p>
+    <% else %>
+
+      <div class="mt-10 max-w-[440px]">
+        <%= render "tickets/ticket", ticket: @tickets.first %>
       </div>
 
+    <% end %>
+
+    <div class="no-print mt-10 grad-edge rounded-2xl p-4 flex items-start gap-3 max-w-[560px]">
+      <span class="shrink-0 w-9 h-9 rounded-full grad-bg grid place-items-center mt-0.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7V5a1 1 0 011-1h3M20 7V5a1 1 0 00-1-1h-3M4 17v2a1 1 0 001 1h3M20 17v2a1 1 0 01-1 1h-3M8 8v8M12 8v8M16 8v8"/>
+        </svg>
+      </span>
+      <p class="text-[14px] text-ink2 leading-snug">
+        <span class="font-medium text-ink">Each code scans once.</span>
+        Bookmark this page — it stays available, and a code that has already been used will be turned away at the gate.
+      </p>
     </div>
+
   </div>
 </section>

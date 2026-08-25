@@ -1,0 +1,30 @@
+<style>
+    /* The gate is the only thing these pages exist for, so make them print clean. */
+    @media print {
+        header, footer, nav, .no-print { display: none !important }
+
+        body { background: #fff }
+
+        .ticket-shell { padding: 0 !important }
+
+        /* Screen shows a grid; print gives each ticket its own sheet so it can
+           be torn off and handed over. */
+        .ticket-grid {
+            display: block !important;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .ticket-card {
+            box-shadow: none !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .ticket-card + .ticket-card {
+            margin-top: 0;
+            break-before: page;
+            page-break-before: always;
+        }
+    }
+</style>
