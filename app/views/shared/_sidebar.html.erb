@@ -28,7 +28,8 @@
     active: controller_name == "tickets" },
 
   { label: "Gate scanner", icon: :scanner,
-    path: "#", active: controller_name == "ticket_verifications" },
+    path: verify_path,
+    active: controller_name == "ticket_verifications" },
 
   { label: "Customers", icon: :users,
     path: (defined?(users_path) ? users_path : "#"),

@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   resources :users, only: %w[new create show]
   resources :dashboard, only: %w[index]
   resources :ticket_types, only: %w[index show]
+  resources :users, only: %w[index new create show]
 
   resources :events, param: :slug do
     collection do
@@ -46,6 +47,11 @@ Rails.application.routes.draw do
       get :download
     end
   end
+
+
+  get "/verify",
+      to: "ticket_verifications#new",
+      as: :verify
 
   get "/verify/:token",
       to: "ticket_verifications#show",

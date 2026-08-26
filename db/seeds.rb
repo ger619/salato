@@ -7,6 +7,12 @@
 
 organiser_email = ENV.fetch("SEED_USER_EMAIL", "admin@salato.com")
 
+Role.find_or_create_by!(name: 'super admin')
+Role.find_or_create_by!(name: 'admin')
+Role.find_or_create_by!(name: 'organiser')
+
+
+
 user = User.find_or_initialize_by(email: organiser_email)
 
 if user.new_record?
@@ -22,6 +28,7 @@ if user.new_record?
 else
   puts "Organiser #{user.email} already exists"
 end
+user.add_role(:admin)
 
 # ── Event ───────────────────────────────────────────────────────────────────
 
@@ -32,7 +39,7 @@ event = Event.find_or_create_by!(slug: "tech-summit-2026") do |record|
   record.venue = "Nairobi"
   record.start_at = Time.zone.parse("2026-10-15 09:00")
   record.end_at = Time.zone.parse("2026-10-15 18:00")
-  record.active = true
+  record.active = false   # published at the end, once ticket types exist
 end
 
 puts "Event: #{event.name} (#{event.slug})"
@@ -55,3 +62,9 @@ puts "Event: #{event.name} (#{event.slug})"
 end
 
 puts "Ticket types: #{event.ticket_types.pluck(:name).join(', ')}"
+
+# ── Publish ─────────────────────────────────────────────────────────────────
+
+event.update!(active: true) unless event.active?
+
+puts "Published: #{event.name}"

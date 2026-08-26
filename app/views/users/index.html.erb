@@ -1,0 +1,70 @@
+
+
+<% content_for :title, "People — Salato" %>
+<%= render 'shared/sidebar' %>
+
+<div class="app-main min-h-dvh bg-mist">
+  <section class="app-inner">
+
+    <p class="eyebrow text-magenta">Team</p>
+    <h1 class="mt-2 text-[30px] leading-tight font-semibold">
+      <%= pluralize(@users.size, "person", plural: "people") %> on Salato
+    </h1>
+
+    <div class="mt-8 rounded-2xl bg-white ring-1 ring-ink/10 overflow-hidden
+                shadow-[0_18px_40px_-20px_rgba(21,13,58,.35)]">
+
+      <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-mist
+                  border-b border-ink/8">
+        <p class="col-span-4 eyebrow text-ink2/60">Name</p>
+        <p class="col-span-3 eyebrow text-ink2/60">Email</p>
+        <p class="col-span-2 eyebrow text-ink2/60">Mobile</p>
+        <p class="col-span-3 eyebrow text-ink2/60">Roles</p>
+      </div>
+
+      <ul class="divide-y divide-ink/8">
+        <% @users.each do |user| %>
+          <li class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4
+                     px-6 py-4 hover:bg-mist/60 transition">
+
+            <div class="md:col-span-4 min-w-0">
+              <%= link_to user.full_name || "Unnamed",
+                          user_path(user),
+                          class: "text-[15px] font-medium hover:text-violet
+                                  transition focus-visible:outline-none
+                                  focus-visible:ring-2 focus-visible:ring-violet rounded" %>
+            </div>
+
+            <div class="md:col-span-3 min-w-0">
+              <%= mail_to user.email, user.email,
+                          class: "text-[14px] text-ink2 hover:text-ink transition truncate block" %>
+            </div>
+
+            <div class="md:col-span-2 min-w-0">
+              <% if user.phone_number.present? %>
+                <%= link_to user.phone_number,
+                            "tel:#{user.phone_number}",
+                            class: "mono text-[13px] text-ink2 hover:text-ink transition" %>
+              <% else %>
+                <span class="text-[14px] text-ink2/40">—</span>
+              <% end %>
+            </div>
+
+            <div class="md:col-span-3 flex flex-wrap gap-1.5">
+              <% if user.roles.any? %>
+                <% user.roles.each do |role| %>
+                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5
+                               text-[11px] font-medium <%= role_pill_classes(role) %>">
+                    <%= role_label(role) %>
+                  </span>
+                <% end %>
+              <% else %>
+                <span class="text-[13px] text-ink2/40">No role</span>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </section>
+</div>

@@ -2,6 +2,9 @@
 <% content_for :title, "#{@event.name} — Salato" %>
 <% content_for :description, truncate(strip_tags(@event.description.to_s), length: 155, separator: " ") %>
 
+<%= render 'shared/header' %>
+
+
 <%# ══════════════ HEADER ══════════════ %>
 <% poster = @event.poster_variant(resize_to_limit: [1600, 900]) %>
 

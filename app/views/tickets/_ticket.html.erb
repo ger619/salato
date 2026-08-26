@@ -13,9 +13,18 @@
 <% if compact %>
 
   <%# ══════════════ COMPACT — sits in the 5-across grid ══════════════ %>
-  <article class="ticket-card rounded-2xl bg-white overflow-hidden
+  <article class="ticket-card group relative rounded-2xl bg-white overflow-hidden
                   shadow-[0_18px_40px_-20px_rgba(21,13,58,.35)] ring-1 ring-ink/10
-                  flex flex-col">
+                  flex flex-col transition hover:-translate-y-0.5
+                  hover:shadow-[0_26px_55px_-22px_rgba(21,13,58,.45)]
+                  focus-within:ring-2 focus-within:ring-violet">
+
+    <%# Stretched link — covers the card, sits beneath the PDF link %>
+    <%= link_to ticket_path(ticket),
+                class: "no-print absolute inset-0 z-10 rounded-2xl",
+                aria: { label: "View ticket #{ticket.ticket_number}" } do %>
+      <span class="sr-only">View ticket <%= ticket.ticket_number %></span>
+    <% end %>
 
     <div class="grad-bg px-3.5 py-2.5 flex items-center justify-between gap-2">
       <span class="mono text-[8px] tracking-[.16em] text-white/95">ADMIT ONE</span>
