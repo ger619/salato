@@ -5,6 +5,11 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
+  # Handle authorization errors by redirecting to root with an alert
+  rescue_from CanCan::AccessDenied do |exception|
+    redirect_to root_path, alert: exception.message
+  end
+
   before_action :update_allowed_parameters, if: :devise_controller?
 
   def update_allowed_parameters
