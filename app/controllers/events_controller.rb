@@ -28,7 +28,7 @@ class EventsController < ApplicationController
     @event = current_user.events.new(event_params)
 
     if @event.save
-      redirect_to @event, notice: "#{@event.name} is published."
+      redirect_to organiser_show_event_path(@event), notice: "#{@event.name} is published."
     else
       @event.ticket_types.build(active: true) if @event.ticket_types.empty?
       render :new, status: :unprocessable_entity
