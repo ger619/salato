@@ -2,6 +2,7 @@ class EventsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update organiser organiser_show]
   before_action :set_owned_event, only: %i[edit update organiser_show]
   before_action :set_visible_event, only: %i[show]
+  load_and_authorize_resource
 
   # Organisers see their own events; everyone else sees what's on sale.
   def index
@@ -46,7 +47,7 @@ class EventsController < ApplicationController
   end
 
   def organiser
-    @events = current_user.events
+    @events = Event.all
       .includes(:ticket_types)
       .with_attached_poster
       .order(start_at: :desc)

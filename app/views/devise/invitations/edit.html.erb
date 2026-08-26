@@ -1,22 +1,88 @@
-<h2><%= t "devise.invitations.edit.header" %></h2>
+<% content_for :title, "Set your password — Salato" %>
 
-<%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-  <%= f.hidden_field :invitation_token, readonly: true %>
+<section class="bg-mist min-h-dvh grid place-items-center px-5 py-12 sm:py-16">
+  <div class="w-full max-w-[440px]">
 
-  <% if f.object.class.require_password_on_accepting %>
-    <div class="field">
-      <%= f.label :password %><br />
-      <%= f.password_field :password %>
+    <%= link_to root_path, class: "block mx-auto w-fit", "aria-label": "Salato" do %>
+      <%= image_tag "salato_logo/salato-logo-horizontal.png", alt: "Salato",
+                    class: "h-9 w-auto" %>
+    <% end %>
+
+    <div class="mt-8 rounded-2xl bg-white ring-1 ring-ink/10 p-6 sm:p-8
+                shadow-[0_18px_40px_-20px_rgba(21,13,58,.35)]">
+
+      <h1 class="text-[24px] leading-tight font-semibold">
+        <%= t "devise.invitations.edit.header" %>
+      </h1>
+
+      <% if resource.email.present? %>
+        <p class="mt-2 text-[15px] text-ink2 leading-snug">
+          Setting up the account for
+          <span class="font-medium text-ink break-all"><%= resource.email %></span>.
+        </p>
+      <% end %>
+
+      <%= form_for(resource, as: resource_name,
+                   url: invitation_path(resource_name),
+                   html: { method: :put, class: "mt-6 space-y-5" }) do |f| %>
+
+        <%= f.hidden_field :invitation_token, readonly: true %>
+
+        <% if resource.errors.any? %>
+          <div role="alert"
+               class="rounded-xl bg-flare/8 ring-1 ring-flare/30 px-4 py-3">
+            <p class="text-[14px] font-medium text-ink">
+              <%= pluralize(resource.errors.count, "problem") %> to fix
+            </p>
+            <ul class="mt-1.5 space-y-0.5 text-[14px] text-ink2 list-disc ps-5">
+              <% resource.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if f.object.class.require_password_on_accepting %>
+
+          <div>
+            <%= f.label :password, "Create a password",
+                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
+            <%= f.password_field :password,
+                                 autofocus: true,
+                                 autocomplete: "new-password",
+                                 class: "w-full rounded-xl px-4 py-3 text-[16px] bg-mist
+                                         ring-1 ring-ink/12 focus:outline-none
+                                         focus:ring-2 focus:ring-violet transition" %>
+            <p class="mt-1.5 text-[13px] text-ink2/70">
+              At least <%= Devise.password_length.min %> characters.
+            </p>
+          </div>
+
+          <div>
+            <%= f.label :password_confirmation, "Confirm password",
+                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
+            <%= f.password_field :password_confirmation,
+                                 autocomplete: "new-password",
+                                 class: "w-full rounded-xl px-4 py-3 text-[16px] bg-mist
+                                         ring-1 ring-ink/12 focus:outline-none
+                                         focus:ring-2 focus:ring-violet transition" %>
+          </div>
+
+        <% end %>
+
+        <%= f.submit t("devise.invitations.edit.submit_button"),
+                     class: "w-full grad-bg text-white rounded-xl px-5 py-3.5 text-[15px]
+                             font-medium cursor-pointer hover:opacity-90 transition
+                             focus-visible:outline-none focus-visible:ring-2
+                             focus-visible:ring-ink focus-visible:ring-offset-2" %>
+      <% end %>
     </div>
 
-    <div class="field">
-      <%= f.label :password_confirmation %><br />
-      <%= f.password_field :password_confirmation %>
-    </div>
-  <% end %>
+    <p class="mt-6 text-center text-[13px] text-ink2/70">
+      Already set up?
+      <%= link_to "Sign in", new_user_session_path,
+                  class: "font-medium text-violet hover:underline" %>
+    </p>
 
-  <div class="actions">
-    <%= f.submit t("devise.invitations.edit.submit_button") %>
   </div>
-<% end %>
+</section>
