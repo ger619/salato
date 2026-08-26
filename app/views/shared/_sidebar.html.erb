@@ -7,9 +7,20 @@
              an empty gutter.
   Mobile   — off-canvas drawer behind an overlay, opened from the top bar.
 
+  Nav items are either a plain link (:path) or a group (:children). Groups are
+  <details> elements, so expanding needs no JavaScript and survives a Turbo
+  navigation without any state to restore.
+
   The collapsed flag lives on <html> (not <body>) so the no-flash snippet in
   the layout head can set it before first paint.
 %>
+
+<%# Invitations only exist once devise_invitable is installed, so the child is
+    added conditionally rather than raising NoMethodError on every page. %>
+<% user_children = [{ label: "View all users", path: users_path }] %>
+<% if defined?(new_user_invitation_path) %>
+  <% user_children << { label: "Invite a user", path: new_user_invitation_path } %>
+<% end %>
 
 <% nav_items = [
   { label: "Dashboard", icon: :dashboard,
@@ -31,9 +42,9 @@
     path: verify_path,
     active: controller_name == "ticket_verifications" },
 
-  { label: "Customers", icon: :users,
-    path: (defined?(users_path) ? users_path : "#"),
-    active: controller_name == "users" },
+  { label: "Users", icon: :users,
+    active: %w[users invitations].include?(controller_name),
+    children: user_children },
 
   { label: "Settings", icon: :settings,
     path: "#", active: controller_name == "settings" }
@@ -96,6 +107,11 @@
         html[data-sidebar="collapsed"] .rail-item:focus-visible .rail-tip {
             opacity: 1; transform: translateX(0);
         }
+
+        /* A 4.75rem strip has no room for a submenu. The summary stays
+           clickable — the script below reopens the rail instead. */
+        html[data-sidebar="collapsed"] .rail-group > ul,
+        html[data-sidebar="collapsed"] .rail-chevron { display: none; }
     }
     .rail-mark { display: none; }
 
@@ -108,14 +124,22 @@
         pointer-events: none; z-index: 60;
     }
 
-    /* Active item: gradient spine on the leading edge. */
-    .rail-item[aria-current="page"]::before {
+    /* ── Nav groups ───────────────────────────────────────────────────── */
+    .rail-group > summary { list-style: none; cursor: pointer; }
+    .rail-group > summary::-webkit-details-marker { display: none; }
+    .rail-chevron { transition: transform .18s ease; }
+    .rail-group[open] .rail-chevron { transform: rotate(90deg); }
+
+    /* Active item: gradient spine on the leading edge. A group carries it on
+       its summary, since aria-current isn't valid on a non-link. */
+    .rail-item[aria-current="page"]::before,
+    .rail-group > summary[data-active="true"]::before {
         content: ""; position: absolute; inset-inline-start: 0; top: 8px; bottom: 8px;
         width: 3px; border-radius: 0 3px 3px 0; background: var(--grad);
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .app-main, .rail-tip, #sidebar, #sidebarOverlay { transition: none !important; }
+        .app-main, .rail-tip, .rail-chevron, #sidebar, #sidebarOverlay { transition: none !important; }
     }
 </style>
 
@@ -186,14 +210,53 @@
       <ul class="space-y-1">
         <% nav_items.each do |item| %>
           <li>
-            <%= link_to item[:path],
-                        class: "rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition
-                          #{item[:active] ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:text-white hover:bg-white/[.07]'}",
-                        aria: { current: (item[:active] ? "page" : nil) } do %>
-              <%= render "shared/sidebar_icon", name: item[:icon],
-                         class_name: "w-5 h-5 shrink-0 #{item[:active] ? 'text-ember' : 'text-white/55 group-hover:text-white/90'} transition" %>
-              <span class="rail-label flex-1 whitespace-nowrap"><%= item[:label] %></span>
-              <span class="rail-tip hidden lg:block"><%= item[:label] %></span>
+            <% if item[:children].present? %>
+
+              <%# ── Group ── %>
+              <details class="rail-group" <%= "open" if item[:active] %>>
+                <summary data-active="<%= item[:active] %>"
+                         class="rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition
+                                <%= item[:active] ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:text-white hover:bg-white/[.07]' %>">
+                  <%= render "shared/sidebar_icon", name: item[:icon],
+                             class_name: "w-5 h-5 shrink-0 #{item[:active] ? 'text-ember' : 'text-white/55 group-hover:text-white/90'} transition" %>
+
+                  <span class="rail-label flex-1 whitespace-nowrap"><%= item[:label] %></span>
+
+                  <svg class="rail-chevron rail-label w-3.5 h-3.5 shrink-0 text-white/40"
+                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6"/>
+                  </svg>
+
+                  <span class="rail-tip hidden lg:block"><%= item[:label] %></span>
+                </summary>
+
+                <ul class="mt-1 ms-4 ps-4 border-s border-white/10 space-y-0.5">
+                  <% item[:children].each do |child| %>
+                    <% child_active = current_page?(child[:path]) %>
+                    <li>
+                      <%= link_to child[:label], child[:path],
+                                  class: "block px-3 py-2 rounded-lg text-[14px] whitespace-nowrap transition
+                                          #{child_active ? 'text-white bg-white/10 font-medium' : 'text-white/60 hover:text-white hover:bg-white/[.07]'}",
+                                  aria: { current: (child_active ? "page" : nil) } %>
+                    </li>
+                  <% end %>
+                </ul>
+              </details>
+
+            <% else %>
+
+              <%# ── Plain link ── %>
+              <%= link_to item[:path],
+                          class: "rail-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] transition
+                            #{item[:active] ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:text-white hover:bg-white/[.07]'}",
+                          aria: { current: (item[:active] ? "page" : nil) } do %>
+                <%= render "shared/sidebar_icon", name: item[:icon],
+                           class_name: "w-5 h-5 shrink-0 #{item[:active] ? 'text-ember' : 'text-white/55 group-hover:text-white/90'} transition" %>
+                <span class="rail-label flex-1 whitespace-nowrap"><%= item[:label] %></span>
+                <span class="rail-tip hidden lg:block"><%= item[:label] %></span>
+              <% end %>
+
             <% end %>
           </li>
         <% end %>
@@ -217,11 +280,15 @@
       <% if defined?(current_user) && current_user %>
         <div class="rail-item flex items-center gap-3 px-3 py-2 mb-1">
           <span class="grid place-items-center w-8 h-8 shrink-0 rounded-full grad-bg text-[13px] font-semibold">
-            <%= current_user.email.to_s.first&.upcase %>
+            <%= (current_user.try(:first_name).presence || current_user.email).to_s.first&.upcase %>
           </span>
           <span class="rail-label min-w-0">
-            <span class="block text-[13px] text-white/90 truncate"><%= current_user.email %></span>
-            <span class="block text-[11px] text-white/45">Organiser</span>
+            <span class="block text-[13px] text-white/90 truncate">
+              <%= current_user.try(:full_name).presence || current_user.email %>
+            </span>
+            <span class="block text-[11px] text-white/45">
+              <%= current_user.roles.first&.name&.humanize || "Organiser" %>
+            </span>
           </span>
         </div>
       <% end %>
@@ -285,6 +352,23 @@
             if(e.target.closest('[data-sidebar-close]'))    return closeDrawer();
             if(e.target.closest('[data-sidebar-collapse]')) {
                 return setCollapsed(root.dataset.sidebar !== 'collapsed');
+            }
+
+            /* Opening a submenu inside a 4.75rem strip would reveal nothing,
+               so the click reopens the rail and expands the group instead. */
+            const summary = e.target.closest('.rail-group > summary');
+            if(summary && window.innerWidth >= 1024 && root.dataset.sidebar === 'collapsed'){
+                e.preventDefault();
+                setCollapsed(false);
+                summary.parentElement.open = true;
+                return;
+            }
+
+            /* Only one group open at a time, so the rail never grows a scrollbar. */
+            if(summary && !summary.parentElement.open){
+                document.querySelectorAll('.rail-group[open]').forEach((d)=>{
+                    if(d !== summary.parentElement) d.open = false;
+                });
             }
 
             if(window.innerWidth < 1024 && e.target.closest('#sidebar a')) closeDrawer();

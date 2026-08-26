@@ -69,6 +69,7 @@ end
 
 gem 'chunky_png'
 gem 'devise', '~> 5.0'
+gem 'devise_invitable'
 gem 'prawn'
 gem 'rolify'
 gem 'rqrcode'

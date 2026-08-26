@@ -114,6 +114,9 @@ GEM
       railties (>= 7.0)
       responders
       warden (~> 1.2.3)
+    devise_invitable (2.0.12)
+      actionmailer (>= 5.0)
+      devise (>= 4.6)
     dotenv (3.2.0)
     drb (2.2.3)
     ed25519 (1.4.0)
@@ -431,6 +434,7 @@ DEPENDENCIES
   chunky_png
   debug
   devise (~> 5.0)
+  devise_invitable
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

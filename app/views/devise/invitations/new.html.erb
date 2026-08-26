@@ -1,0 +1,139 @@
+<% content_for :title, "Invite a user — Salato" %>
+
+<%= render "shared/sidebar" %>
+
+<div class="app-main bg-mist min-h-dvh">
+  <section class="app-inner">
+
+    <div class="max-w-[560px]">
+
+      <p class="eyebrow text-magenta">Users</p>
+      <h1 class="mt-2 text-[30px] leading-tight font-semibold">Invite a user</h1>
+      <p class="mt-2 text-[15px] text-ink2 leading-snug">
+        They'll get an email with a link to set their own password. The
+        invitation expires if it isn't accepted.
+      </p>
+
+      <div class="mt-8 rounded-2xl bg-white ring-1 ring-ink/10 p-6 sm:p-7
+                  shadow-[0_18px_40px_-20px_rgba(21,13,58,.35)]">
+
+        <%= form_for(resource, as: resource_name,
+                     url: invitation_path(resource_name),
+                     html: { method: :post, class: "space-y-5" }) do |f| %>
+
+          <% if resource.errors.any? %>
+            <div role="alert"
+                 class="rounded-xl bg-flare/8 ring-1 ring-flare/30 px-4 py-3">
+              <p class="text-[14px] font-medium text-ink">
+                <%= pluralize(resource.errors.count, "problem") %> with this invite
+              </p>
+              <ul class="mt-1.5 space-y-0.5 text-[14px] text-ink2 list-disc ps-5">
+                <% resource.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div>
+            <%= f.label :email, "Email address",
+                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
+            <%= f.email_field :email,
+                              autofocus: true,
+                              autocomplete: "off",
+                              placeholder: "name@example.com",
+                              class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
+                                      ring-1 ring-ink/12 focus:outline-none
+                                      focus:ring-2 focus:ring-violet transition" %>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <%= f.label :first_name, "First name",
+                          class: "block text-[14px] font-medium text-ink mb-1.5" %>
+              <%= f.text_field :first_name,
+                               class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
+                                       ring-1 ring-ink/12 focus:outline-none
+                                       focus:ring-2 focus:ring-violet transition" %>
+            </div>
+
+            <div>
+              <%= f.label :last_name, "Last name",
+                          class: "block text-[14px] font-medium text-ink mb-1.5" %>
+              <%= f.text_field :last_name,
+                               class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
+                                       ring-1 ring-ink/12 focus:outline-none
+                                       focus:ring-2 focus:ring-violet transition" %>
+            </div>
+          </div>
+          <div>
+            <%= f.label :role, "Role",
+                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
+
+            <%= f.select :role,
+                         current_user.assignable_roles.map { |r| [r.humanize, r] },
+                         { prompt: "Choose a role" },
+                         class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
+                       ring-1 ring-ink/12 focus:outline-none
+                       focus:ring-2 focus:ring-violet transition
+                       appearance-none bg-[length:16px] bg-no-repeat
+                       bg-[right_1rem_center]",
+                         style: "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23150D3A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")" %>
+
+            <p class="mt-1.5 text-[13px] text-ink2/70">
+              Scanners can check tickets in at the gate. Organisers can also
+              create and manage events.
+            </p>
+          </div>
+
+          <div>
+            <%= f.label :role, "Role",
+                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
+            <%#= select_tag :role, options_for_select(Role.where.not(name: %w[creator editor admin observer sales]).distinct.pluck(:name, :name)),
+                         current_user.assignable_roles.map { |r| [r.humanize, r] },
+                         { prompt: "Choose a role" },
+                         class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
+                                 ring-1 ring-ink/12 focus:outline-none
+                                 focus:ring-2 focus:ring-violet transition
+                                 appearance-none bg-[length:16px] bg-no-repeat
+                                 bg-[right_1rem_center]",
+                         style: "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23150D3A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")" %>
+
+            <p class="mt-1.5 text-[13px] text-ink2/70">
+              Scanners can check tickets in at the gate. Organisers can also
+              create and manage events.
+            </p>
+          </div>
+
+          <div>
+            <%= f.label :phone_number, "Mobile number",
+                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
+            <%= f.telephone_field :phone_number,
+                                  placeholder: "+254 7…",
+                                  class: "w-full rounded-xl px-4 py-3 text-[15px] mono bg-mist
+                                          ring-1 ring-ink/12 focus:outline-none
+                                          focus:ring-2 focus:ring-violet transition" %>
+            <p class="mt-1.5 text-[13px] text-ink2/70">
+              Optional — used to reach gate staff during an event.
+            </p>
+          </div>
+
+          <div class="pt-1 flex flex-col sm:flex-row gap-3">
+            <%= f.submit t("devise.invitations.new.submit_button"),
+                         class: "grad-bg text-white rounded-xl px-5 py-3.5 text-[15px]
+                                 font-medium cursor-pointer hover:opacity-90 transition
+                                 focus-visible:outline-none focus-visible:ring-2
+                                 focus-visible:ring-ink focus-visible:ring-offset-2" %>
+
+            <%= link_to "Cancel", users_path,
+                        class: "rounded-xl px-5 py-3.5 text-[15px] font-medium text-center
+                                bg-white ring-1 ring-ink/12 text-ink hover:ring-ink/25
+                                transition focus-visible:outline-none
+                                focus-visible:ring-2 focus-visible:ring-violet" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+  </section>
+</div>
