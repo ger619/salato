@@ -41,7 +41,8 @@
       <div class="relative">
         <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-[#150D3A]/40">KES</span>
         <%= f.number_field :price,
-
+                           min: 1,
+                           step: 1,
               placeholder: "1000",
               class: "#{field_base} pl-[52px] font-mono",
               data: { tier_price: true, action: "input->event-form#tiersChanged" } %>
