@@ -1,14 +1,4 @@
-<%#
-  Salato — events/_poster_field
 
-  The poster band that sits at the top of the event form, above everything else.
-  Render with:  <%= render "poster_field", f: f, event: event %>
-
-Empty state and filled state are the same height, so nothing on the page
-shifts when an image lands. Height is 40vh — a percentage height only
-resolves against a parent that has a height of its own, and the page doesn't,
-so 40% of the viewport is the version that actually renders.
-%>
 
 <% eyebrow      = "font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7620B1]" %>
 <% poster_style = "max-width:100%;height:40vh;object-fit:cover;" %>

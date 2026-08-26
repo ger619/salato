@@ -1,7 +1,8 @@
 <% content_for :title, "Edit #{@event.name} · Salato" %>
+<%= render 'shared/sidebar' %>
 
-<div class="min-h-screen bg-[#F7F4FB] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-  <div class="mx-auto max-w-5xl">
+<div class="app-main min-h-dvh bg-mist">
+  <div class="app-inner">
 
     <header class="mb-9">
       <%= link_to @event, class: "inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-[#150D3A]/45 transition hover:text-[#7620B1]" do %>
