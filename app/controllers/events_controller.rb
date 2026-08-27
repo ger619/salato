@@ -7,7 +7,7 @@ class EventsController < ApplicationController
   # Organisers see their own events; everyone else sees what's on sale.
   def index
     @events = if user_signed_in?
-                current_user.events.order(start_at: :desc)
+                Event.all.order(start_at: :desc)
               else
                 Event.live.upcoming
               end
