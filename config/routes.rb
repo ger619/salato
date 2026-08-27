@@ -28,6 +28,8 @@ Rails.application.routes.draw do
     end
     member do
       get :organiser_show # show → /events/:slug/organiser_show
+      post   :assign_user
+      post :unassign_user
     end
     resources :orders, only: [:new, :create, :show] do
       member do

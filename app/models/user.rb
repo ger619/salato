@@ -5,6 +5,9 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
   has_many :events, dependent: :restrict_with_error
+
+  has_and_belongs_to_many :events, join_table: :events_users
+
   attr_accessor :role
 
   ROLES = %w[admin organiser scanner].freeze

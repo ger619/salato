@@ -60,6 +60,8 @@
     </div>
 
     <div class="flex shrink-0 items-center gap-2.5">
+      <%=  render partial: "events/assign_user", locals: { event: @event } %>
+
       <%= link_to "View public page", @event,
                   class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8" %>
       <%= link_to "Edit event", edit_event_path(@event),
