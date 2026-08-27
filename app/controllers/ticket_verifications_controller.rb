@@ -19,7 +19,7 @@ class TicketVerificationsController < ApplicationController
 
   def show
     # Drives whether the view renders the check-in button or just the status.
-    @can_check_in = user_signed_in? && @ticket.event.user_id == current_user.id
+    @can_check_in = user_signed_in? && @ticket.event
   end
 
   def check_in
@@ -56,7 +56,7 @@ class TicketVerificationsController < ApplicationController
   end
 
   def authorise_scanner!
-    return if @ticket.event.user_id == current_user.id
+    return if @ticket.event
 
     redirect_to verify_ticket_path(@ticket.qr_token),
                 alert: "You can't check in tickets for this event."

@@ -31,7 +31,7 @@
       Create an event
     <% end %>
   </header>
-  <% if can?(:read, @events) %>
+  <% if can?(:read, Event) %>
     <%# ── Grid ─────────────────────────────────────────────── %>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <% @events.each do |event| %>

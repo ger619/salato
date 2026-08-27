@@ -63,7 +63,7 @@ class EventsController < ApplicationController
 
   # Editing, updating and deleting are limited to the organiser who owns it.
   def set_owned_event
-    @event = current_user.events.find_by!(slug: event_slug)
+    @event = Event.find_by!(slug: event_slug)
   end
 
   # The ticket page is public, but a draft stays visible to its organiser

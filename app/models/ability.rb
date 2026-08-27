@@ -17,8 +17,7 @@ class Ability
 
     elsif user.has_role?(:scanner)
       can :read, Event
-      can %i[organiser organiser_show], Event
-
+      can %i[read organiser organiser_show], Event
       can %i[read check_in], Ticket
     else
       can :read, Event
