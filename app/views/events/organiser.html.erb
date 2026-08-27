@@ -23,12 +23,13 @@
       </p>
     </div>
 
-    <%= link_to new_event_path,
-          class: "inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-3 text-sm font-semibold text-[#7620B1] shadow-[0_10px_30px_-12px_rgba(118,32,177,0.8)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" do %>
-      <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path d="M10 4a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2h-4v4a1 1 0 1 1-2 0v-4H5a1 1 0 1 1 0-2h4V5a1 1 0 0 1 1-1Z"/>
-      </svg>
-      Create an event
+    <% if current_user.has_role?(:admin) or current_user.has_role?(:organiser) %>
+      <%= link_to new_event_path, class: "inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-3 text-sm font-semibold text-[#7620B1] shadow-[0_10px_30px_-12px_rgba(118,32,177,0.8)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" do %>
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M10 4a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2h-4v4a1 1 0 1 1-2 0v-4H5a1 1 0 1 1 0-2h4V5a1 1 0 0 1 1-1Z"/>
+          </svg>
+        Create an event
+      <% end %>
     <% end %>
   </header>
   <% if can?(:read, Event) %>
