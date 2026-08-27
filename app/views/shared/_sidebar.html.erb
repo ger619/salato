@@ -26,6 +26,7 @@
     Swap to `current&.roles&.pluck(:name) == %w[scanner]` if someone may hold
     the scanner role alongside an admin one and should keep admin access. %>
 <% scanner_only = current&.roles&.exists?(name: "scanner") || false %>
+<% organiser_only = current&.roles&.exists?(name: "organiser") || false %>
 
 <%# Invitations only exist once devise_invitable is installed, so the child is
     added conditionally rather than raising NoMethodError on every page. %>
@@ -63,6 +64,7 @@
   { label: "Clients", icon: :users,
     path: clients_path,
     visible: !scanner_only,
+    visible: !organiser_only,
     active: controller_name == "clients" },
 
   { label: "Settings", icon: :settings,

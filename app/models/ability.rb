@@ -12,7 +12,7 @@ class Ability
       can :manage, TicketType, event: { user_id: user.id }
       can :read, Order, event: { user_id: user.id }
       can %i[read check_in], Ticket, event: { user_id: user.id }
-      can :read, User
+      can :read, User, client_id: user.client_id
       can :invite, User
 
     elsif user.has_role?(:scanner)
