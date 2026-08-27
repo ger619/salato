@@ -11,9 +11,21 @@
   <details> elements, so expanding needs no JavaScript and survives a Turbo
   navigation without any state to restore.
 
+  Visibility — every item may carry a :visible key. Anything without one stays
+  visible, so gating a new item is a one-line change and never disturbs the
+  rest of the list. Hiding a link is presentation only: the matching rule in
+  Ability is what actually stops a typed-in URL.
+
   The collapsed flag lives on <html> (not <body>) so the no-flash snippet in
   the layout head can set it before first paint.
 %>
+
+<% current = (defined?(current_user) && current_user) || nil %>
+
+<%# Gate staff only ever work the door, so administration is hidden from them.
+    Swap to `current&.roles&.pluck(:name) == %w[scanner]` if someone may hold
+    the scanner role alongside an admin one and should keep admin access. %>
+<% scanner_only = current&.roles&.exists?(name: "scanner") || false %>
 
 <%# Invitations only exist once devise_invitable is installed, so the child is
     added conditionally rather than raising NoMethodError on every page. %>
@@ -25,6 +37,7 @@
 <% nav_items = [
   { label: "Dashboard", icon: :dashboard,
     path: (defined?(dashboard_index_path) ? dashboard_index_path : "#"),
+    visible: !scanner_only,
     active: controller_name == "dashboard" },
 
   { label: "Events", icon: :events,
@@ -44,15 +57,19 @@
 
   { label: "Users", icon: :users,
     active: %w[users invitations].include?(controller_name),
+    visible: !scanner_only,
     children: user_children },
 
-  { label: "Client", icon: :scanner,
+  { label: "Clients", icon: :users,
     path: clients_path,
+    visible: !scanner_only,
     active: controller_name == "clients" },
 
   { label: "Settings", icon: :settings,
     path: "#", active: controller_name == "settings" }
 ] %>
+
+<% nav_items = nav_items.select { |item| item.fetch(:visible, true) } %>
 
 <style>
     /* ── The one number everything keys off ───────────────────────────── */
@@ -281,17 +298,17 @@
 
     <%# ── Account ── %>
     <div class="px-3 py-4 border-t border-white/10">
-      <% if defined?(current_user) && current_user %>
+      <% if current %>
         <div class="rail-item flex items-center gap-3 px-3 py-2 mb-1">
           <span class="grid place-items-center w-8 h-8 shrink-0 rounded-full grad-bg text-[13px] font-semibold">
-            <%= (current_user.try(:first_name).presence || current_user.email).to_s.first&.upcase %>
+            <%= (current.try(:first_name).presence || current.email).to_s.first&.upcase %>
           </span>
           <span class="rail-label min-w-0">
             <span class="block text-[13px] text-white/90 truncate">
-              <%= current_user.try(:full_name).presence || current_user.email %>
+              <%= current.try(:full_name).presence || current.email %>
             </span>
             <span class="block text-[11px] text-white/45">
-              <%= current_user.roles.first&.name&.humanize || "Organiser" %>
+              <%= current.roles.first&.name&.humanize || "Organiser" %>
             </span>
           </span>
         </div>
