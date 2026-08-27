@@ -5,15 +5,21 @@
   here. This partial only renders what that scope returns, so the list can
   never offer someone the server would reject.
 
-  The modal is a native <dialog>: Esc, focus trapping and the backdrop come
-  free, and the only script is open/close.
+  Positioning note: Tailwind's preflight zeroes margin on every element,
+  which cancels the `margin: auto` a browser uses to centre a modal dialog —
+  so it is centred explicitly below. The dialog renders in the top layer, so
+  it sits above the sidebar regardless of where the partial appears in the
+  markup.
+
+  The roster's Remove buttons are their own forms, so the add form is a
+  sibling of the roster rather than wrapping it — forms can't nest.
 %>
 
 <% assignable = assignable_users %>
 <% team = event.users.includes(:roles).order(:email) %>
 
 <%# ── Trigger ─────────────────────────────────────────────────────── %>
-<% if assignable.any? %>
+<% if assignable.any? || team.any? %>
   <button type="button" data-assign-open
           class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1]">
     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -29,81 +35,102 @@
 
 <%# ── Modal ───────────────────────────────────────────────────────── %>
 <dialog id="assign-user-modal"
-        class="w-[min(32rem,calc(100vw-2rem))] rounded-2xl bg-white p-0 text-[#150D3A] shadow-[0_40px_80px_-30px_rgba(21,13,58,.55)] backdrop:bg-[#150D3A]/50 backdrop:backdrop-blur-sm">
+        class="fixed inset-0 m-auto max-h-[85vh] w-[min(32rem,calc(100vw-2rem))] rounded-2xl bg-white p-0 text-[#150D3A] shadow-[0_40px_80px_-30px_rgba(21,13,58,.55)] backdrop:bg-[#150D3A]/50 backdrop:backdrop-blur-sm">
 
-  <div class="flex items-start justify-between gap-4 px-6 pt-6">
-    <div>
-      <h2 class="font-[Outfit] text-lg font-semibold">Door team</h2>
-      <p class="mt-1 text-sm text-[#150D3A]/55">
-        Anyone here can scan tickets for <%= event.name %>.
-      </p>
+  <div class="flex max-h-[85vh] flex-col">
+
+    <%# ── Header ── %>
+    <div class="flex shrink-0 items-start justify-between gap-4 px-6 pb-5 pt-6">
+      <div>
+        <h2 class="font-[Outfit] text-lg font-semibold">Door team</h2>
+        <p class="mt-1 text-sm text-[#150D3A]/55">
+          Anyone here can scan tickets for <%= event.name %>.
+        </p>
+      </div>
+      <button type="button" data-assign-close
+              class="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#150D3A]/45 transition hover:bg-[#150D3A]/5 hover:text-[#150D3A]"
+              aria-label="Close">
+        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/>
+        </svg>
+      </button>
     </div>
-    <button type="button" data-assign-close
-            class="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#150D3A]/45 transition hover:bg-[#150D3A]/5 hover:text-[#150D3A]"
-            aria-label="Close">
-      <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/>
-      </svg>
-    </button>
-  </div>
 
-  <%# ── Roster ── %>
-  <div class="mt-5 px-6">
-    <p class="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.16em] text-[#150D3A]/45">
-      On this event
-    </p>
+    <%# ── Roster (scrolls if the team is long) ── %>
+    <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-5">
+      <p class="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.16em] text-[#150D3A]/45">
+        On this event
+      </p>
 
-    <% if team.any? %>
-      <ul class="mt-2 divide-y divide-[#150D3A]/8 rounded-xl ring-1 ring-[#150D3A]/10">
-        <% team.each do |member| %>
-          <li class="flex items-center gap-3 px-3 py-2.5">
-            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#7620B1] to-[#FC8027] text-[12px] font-semibold text-white">
-              <%= (member.try(:full_name).presence || member.email).to_s.first&.upcase %>
-            </span>
-            <span class="min-w-0 flex-1">
-              <span class="block truncate text-sm"><%= member.try(:full_name).presence || member.email %></span>
-              <span class="block font-[JetBrains_Mono] text-[11px] text-[#150D3A]/45">
-                <%= member.roles.map { |r| r.name.humanize }.join(", ").presence || "No role" %>
+      <% if team.any? %>
+        <ul class="mt-2 divide-y divide-[#150D3A]/8 rounded-xl ring-1 ring-[#150D3A]/10">
+          <% team.each do |member| %>
+            <% member_name = member.try(:full_name).presence || member.email %>
+            <li class="flex items-center gap-3 px-3 py-2.5">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#7620B1] to-[#FC8027] text-[12px] font-semibold text-white">
+                <%= member_name.to_s.first&.upcase %>
               </span>
-            </span>
-            <%= button_to "Remove", unassign_user_event_path(event, user_id: member.id),
-                  form: { data: { turbo: false } },
-                  data: { turbo_confirm: "Remove #{member.try(:full_name).presence || member.email} from #{event.name}?" },
-                  class: "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium text-[#150D3A]/50 transition hover:bg-[#FC8027]/10 hover:text-[#B4530F]" %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="mt-2 rounded-xl border border-dashed border-[#150D3A]/20 px-4 py-6 text-center text-sm text-[#150D3A]/50">
-        Nobody assigned yet. Without a door team, no one can scan tickets on the night.
-      </p>
-    <% end %>
-  </div>
-
-  <%# ── Add ── %>
-  <div class="mt-6 border-t border-[#150D3A]/8 bg-[#F7F4FB] px-6 py-5">
-    <% if assignable.any? %>
-      <%= form_with url: assign_user_event_path(event), method: :post,
-                    data: { turbo: false }, class: "space-y-3" do %>
-        <div>
-          <%= label_tag :user_id, "Add someone",
-                class: "block font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.16em] text-[#150D3A]/45" %>
-          <%= select_tag :user_id,
-                options_from_collection_for_select(assignable, :id,
-                  ->(u) { u.try(:full_name).presence || u.email }),
-                include_blank: "Choose a user",
-                required: true,
-                class: "mt-1.5 w-full rounded-xl border-0 bg-white px-4 py-2.5 text-sm ring-1 ring-[#150D3A]/10 focus:outline-none focus:ring-2 focus:ring-[#7620B1]" %>
-        </div>
-
-        <%= submit_tag "Add to door team",
-              class: "w-full cursor-pointer rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm"><%= member_name %></span>
+                <span class="block font-[JetBrains_Mono] text-[11px] text-[#150D3A]/45">
+                  <%= member.roles.map { |r| r.name.humanize }.join(", ").presence || "No role" %>
+                </span>
+              </span>
+              <%= button_to "Remove", unassign_user_event_path(event, user_id: member.id),
+                    method: :delete,
+                    form: { data: { turbo: false } },
+                    data: { turbo_confirm: "Remove #{member_name} from #{event.name}?" },
+                    class: "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium text-[#150D3A]/50 transition hover:bg-[#FC8027]/10 hover:text-[#B4530F]" %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="mt-2 rounded-xl border border-dashed border-[#150D3A]/20 px-4 py-6 text-center text-sm text-[#150D3A]/50">
+          Nobody assigned yet. Without a door team, no one can scan tickets on the night.
+        </p>
       <% end %>
-    <% else %>
-      <p class="text-center text-sm text-[#150D3A]/50">
-        Everyone you can assign is already on this event.
-      </p>
-    <% end %>
+    </div>
+
+    <%# ── Add — pinned below the scroll area so the submit is always in view ── %>
+    <div class="shrink-0 border-t border-[#150D3A]/8 bg-[#F7F4FB] px-6 py-5">
+      <% if assignable.any? %>
+        <%= form_with url: assign_user_event_path(event), method: :post,
+                      data: { turbo: false }, class: "space-y-4" do %>
+          <div>
+            <%= label_tag :user_id, "Add someone",
+                  class: "block font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.16em] text-[#150D3A]/45" %>
+            <%= select_tag :user_id,
+                  options_from_collection_for_select(assignable, :id,
+                    ->(u) { u.try(:full_name).presence || u.email }),
+                  include_blank: "Choose a user",
+                  required: true,
+                  class: "mt-1.5 w-full rounded-xl border-0 bg-white px-4 py-2.5 text-sm ring-1 ring-[#150D3A]/10 focus:outline-none focus:ring-2 focus:ring-[#7620B1]" %>
+          </div>
+
+          <div class="flex items-center justify-end gap-2.5">
+            <button type="button" data-assign-close
+                    class="rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5 border border-[#7620B1]/25">
+              Cancel
+            </button>
+
+            <button type="submit"
+                    class="cursor-pointer rounded-full bg-linear-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-[#7620B1] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2 border border-[#7620B1]/25">
+              Add to door team
+            </button>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="flex items-center justify-between gap-4">
+          <p class="text-sm text-[#150D3A]/50">
+            Everyone you can assign is already on this event.
+          </p>
+          <button type="button" data-assign-close
+                  class="shrink-0 rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5">
+            Close
+          </button>
+        </div>
+      <% end %>
+    </div>
   </div>
 </dialog>
 
@@ -120,7 +147,7 @@
             if(e.target.closest('[data-assign-close]')) return dialog.close();
 
             /* Clicking the backdrop lands on the dialog element itself, since
-               its own children sit inside the padded panel. */
+               everything visible sits inside the panel div. */
             if(e.target === dialog) dialog.close();
         });
     })();
