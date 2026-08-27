@@ -133,6 +133,7 @@ class EventsController < ApplicationController
       User.none
     end
   end
+
   helper_method :assignable_users
 
   def can_manage_team?
