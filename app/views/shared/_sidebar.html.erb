@@ -46,6 +46,10 @@
     active: %w[users invitations].include?(controller_name),
     children: user_children },
 
+  { label: "Client", icon: :scanner,
+    path: clients_path,
+    active: controller_name == "clients" },
+
   { label: "Settings", icon: :settings,
     path: "#", active: controller_name == "settings" }
 ] %>

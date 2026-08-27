@@ -1,0 +1,48 @@
+<%= form_with model: client, class: "space-y-5" do |f| %>
+
+  <% if client.errors.any? %>
+    <div class="rounded-2xl bg-[#FC8027]/10 px-4 py-3 ring-1 ring-[#FC8027]/30">
+      <p class="font-[Outfit] text-sm font-semibold text-[#150D3A]">
+        <%= pluralize(client.errors.count, "field needs", plural: "fields need") %> fixing
+      </p>
+      <ul class="mt-1.5 list-disc space-y-0.5 pl-5 text-sm text-[#150D3A]/70">
+        <% client.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% field_class = "w-full rounded-xl border-0 bg-white px-4 py-2.5 text-sm text-[#150D3A] ring-1 ring-[#150D3A]/10 placeholder:text-[#150D3A]/35 focus:outline-none focus:ring-2 focus:ring-[#7620B1]" %>
+  <% label_class = "block font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/55" %>
+
+  <div>
+    <%= f.label :name, "Name", class: label_class %>
+    <%= f.text_field :name, placeholder: "Nairobi Live Ltd", class: "mt-1.5 #{field_class}" %>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <%= f.label :email, "Email", class: label_class %>
+      <%= f.email_field :email, placeholder: "bookings@example.co.ke", class: "mt-1.5 #{field_class}" %>
+    </div>
+
+    <div>
+      <%= f.label :phone, "Phone", class: label_class %>
+      <%= f.telephone_field :phone, placeholder: "+254 700 000 000", class: "mt-1.5 #{field_class}" %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :address, "Address", class: label_class %>
+    <%= f.text_area :address, rows: 3, placeholder: "Street, building, city", class: "mt-1.5 #{field_class}" %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-1">
+    <%= f.submit submit_label,
+          class: "cursor-pointer rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+
+    <%= link_to "Cancel", client.persisted? ? client_path(client) : clients_path,
+          class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5" %>
+  </div>
+<% end %>

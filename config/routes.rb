@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   resources :dashboard, only: %w[index]
   resources :ticket_types, only: %w[index show]
   resources :users, only: %w[index new create show]
+  resources :clients, only: %w[index new create show edit update]
 
   resources :events, param: :slug do
     collection do

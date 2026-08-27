@@ -1,0 +1,13 @@
+<%= render 'shared/sidebar' %>
+
+<div class="mx-auto max-w-2xl px-6 py-10">
+  <%= link_to "← Clients", clients_path,
+        class: "font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#7620B1] hover:underline" %>
+
+  <h1 class="mt-3 font-[Outfit] text-2xl font-semibold text-[#150D3A]">Add a client</h1>
+  <p class="mt-1 text-sm text-[#150D3A]/60">Name is enough to start — you can fill in the rest later.</p>
+
+  <div class="mt-7 rounded-2xl bg-white p-6 ring-1 ring-[#150D3A]/10">
+    <%= render "form", client: @client, submit_label: "Add client" %>
+  </div>
+</div>
