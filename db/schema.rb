@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_150917) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_164249) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -140,6 +140,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_150917) do
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "client_id"
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"
     t.datetime "confirmed_at"
@@ -170,6 +171,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_150917) do
     t.string "unconfirmed_email"
     t.string "unlock_token"
     t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_users_on_client_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
@@ -196,4 +198,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_150917) do
   add_foreign_key "tickets", "events"
   add_foreign_key "tickets", "orders"
   add_foreign_key "tickets", "ticket_types"
+  add_foreign_key "users", "clients"
 end

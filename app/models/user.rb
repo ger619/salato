@@ -5,6 +5,8 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
+  belongs_to :client, optional: true
+
   has_many :events, dependent: :restrict_with_error # events they own
   has_and_belongs_to_many :staffed_events,
                           class_name: 'Event',
