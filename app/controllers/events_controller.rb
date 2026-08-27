@@ -30,6 +30,9 @@ class EventsController < ApplicationController
     @event = current_user.events.new(event_params)
 
     if @event.save
+      @event.users << current_user if current_user.has_role?(:organiser) &&
+                                      !current_user.has_role?(:admin)
+
       redirect_to organiser_show_event_path(@event), notice: "#{@event.name} is published."
     else
       @event.ticket_types.build(active: true) if @event.ticket_types.empty?
@@ -84,6 +87,8 @@ class EventsController < ApplicationController
       .includes(:ticket_types)
       .with_attached_poster
       .order(start_at: :desc)
+
+    @events = @events.joins(:users).where(users: { id: current_user.id }) unless current_user&.has_any_role?(:admin)
   end
 
   def organiser_show
