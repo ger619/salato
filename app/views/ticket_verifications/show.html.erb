@@ -1,0 +1,93 @@
+<% content_for :title, "#{@ticket.ticket_number} — Salato" %>
+<%= render 'shared/sidebar' %>
+
+<% state = ticket_verification_state(@ticket) %>
+
+<section class="bg-mist min-h-screen pt-28 lg:pt-32 pb-20">
+  <div class="max-w-shell mx-auto px-5 lg:px-8">
+    <div class="mx-auto max-w-[440px]">
+
+      <div class="rounded-[22px] bg-white overflow-hidden ring-1 ring-ink/10
+                  shadow-[0_30px_70px_-25px_rgba(21,13,58,.38)]">
+
+        <div class="<%= state[:bar] %> px-6 py-4">
+          <span class="mono text-[11px] tracking-[.2em] text-white/95">
+            <%= state[:verdict] %>
+          </span>
+        </div>
+
+        <div class="<%= state[:wash] %> px-6 pt-7 pb-7 text-center">
+          <span class="mx-auto w-16 h-16 rounded-full bg-white grid place-items-center
+                       ring-1 ring-ink/8">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+                 stroke="<%= state[:stroke] %>" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="<%= state[:icon] %>"/>
+            </svg>
+          </span>
+
+          <h1 class="mt-4 text-[26px] leading-tight font-semibold">
+            <%= state[:headline] %>
+          </h1>
+
+          <p class="mt-1.5 text-[17px] font-medium">
+            <%= @ticket.attendee_name %>
+          </p>
+
+          <% if @ticket.checked_in? && @ticket.checked_in_at %>
+            <p class="mt-2 text-[14px] text-ink2">
+              <%= @ticket.checked_in_at.strftime("%-d %B, %-l:%M %p") %>
+            </p>
+          <% end %>
+        </div>
+
+        <div class="relative px-6"><div class="tear tear-mist"></div></div>
+
+        <div class="px-6 pt-6 pb-6">
+          <dl class="space-y-4 text-[14px]">
+            <div class="min-w-0">
+              <dt class="text-ink2/70">Event</dt>
+              <dd class="font-medium mt-0.5"><%= @ticket.event.name %></dd>
+            </div>
+
+            <div class="min-w-0">
+              <dt class="text-ink2/70">Ticket type</dt>
+              <dd class="font-medium mt-0.5"><%= @ticket.ticket_type.name %></dd>
+            </div>
+
+            <div class="min-w-0">
+              <dt class="text-ink2/70">Ticket number</dt>
+              <dd class="mono text-[13px] font-medium mt-0.5 break-all">
+                <%= @ticket.ticket_number %>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <% if @can_check_in && @ticket.valid_ticket? %>
+
+        <%= button_to check_in_ticket_path(@ticket.qr_token),
+                      method: :post,
+                      class: "mt-6 w-full grad-bg text-white rounded-xl px-5 py-4
+                              text-[16px] font-medium hover:opacity-90 transition
+                              focus-visible:outline-none focus-visible:ring-2
+                              focus-visible:ring-ink focus-visible:ring-offset-2" do %>
+          Check in <%= @ticket.attendee_name %>
+        <% end %>
+
+      <% elsif @ticket.valid_ticket? %>
+
+        <p class="mt-6 text-center text-[14px] text-ink2 leading-snug">
+          Show this screen, or the QR code on your ticket, at the gate.
+        </p>
+
+      <% end %>
+
+      <div class="mt-6">
+        <%= render "manual_entry" %>
+      </div>
+
+    </div>
+  </div>
+</section>

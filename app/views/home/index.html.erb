@@ -1,0 +1,464 @@
+<% content_for :title, "Salato — sell tickets to your event in Kenya" %>
+
+<%= render 'shared/header' %>
+
+
+<%# ══════════════ HERO ══════════════ %>
+<section id="hero" class="relative overflow-hidden pt-28 sm:pt-32 lg:pt-40 pb-16 sm:pb-20 lg:pb-28">
+  <div aria-hidden="true" class="pointer-events-none absolute -top-40 -right-32 w-[420px] h-[420px] lg:w-[620px] lg:h-[620px] rounded-full blur-3xl opacity-[.13] grad-bg"></div>
+  <div aria-hidden="true" class="pointer-events-none absolute top-72 -left-40 w-[300px] h-[300px] lg:w-[420px] lg:h-[420px] rounded-full blur-3xl opacity-[.10] grad-bg"></div>
+
+  <div class="max-w-shell mx-auto px-[var(--shell-x)] relative">
+    <div class="grid lg:grid-cols-[1.05fr_.95fr] gap-12 sm:gap-14 lg:gap-10 items-center">
+
+      <div>
+        <p class="eyebrow text-magenta reveal">Nairobi &middot; built for African organisers</p>
+
+        <h1 class="mt-5 t-hero font-semibold reveal">
+          Sell out your event.<br>
+          <span class="grad-text">Get paid the same day.</span>
+        </h1>
+
+        <p class="mt-6 t-lead text-ink2 max-w-[36rem] reveal">
+          Salato turns your event into a page people can buy from in under two minutes. Buyers pay with M-Pesa or card, get a QR ticket in their inbox, and walk straight through the gate.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row flex-wrap gap-3 reveal">
+          <button type="button" data-open-auth="signup"
+                  class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_10px_30px_-10px_rgba(225,55,101,.85)]">
+            Create your first event
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </button>
+          <a href="#how" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-medium text-ink ring-1 ring-ink/15 hover:ring-ink/35 hover:bg-mist transition">See how it works</a>
+        </div>
+
+        <p class="mt-6 text-[14px] text-ink2/80 reveal">No monthly fee to start. Free events cost you nothing, ever.</p>
+
+        <div class="mt-9 pt-7 border-t border-ink/10 reveal">
+          <p class="eyebrow text-ink2/60">Buyers can pay with</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <% ["M-Pesa", "Airtel Money", "Visa", "Mastercard", "Bank transfer"].each do |method| %>
+              <span class="px-3 py-1.5 rounded-lg bg-mist text-[13px] font-medium text-ink2 ring-1 ring-ink/10"><%= method %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# ── the ticket ── %>
+      <div class="relative reveal">
+        <div class="drift mx-auto max-w-[420px] rounded-[22px] bg-white shadow-[0_30px_70px_-25px_rgba(21,13,58,.38)] ring-1 ring-ink/10 overflow-hidden">
+          <div class="grad-bg px-5 sm:px-6 py-4 flex items-center justify-between gap-3">
+            <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/95">ADMIT ONE</span>
+            <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/80">GEN. ACCESS</span>
+          </div>
+
+          <div class="px-5 sm:px-6 pt-6 pb-5">
+            <p class="eyebrow text-magenta">Saturday 12 September</p>
+            <h2 class="mt-2 text-[24px] sm:text-[27px] leading-tight font-semibold">Nairobi Sound System</h2>
+            <p class="mt-1 text-[15px] text-ink2">Alchemist, Westlands &middot; gates 6:00 PM</p>
+
+            <dl class="mt-5 grid grid-cols-2 gap-y-3 gap-x-4 text-[14px]">
+              <div><dt class="text-ink2/70">Holder</dt><dd class="font-medium">Wanjiru Kamau</dd></div>
+              <div><dt class="text-ink2/70">Paid</dt><dd class="font-medium">KES 1,500 &middot; M-Pesa</dd></div>
+            </dl>
+          </div>
+
+          <div class="relative px-5 sm:px-6"><div class="tear"></div></div>
+
+          <div class="px-5 sm:px-6 pt-6 pb-6 flex items-center gap-4 sm:gap-5">
+            <div class="shrink-0 p-2 rounded-xl ring-1 ring-ink/10 bg-white">
+              <svg viewBox="0 0 33 33" width="82" height="82" class="sm:w-[92px] sm:h-[92px]" shape-rendering="crispEdges" role="img" aria-label="QR code linking to a sample Salato ticket">
+                <rect width="33" height="33" fill="#fff"/>
+                <path fill="#150D3A" d="M2 2h7v1h-7zM11 2h1v1h-1zM13 2h1v1h-1zM15 2h1v1h-1zM22 2h1v1h-1zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM16 3h1v1h-1zM21 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM12 4h5v1h-5zM20 4h3v1h-3zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM10 5h2v1h-2zM15 5h1v1h-1zM19 5h1v1h-1zM21 5h2v1h-2zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM10 6h2v1h-2zM13 6h5v1h-5zM19 6h3v1h-3zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM12 7h1v1h-1zM16 7h1v1h-1zM18 7h2v1h-2zM22 7h1v1h-1zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM10 9h6v1h-6zM20 9h3v1h-3zM3 10h1v1h-1zM5 10h4v1h-4zM10 10h2v1h-2zM13 10h1v1h-1zM16 10h1v1h-1zM21 10h1v1h-1zM23 10h2v1h-2zM26 10h2v1h-2zM29 10h1v1h-1zM3 11h1v1h-1zM6 11h2v1h-2zM9 11h1v1h-1zM11 11h2v1h-2zM14 11h2v1h-2zM20 11h3v1h-3zM26 11h2v1h-2zM29 11h1v1h-1zM5 12h2v1h-2zM8 12h1v1h-1zM11 12h2v1h-2zM15 12h6v1h-6zM22 12h5v1h-5zM2 13h1v1h-1zM9 13h4v1h-4zM14 13h3v1h-3zM18 13h2v1h-2zM22 13h1v1h-1zM26 13h2v1h-2zM30 13h1v1h-1zM2 14h1v1h-1zM4 14h5v1h-5zM10 14h1v1h-1zM12 14h1v1h-1zM17 14h1v1h-1zM21 14h4v1h-4zM27 14h1v1h-1zM29 14h1v1h-1zM2 15h1v1h-1zM4 15h3v1h-3zM10 15h1v1h-1zM12 15h8v1h-8zM24 15h1v1h-1zM26 15h1v1h-1zM28 15h1v1h-1zM30 15h1v1h-1zM2 16h3v1h-3zM8 16h1v1h-1zM10 16h1v1h-1zM12 16h1v1h-1zM15 16h3v1h-3zM19 16h4v1h-4zM25 16h1v1h-1zM27 16h1v1h-1zM29 16h2v1h-2zM2 17h2v1h-2zM5 17h3v1h-3zM9 17h2v1h-2zM18 17h1v1h-1zM21 17h3v1h-3zM26 17h4v1h-4zM4 18h3v1h-3zM8 18h4v1h-4zM19 18h1v1h-1zM27 18h1v1h-1zM30 18h1v1h-1zM2 19h2v1h-2zM5 19h3v1h-3zM10 19h3v1h-3zM15 19h1v1h-1zM18 19h2v1h-2zM22 19h3v1h-3zM26 19h1v1h-1zM28 19h1v1h-1zM2 20h3v1h-3zM6 20h1v1h-1zM8 20h1v1h-1zM11 20h3v1h-3zM15 20h1v1h-1zM17 20h3v1h-3zM21 20h2v1h-2zM30 20h1v1h-1zM2 21h2v1h-2zM7 21h1v1h-1zM9 21h1v1h-1zM11 21h2v1h-2zM15 21h3v1h-3zM20 21h2v1h-2zM23 21h3v1h-3zM28 21h1v1h-1zM2 22h5v1h-5zM8 22h3v1h-3zM13 22h3v1h-3zM17 22h3v1h-3zM22 22h9v1h-9zM10 23h1v1h-1zM12 23h2v1h-2zM16 23h2v1h-2zM19 23h4v1h-4zM26 23h3v1h-3zM2 24h7v1h-7zM12 24h4v1h-4zM17 24h1v1h-1zM19 24h4v1h-4zM24 24h1v1h-1zM26 24h1v1h-1zM28 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM12 25h6v1h-6zM19 25h4v1h-4zM26 25h2v1h-2zM29 25h1v1h-1zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM10 26h2v1h-2zM14 26h1v1h-1zM20 26h7v1h-7zM29 26h2v1h-2zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h1v1h-1zM12 27h4v1h-4zM17 27h1v1h-1zM19 27h1v1h-1zM25 27h1v1h-1zM28 27h1v1h-1zM30 27h1v1h-1zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM12 28h2v1h-2zM17 28h1v1h-1zM19 28h1v1h-1zM22 28h2v1h-2zM25 28h2v1h-2zM29 28h2v1h-2zM2 29h1v1h-1zM8 29h1v1h-1zM10 29h1v1h-1zM14 29h1v1h-1zM16 29h1v1h-1zM18 29h1v1h-1zM22 29h1v1h-1zM24 29h1v1h-1zM26 29h1v1h-1zM28 29h1v1h-1zM30 29h1v1h-1zM2 30h7v1h-7zM11 30h1v1h-1zM13 30h2v1h-2zM16 30h1v1h-1zM20 30h3v1h-3zM24 30h3v1h-3z"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="eyebrow text-ink2/60">Ticket number</p>
+              <p class="mono text-[16px] sm:text-[17px] font-medium mt-1">SLT-4KX92</p>
+              <p class="mt-3 text-[13px] text-ink2 leading-snug">Scanned once at the gate. Screenshots of a used code are rejected.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 mx-auto max-w-[420px] grad-edge rounded-2xl p-4 flex items-center gap-3">
+          <span class="shrink-0 w-9 h-9 rounded-full grad-bg grid place-items-center">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <p class="text-[14px] text-ink2"><span class="font-medium text-ink">Payout on request.</span> Money reaches your M-Pesa or bank the same working day.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<%# ══════════════ WHO IT'S FOR ══════════════ %>
+<section class="py-12 sm:py-14 bg-mist border-y border-ink/10">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <p class="eyebrow text-ink2/60 text-center">Organisers using Salato run</p>
+    <div class="mt-6 flex flex-wrap justify-center gap-x-6 sm:gap-x-8 gap-y-3 sm:gap-y-4 text-[16px] sm:text-[17px] lg:text-[20px] font-display font-medium text-ink/45">
+      <%
+        run_types = ["Concerts", "Conferences", "Comedy nights", "Church conventions",
+                     "Football fixtures", "Food festivals", "Workshops"]
+      %>
+      <% run_types.each_with_index do |type, i| %>
+        <span><%= type %></span>
+        <% unless i == run_types.length - 1 %>
+          <span class="text-pink/40" aria-hidden="true">&middot;</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ══════════════ ABOUT ══════════════ %>
+<section id="about" class="py-20 sm:py-24 lg:py-32">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="grid lg:grid-cols-[.85fr_1.15fr] gap-12 lg:gap-20">
+
+      <div class="lg:sticky lg:top-32 lg:self-start">
+        <p class="eyebrow text-magenta reveal">About us</p>
+        <h2 class="mt-4 t-h2 font-semibold reveal">
+          We built the tool<br class="hidden sm:block">we kept wishing for.
+        </h2>
+        <p class="mt-5 t-lead text-ink2 reveal">
+          Salato is made in Nairobi by people who have stood at a gate with a printed list and a torch, arguing about a screenshot.
+        </p>
+      </div>
+
+      <div class="reveal">
+        <div class="space-y-5 t-body text-ink2">
+          <p>Selling tickets here has always worked, technically. You post a poster with a till number, buyers send money, someone screenshots the confirmation, and a person at the door checks names against a phone. It works right up until it doesn't — a queue forms, a screenshot gets forwarded to four friends, and nobody can tell you at 9 PM how many people have actually paid.</p>
+          <p>Salato replaces that whole chain with one link. You create the event, set your ticket types, and share the page. Every payment lands against a named ticket with a code that can only be used once. At the gate, your team scans with a phone — and it keeps working when the venue WiFi doesn't.</p>
+          <p>We are not trying to be a global marketplace that happens to support M-Pesa. We started from how events actually get run in Kenya: mobile money first, tight margins, plans that change on the Thursday before the show.</p>
+        </div>
+
+        <div class="mt-10 grid sm:grid-cols-2 gap-4">
+          <%
+            about_stats = [
+              ["Under 2 min", "From signing up to a live event page you can share."],
+              ["Same day",    "Request a payout and the money moves the same working day."],
+              ["One scan",    "Each code opens the gate once. Forwarded screenshots bounce."],
+              ["Offline gate","The scanner keeps admitting people when the network drops."]
+            ]
+          %>
+          <% about_stats.each do |headline, detail| %>
+            <div class="rounded-2xl bg-mist p-6 ring-1 ring-ink/10">
+              <p class="font-display text-[30px] sm:text-[34px] font-semibold grad-text leading-none"><%= headline %></p>
+              <p class="mt-2 text-[15px] text-ink2"><%= detail %></p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<%# ══════════════ HOW IT WORKS ══════════════ %>
+<section id="how" class="py-20 sm:py-24 lg:py-32 bg-mist border-y border-ink/10">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="max-w-2xl">
+      <p class="eyebrow text-magenta reveal">How it works</p>
+      <h2 class="mt-4 t-h2 font-semibold reveal">Four steps, in this order.</h2>
+      <p class="mt-5 t-lead text-ink2 reveal">Nothing to install and no integration work. If you can post a poster, you can run an event on Salato.</p>
+    </div>
+
+    <ol class="mt-12 sm:mt-14 space-y-px">
+
+      <li class="reveal grid md:grid-cols-[56px_1fr_1fr] lg:grid-cols-[64px_1fr_1fr] gap-5 md:gap-10 items-start py-8 sm:py-10 border-t border-ink/15">
+        <span class="mono text-[13px] font-medium text-pink pt-1">01</span>
+        <div>
+          <h3 class="t-h3 font-semibold">Create the event</h3>
+          <p class="mt-3 t-body text-ink2">Name, date, venue, poster. Add as many ticket types as you need — early bird, regular, VIP, group of five — each with its own price and quantity.</p>
+        </div>
+        <div class="rounded-xl bg-white p-5 ring-1 ring-ink/10">
+          <div class="flex justify-between gap-3 text-[14px]"><span class="text-ink2">Early bird</span><span class="mono">KES 1,000</span></div>
+          <div class="mt-2 h-1.5 rounded-full bg-ink/10 overflow-hidden"><div class="h-full w-full grad-bg"></div></div>
+          <p class="mt-1.5 text-[12px] text-ink2/70">200 of 200 sold — closed automatically</p>
+          <div class="mt-4 flex justify-between gap-3 text-[14px]"><span class="text-ink2">Regular</span><span class="mono">KES 1,500</span></div>
+          <div class="mt-2 h-1.5 rounded-full bg-ink/10 overflow-hidden"><div class="h-full w-[62%] grad-bg"></div></div>
+          <p class="mt-1.5 text-[12px] text-ink2/70">310 of 500 sold</p>
+        </div>
+      </li>
+
+      <li class="reveal grid md:grid-cols-[56px_1fr_1fr] lg:grid-cols-[64px_1fr_1fr] gap-5 md:gap-10 items-start py-8 sm:py-10 border-t border-ink/15">
+        <span class="mono text-[13px] font-medium text-pink pt-1">02</span>
+        <div>
+          <h3 class="t-h3 font-semibold">Share one link</h3>
+          <p class="mt-3 t-body text-ink2">Put it in your bio, your WhatsApp status, your poster as a QR. The page carries your poster and your colours — buyers never wonder whose event this is.</p>
+        </div>
+        <div class="rounded-xl bg-white p-5 ring-1 ring-ink/10">
+          <p class="eyebrow text-ink2/55">Your event link</p>
+          <p class="mono text-[14px] sm:text-[15px] mt-2 break-all">salato.co.ke/<span class="grad-text font-medium">sound-system</span></p>
+          <p class="mt-3 text-[13px] text-ink2">Works on any phone. No app download, no account needed to buy.</p>
+        </div>
+      </li>
+
+      <li class="reveal grid md:grid-cols-[56px_1fr_1fr] lg:grid-cols-[64px_1fr_1fr] gap-5 md:gap-10 items-start py-8 sm:py-10 border-t border-ink/15">
+        <span class="mono text-[13px] font-medium text-pink pt-1">03</span>
+        <div>
+          <h3 class="t-h3 font-semibold">Buyers pay, tickets send themselves</h3>
+          <p class="mt-3 t-body text-ink2">Payment goes through M-Pesa or card. The moment it clears, a PDF ticket with the buyer's name, ticket number and QR code lands in their email — and you see the sale in your dashboard.</p>
+        </div>
+        <div class="rounded-xl bg-white p-5 ring-1 ring-ink/10 space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-full grad-bg grid place-items-center shrink-0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="min-w-0"><p class="text-[14px] font-medium">Payment received</p><p class="mono text-[12px] text-ink2/75 truncate">KES 1,500 &middot; M-Pesa &middot; 19:42</p></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-full grad-bg grid place-items-center shrink-0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="min-w-0"><p class="text-[14px] font-medium">Ticket emailed</p><p class="mono text-[12px] text-ink2/75 truncate">SLT-4KX92 &middot; wanjiru@example.com</p></div>
+          </div>
+        </div>
+      </li>
+
+      <li class="reveal grid md:grid-cols-[56px_1fr_1fr] lg:grid-cols-[64px_1fr_1fr] gap-5 md:gap-10 items-start py-8 sm:py-10 border-t border-b border-ink/15">
+        <span class="mono text-[13px] font-medium text-pink pt-1">04</span>
+        <div>
+          <h3 class="t-h3 font-semibold">Scan at the gate</h3>
+          <p class="mt-3 t-body text-ink2">Your door team opens the scanner on their own phones. Green means let them in, red means the code is fake or already used. Everyone scanning sees the same live count.</p>
+        </div>
+        <div class="rounded-xl bg-white p-5 ring-1 ring-ink/10">
+          <div class="flex items-center justify-between gap-4">
+            <div><p class="text-[14px] font-medium">Checked in</p><p class="mono text-[12px] text-ink2/75">Gate A &middot; 2 scanners</p></div>
+            <p class="font-display text-[30px] font-semibold grad-text leading-none">412</p>
+          </div>
+          <div class="mt-3 h-1.5 rounded-full bg-ink/10 overflow-hidden"><div class="h-full w-[81%] grad-bg"></div></div>
+          <p class="mt-1.5 text-[12px] text-ink2/70">of 510 tickets sold</p>
+        </div>
+      </li>
+
+    </ol>
+  </div>
+</section>
+
+<%# ══════════════ PRICING ══════════════ %>
+<section id="pricing" class="py-20 sm:py-24 lg:py-32">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="max-w-2xl">
+      <p class="eyebrow text-magenta reveal">Pricing</p>
+      <h2 class="mt-4 t-h2 font-semibold reveal">You only pay when you sell.</h2>
+      <p class="mt-5 t-lead text-ink2 reveal">Our fee comes out of each paid ticket. Choose whether you absorb it or pass it to the buyer at checkout — that switch is yours.</p>
+    </div>
+
+    <div class="mt-12 sm:mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <%# ── Starter ── %>
+      <div class="reveal stub rounded-[20px] bg-mist ring-1 ring-ink/10 p-6 sm:p-7 flex flex-col" style="--ty:calc(100% - 118px)">
+        <p class="eyebrow text-ink2/60">Starter</p>
+        <p class="mt-4 font-display text-[38px] sm:text-[40px] font-semibold leading-none">4.5%</p>
+        <p class="mt-2 text-[15px] text-ink2">+ KES 20 per paid ticket. No monthly fee.</p>
+        <ul class="mt-6 space-y-3 text-[15px] text-ink2 flex-1">
+          <% ["Unlimited events and ticket types", "M-Pesa and card checkout", "PDF tickets with QR codes",
+              "Gate scanner for 2 devices", "Free events cost nothing"].each do |feature| %>
+            <li class="flex gap-2.5"><span class="text-pink mt-0.5" aria-hidden="true">&#10003;</span> <%= feature %></li>
+          <% end %>
+        </ul>
+        <div class="my-6 relative"><div class="tear tear-mist"></div></div>
+        <button type="button" data-open-auth="signup" class="w-full py-3 rounded-xl font-medium ring-1 ring-ink/20 hover:bg-white transition">Start free</button>
+      </div>
+
+      <%# ── Growth ── %>
+      <div class="reveal stub grad-edge rounded-[20px] p-6 sm:p-7 flex flex-col shadow-[0_24px_60px_-30px_rgba(21,13,58,.45)]" style="--ty:calc(100% - 118px)">
+        <div class="flex items-center justify-between gap-3">
+          <p class="eyebrow text-magenta">Growth</p>
+          <span class="mono text-[10px] tracking-[.14em] px-2 py-1 rounded-md text-white grad-bg">POPULAR</span>
+        </div>
+        <p class="mt-4 font-display text-[38px] sm:text-[40px] font-semibold leading-none grad-text">3%</p>
+        <p class="mt-2 text-[15px] text-ink2">+ KES 2,500 per month. Cancel any time.</p>
+        <ul class="mt-6 space-y-3 text-[15px] text-ink2 flex-1">
+          <% ["Everything in Starter", "Your logo and colours on the event page", "Discount codes and group tickets",
+              "Unlimited gate scanners", "Buyer list export and refunds"].each do |feature| %>
+            <li class="flex gap-2.5"><span class="text-pink mt-0.5" aria-hidden="true">&#10003;</span> <%= feature %></li>
+          <% end %>
+        </ul>
+        <div class="my-6 relative"><div class="tear"></div></div>
+        <button type="button" data-open-auth="signup" class="w-full py-3 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition">Choose Growth</button>
+      </div>
+
+      <%# ── Venue ── %>
+      <div class="reveal stub rounded-[20px] bg-ink text-white p-6 sm:p-7 flex flex-col sm:col-span-2 lg:col-span-1" style="--ty:calc(100% - 118px)">
+        <p class="eyebrow text-white/55">Venue</p>
+        <p class="mt-4 font-display text-[38px] sm:text-[40px] font-semibold leading-none">Let's talk</p>
+        <p class="mt-2 text-[15px] text-white/70">For venues and promoters running weekly shows.</p>
+        <ul class="mt-6 space-y-3 text-[15px] text-white/75 flex-1">
+          <% ["Rates from 2% per ticket", "Multiple gates and staff roles", "Reserved seating charts",
+              "API access for your own site", "A named person on WhatsApp"].each do |feature| %>
+            <li class="flex gap-2.5"><span class="text-orange mt-0.5" aria-hidden="true">&#10003;</span> <%= feature %></li>
+          <% end %>
+        </ul>
+        <div class="my-6 relative"><div class="tear tear-ink"></div></div>
+        <a href="#contact" class="block text-center w-full py-3 rounded-xl font-medium bg-white text-ink hover:bg-white/90 transition">Talk to us</a>
+      </div>
+
+    </div>
+
+    <p class="mt-8 text-[14px] text-ink2/80 reveal">Payment processing is included in the rates above — there is no separate Paystack or M-Pesa charge on top. Refunds return our fee too.</p>
+
+    <%# ── FAQ ── %>
+    <div class="mt-16 sm:mt-20 max-w-3xl">
+      <h3 class="text-[24px] sm:text-[26px] font-semibold reveal">Questions organisers ask us</h3>
+      <div class="mt-6 divide-y divide-ink/10 border-y border-ink/10">
+        <%
+          faqs = [
+            ["When do I get my money?",
+             "Request a payout from your dashboard and it moves to your M-Pesa or bank the same working day. You don't have to wait for the event to finish."],
+            ["Can someone forward their ticket to a friend?",
+             "They can forward the file, but the code only works once. Whoever scans first gets in and the second scan shows red. You can also require the holder's name at the gate."],
+            ["What if the venue has no network?",
+             "Load the guest list onto each scanning phone before doors open. Scanning continues offline and the devices reconcile with each other once a connection returns."],
+            ["Do buyers need to create an account?",
+             "No. They enter a name, email and phone number, pay, and the ticket arrives. Accounts are only for organisers."],
+            ["Can I cancel an event and refund everyone?",
+             "Yes — refund the whole event in one action or refund buyers individually. Our fee is returned on any refunded ticket."]
+          ]
+        %>
+        <% faqs.each do |question, answer| %>
+          <details class="group py-5">
+            <summary class="flex items-start justify-between gap-6 cursor-pointer list-none font-medium text-[16px] sm:text-[17px]">
+              <%= question %>
+              <span class="chev shrink-0 mt-1 transition-transform text-pink" aria-hidden="true">+</span>
+            </summary>
+            <p class="mt-3 t-body text-ink2"><%= answer %></p>
+          </details>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# ══════════════ CONTACT ══════════════ %>
+<section id="contact" class="py-20 sm:py-24 lg:py-32 bg-mist border-t border-ink/10">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="grid lg:grid-cols-[1fr_.85fr] gap-12 lg:gap-16">
+
+      <div>
+        <p class="eyebrow text-magenta reveal">Contact</p>
+        <h2 class="mt-4 t-h2 font-semibold reveal">Tell us about your event.</h2>
+        <p class="mt-5 t-lead text-ink2 max-w-lg reveal">Planning something bigger than a few hundred people, or moving from another platform? Send the details and we'll come back with a plan and a rate.</p>
+
+        <%# Point this at your own route, e.g. form_with url: contact_messages_path %>
+        <form id="contactForm" novalidate class="mt-10 space-y-5 reveal">
+          <div class="grid sm:grid-cols-2 gap-5">
+            <div>
+              <label for="cName" class="block text-[14px] font-medium mb-2">Your name</label>
+              <input id="cName" name="name" type="text" autocomplete="name" placeholder="Wanjiru Kamau"
+                     class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition">
+              <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+            </div>
+            <div>
+              <label for="cEmail" class="block text-[14px] font-medium mb-2">Email</label>
+              <input id="cEmail" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"
+                     class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition">
+              <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-5">
+            <div>
+              <label for="cType" class="block text-[14px] font-medium mb-2">Kind of event</label>
+              <select id="cType" name="type"
+                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition">
+                <option>Concert or festival</option>
+                <option>Conference or workshop</option>
+                <option>Sports fixture</option>
+                <option>Church or community event</option>
+                <option>Something else</option>
+              </select>
+            </div>
+            <div>
+              <label for="cSize" class="block text-[14px] font-medium mb-2">Expected attendance</label>
+              <input id="cSize" name="size" type="text" inputmode="numeric" placeholder="e.g. 800"
+                     class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label for="cMsg" class="block text-[14px] font-medium mb-2">What do you need?</label>
+            <textarea id="cMsg" name="message" rows="4" placeholder="Dates, ticket types, anything unusual about the venue."
+                      class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition resize-y"></textarea>
+            <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <button type="submit" class="px-7 py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_10px_30px_-12px_rgba(225,55,101,.85)]">Send message</button>
+            <p id="contactOk" class="hidden text-[14px] font-medium text-magenta">Thanks — we'll reply within one working day.</p>
+          </div>
+        </form>
+      </div>
+
+      <div class="reveal">
+        <div class="rounded-[22px] bg-ink text-white p-7 sm:p-8 lg:p-9">
+          <h3 class="text-[22px] font-semibold">Reach us directly</h3>
+          <dl class="mt-7 space-y-6 text-[15px]">
+            <div>
+              <dt class="eyebrow text-white/45">Email</dt>
+              <dd class="mt-1.5"><a href="mailto:hello@salato.co.ke" class="hover:text-orange transition break-all">hello@salato.co.ke</a></dd>
+            </div>
+            <div>
+              <dt class="eyebrow text-white/45">WhatsApp</dt>
+              <dd class="mt-1.5"><a href="tel:+254700000000" class="mono hover:text-orange transition">+254 700 000 000</a></dd>
+            </div>
+            <div>
+              <dt class="eyebrow text-white/45">Where we are</dt>
+              <dd class="mt-1.5 text-white/80">Kilimani, Nairobi<br>Kenya</dd>
+            </div>
+            <div>
+              <dt class="eyebrow text-white/45">Support hours</dt>
+              <dd class="mt-1.5 text-white/80">Mon–Sat, 8:00–20:00 EAT<br><span class="text-white/60">Event nights: we're on call.</span></dd>
+            </div>
+          </dl>
+          <div class="my-7 relative"><div class="tear tear-ink"></div></div>
+          <p class="text-[14px] text-white/70">Running an event this week and something is wrong? Message the WhatsApp line — it reaches a person, not a queue.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<%# ══════════════ FINAL CTA ══════════════ %>
+<section class="py-16 sm:py-20 lg:py-28">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="rounded-[26px] grad-bg px-6 sm:px-8 py-12 sm:py-14 lg:px-16 lg:py-20 text-center reveal">
+      <h2 class="t-h2 font-semibold text-white max-w-2xl mx-auto">Your next event could be selling tickets in ten minutes.</h2>
+      <p class="mt-5 t-lead text-white/85 max-w-xl mx-auto">Set it up free. You'll only pay us once someone buys.</p>
+      <div class="mt-9 flex flex-col sm:flex-row flex-wrap justify-center gap-3">
+        <button type="button" data-open-auth="signup" class="px-7 py-3.5 rounded-xl font-medium bg-white text-ink hover:bg-white/90 transition">Create your account</button>
+        <a href="#how" class="px-7 py-3.5 rounded-xl font-medium text-white ring-1 ring-white/50 hover:bg-white/10 transition text-center">See how it works</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+    (function(){
+        const wire = () => {
+            const form = document.querySelector('#contactForm');
+            if(!form || form.dataset.wired) return;
+            form.dataset.wired = '1';
+
+            form.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                const F = window.SalatoForms;
+                if(!F) return;
+
+                const n = document.querySelector('#cName'),
+                    em = document.querySelector('#cEmail'),
+                    msg = document.querySelector('#cMsg');
+                let bad = null;
+
+                if(!n.value.trim()){ F.setError(n, 'Enter your name'); bad ||= n; }
+                if(!F.emailOk(em.value)){ F.setError(em, em.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= em; }
+                if(msg.value.trim().length < 10){ F.setError(msg, 'Tell us a little about the event'); bad ||= msg; }
+                if(bad){ bad.focus(); return; }
+
+                document.querySelector('#contactOk').classList.remove('hidden');
+                form.reset();
+            });
+        };
+        document.addEventListener('DOMContentLoaded', wire);
+        document.addEventListener('turbo:load', wire);
+    })();
+</script>

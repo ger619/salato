@@ -1,0 +1,306 @@
+<%#
+  Salato — events/_form
+  Shared by new.html.erb and edit.html.erb.
+  Palette: violet #7620B1 · orange #FC8027 · ink #150D3A · mist #F7F4FB
+%>
+
+<% field_base = "w-full rounded-xl border border-[#150D3A]/10 bg-white px-4 py-3 text-[15px] leading-6 text-[#150D3A] placeholder-[#150D3A]/35 shadow-[0_1px_2px_rgba(21,13,58,0.04)] transition duration-150 focus:border-[#7620B1] focus:outline-none focus:ring-4 focus:ring-[#7620B1]/15" %>
+<% label_base = "mb-2 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-[#150D3A]/55" %>
+<% hint_base  = "mt-2 text-[13px] leading-5 text-[#150D3A]/50" %>
+<% eyebrow    = "font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7620B1]" %>
+
+<%= form_with model: event,
+              html: { multipart: true },
+              data: {
+                controller: "event-form",
+                event_form_slug_touched_value: event.slug.present?,
+                action: "ticket-tiers:changed->event-form#tiersChanged"
+              },
+              class: "space-y-8" do |f| %>
+
+  <%# ─────────────────────── Poster, up top ─────────────────────── %>
+  <%= render "poster_field", f: f, event: event %>
+
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:items-start">
+
+  <%# ───────────────────────── Form card ───────────────────────── %>
+  <div class="lg:col-span-3">
+    <div class="overflow-hidden rounded-3xl border border-[#150D3A]/8 bg-white shadow-[0_18px_50px_-24px_rgba(21,13,58,0.35)]">
+      <div class="h-1.5 w-full bg-gradient-to-r from-[#7620B1] via-[#A845A0] to-[#FC8027]"></div>
+
+      <div class="p-6 sm:p-9">
+
+        <%# Errors %>
+        <% if event.errors.any? %>
+          <div class="mb-8 rounded-2xl border border-[#FC8027]/30 bg-[#FC8027]/[0.06] p-4 sm:p-5" role="alert">
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#C2410C]">
+              <%= pluralize(event.errors.count, "field needs") %> attention
+            </p>
+            <ul class="mt-3 space-y-1.5 text-[14px] leading-5 text-[#150D3A]/75">
+              <% event.errors.each do |error| %>
+                <li class="flex gap-2">
+                  <span class="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#FC8027]"></span>
+                  <span><%= error.full_message %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%# ── Details ── %>
+        <section>
+          <p class="<%= eyebrow %>">Details</p>
+
+          <div class="mt-5 space-y-6">
+            <div>
+              <%= f.label :name, "Event name", class: label_base %>
+              <%= f.text_field :name,
+                               required: true,
+                               autofocus: true,
+                               maxlength: 120,
+                               placeholder: "Sauti Sol Live at the Carnivore",
+                               class: "#{field_base} font-[Outfit] text-[17px] font-medium",
+                               data: {
+                                 event_form_target: "name",
+                                 action: "input->event-form#nameChanged"
+                               } %>
+              <p class="<%= hint_base %>">This is the headline buyers see on the ticket and the checkout page.</p>
+            </div>
+
+            <div>
+              <%= f.label :slug, "Ticket link", class: label_base %>
+              <div class="flex items-stretch overflow-hidden rounded-xl border border-[#150D3A]/10 bg-white shadow-[0_1px_2px_rgba(21,13,58,0.04)] transition duration-150 focus-within:border-[#7620B1] focus-within:ring-4 focus-within:ring-[#7620B1]/15">
+                <span class="hidden shrink-0 items-center border-r border-[#150D3A]/8 bg-[#F7F4FB] px-4 font-mono text-[13px] text-[#150D3A]/45 sm:flex">
+                  salato.co/e/
+                </span>
+                <%= f.text_field :slug,
+                                 placeholder: "sauti-sol-live",
+                                 class: "w-full bg-transparent px-4 py-3 font-mono text-[14px] text-[#150D3A] placeholder-[#150D3A]/30 focus:outline-none",
+                                 data: {
+                                   event_form_target: "slug",
+                                   action: "input->event-form#slugEdited"
+                                 } %>
+              </div>
+              <p class="<%= hint_base %>">
+                Fills in from the name. Edit it if you want something shorter — it can't be changed once tickets are sold.
+              </p>
+            </div>
+
+            <div>
+              <div class="flex items-baseline justify-between">
+                <%= f.label :description, class: label_base %>
+                <span class="font-mono text-[11px] text-[#150D3A]/35">
+                  <span data-event-form-target="count">0</span>/280
+                </span>
+              </div>
+              <%= f.text_area :description,
+                              rows: 4,
+                              maxlength: 280,
+                              placeholder: "One night, two sets, and the full band. Doors open at 6pm.",
+                              class: "#{field_base} resize-none",
+                              data: {
+                                event_form_target: "description",
+                                action: "input->event-form#descriptionChanged"
+                              } %>
+            </div>
+
+            <div>
+              <%= f.label :venue, class: label_base %>
+              <div class="relative">
+                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#150D3A]/30">
+                  <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                </span>
+                <%= f.text_field :venue,
+                                 placeholder: "Carnivore Grounds, Langata Road, Nairobi",
+                                 class: "#{field_base} pl-11",
+                                 data: {
+                                   event_form_target: "venue",
+                                   action: "input->event-form#venueChanged"
+                                 } %>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="my-9 h-px w-full bg-[#150D3A]/8"></div>
+
+        <%# ── Schedule ── %>
+        <section>
+          <p class="<%= eyebrow %>">Schedule</p>
+
+          <div class="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <%= f.label :start_at, "Starts", class: label_base %>
+              <%= f.datetime_field :start_at,
+                                   step: 60,
+                                   value: event.start_at&.strftime("%Y-%m-%dT%H:%M"),
+                                   class: field_base,
+                                   data: {
+                                     event_form_target: "startAt",
+                                     action: "change->event-form#startChanged input->event-form#startChanged"
+                                   } %>
+            </div>
+
+            <div>
+              <%= f.label :end_at, "Ends", class: label_base %>
+              <%= f.datetime_field :end_at,
+                                   step: 60,
+                                   value: event.end_at&.strftime("%Y-%m-%dT%H:%M"),
+                                   class: field_base,
+                                   data: {
+                                     event_form_target: "endAt",
+                                     action: "change->event-form#endChanged input->event-form#endChanged"
+                                   } %>
+              <p class="<%= hint_base %> hidden text-[#C2410C]" data-event-form-target="dateWarning">
+                The end time is before the start time.
+              </p>
+            </div>
+          </div>
+          <p class="<%= hint_base %>">Times use East Africa Time (GMT+3), the same zone shown on every ticket.</p>
+        </section>
+
+        <div class="my-9 h-px w-full bg-[#150D3A]/8"></div>
+
+        <%# ── Ticket tiers ── %>
+        <section data-controller="ticket-tiers">
+          <div class="flex items-baseline justify-between gap-4">
+            <p class="<%= eyebrow %>">Tickets</p>
+            <span class="font-mono text-[11px] text-[#150D3A]/35">Cheapest tier shows first at checkout</span>
+          </div>
+
+          <div class="mt-5 space-y-4" data-ticket-tiers-target="list">
+            <%= f.fields_for :ticket_types do |tier| %>
+              <%= render "ticket_type_fields", f: tier %>
+            <% end %>
+          </div>
+
+          <%# Cloned by the Stimulus controller; NEW_RECORD becomes a unique index. %>
+          <template data-ticket-tiers-target="template">
+            <%= f.fields_for :ticket_types, TicketType.new(active: true), child_index: "NEW_RECORD" do |tier| %>
+              <%= render "ticket_type_fields", f: tier %>
+            <% end %>
+          </template>
+
+          <button type="button"
+                  data-action="ticket-tiers#add"
+                  class="mt-4 inline-flex items-center gap-2 rounded-full border border-dashed border-[#7620B1]/35 px-5 py-2.5 text-[14px] font-medium text-[#7620B1] transition hover:border-[#7620B1] hover:bg-[#7620B1]/[0.05] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/25">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add another tier
+          </button>
+
+          <p class="<%= hint_base %>">
+            Price in whole shillings. Buyers pay by M-Pesa or card, and each tier gets its own QR code on the ticket.
+          </p>
+        </section>
+
+        <div class="my-9 h-px w-full bg-[#150D3A]/8"></div>
+
+        <%# ── Visibility ── %>
+        <section>
+          <p class="<%= eyebrow %>">Visibility</p>
+
+          <label class="mt-5 flex cursor-pointer items-start gap-4 rounded-2xl border border-[#150D3A]/10 bg-[#F7F4FB]/60 p-4 transition hover:border-[#7620B1]/30 sm:p-5">
+            <span class="relative mt-0.5 inline-flex shrink-0">
+              <%= f.check_box :active, class: "peer sr-only", data: { event_form_target: "active", action: "change->event-form#activeChanged" } %>
+              <span class="h-6 w-11 rounded-full bg-[#150D3A]/15 transition-colors duration-200 peer-checked:bg-gradient-to-r peer-checked:from-[#7620B1] peer-checked:to-[#FC8027] peer-focus-visible:ring-4 peer-focus-visible:ring-[#7620B1]/25"></span>
+              <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></span>
+            </span>
+            <span>
+              <span class="block font-[Outfit] text-[15px] font-medium text-[#150D3A]">Sell tickets for this event</span>
+              <span class="<%= hint_base %> mt-1 block">
+                Turn this off to keep the event as a draft. Nobody can reach the ticket link while it's off.
+              </span>
+            </span>
+          </label>
+        </section>
+
+        <%# ── Actions ── %>
+        <div class="mt-9 flex flex-col-reverse gap-3 border-t border-[#150D3A]/8 pt-7 sm:flex-row sm:items-center sm:justify-end">
+          <%= link_to (event.persisted? ? event : events_path),
+                      class: "inline-flex items-center justify-center rounded-full px-5 py-3 text-[15px] font-medium text-[#150D3A]/60 transition hover:bg-[#F7F4FB] hover:text-[#150D3A] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/20" do %>
+            Cancel
+          <% end %>
+
+          <%= f.button type: "submit",
+                       class: "group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-7 py-3 font-[Outfit] text-[15px] font-semibold text-[#150D3A]/60 shadow-[0_10px_24px_-10px_rgba(118,32,177,0.8)] transition duration-150 hover:brightness-[1.06] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/30 active:scale-[0.99]" do %>
+            <%= event.persisted? ? "Save changes" : "Publish event" %>
+            <svg class="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# ───────────────────── Live ticket preview ───────────────────── %>
+  <aside class="lg:col-span-2 lg:sticky lg:top-8">
+    <p class="<%= eyebrow %> mb-4">Buyer's ticket</p>
+
+    <div class="relative overflow-hidden rounded-3xl bg-[#150D3A] text-white shadow-[0_18px_50px_-24px_rgba(21,13,58,0.6)]">
+      <div class="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-gradient-to-br from-[#7620B1] to-[#FC8027] opacity-40 blur-2xl"></div>
+
+      <div class="relative p-6 sm:p-7">
+        <div class="flex items-center justify-between">
+          <span class="font-[Outfit] text-[15px] font-semibold tracking-tight">Salato</span>
+          <span class="rounded-full border border-white/20 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/70"
+                data-event-form-target="status">Draft</span>
+        </div>
+
+        <h3 class="mt-6 font-[Outfit] text-[26px] font-semibold leading-[1.15] tracking-tight"
+            data-event-form-target="previewName">Untitled event</h3>
+
+        <dl class="mt-5 space-y-3">
+          <div>
+            <dt class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">When</dt>
+            <dd class="mt-0.5 text-[14px] text-white/85" data-event-form-target="previewDate">Date to be set</dd>
+          </div>
+          <div>
+            <dt class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Where</dt>
+            <dd class="mt-0.5 text-[14px] text-white/85" data-event-form-target="previewVenue">Venue to be set</dd>
+          </div>
+        </dl>
+
+        <div class="mt-6 flex items-end justify-between gap-4 border-t border-white/10 pt-5">
+          <div>
+            <dt class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Entry</dt>
+            <dd class="mt-1 font-[Outfit] text-[19px] font-semibold tracking-tight"
+                data-event-form-target="previewPrice">Price to be set</dd>
+          </div>
+          <span class="font-mono text-[11px] text-white/45" data-event-form-target="previewCapacity">No tickets yet</span>
+        </div>
+      </div>
+
+      <%# Perforation — the tear line, with notches punched into both edges %>
+      <div class="relative">
+        <span class="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#F7F4FB]"></span>
+        <span class="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#F7F4FB]"></span>
+        <div class="mx-6 border-t border-dashed border-white/25"></div>
+      </div>
+
+      <div class="relative flex items-center gap-4 p-6 sm:p-7">
+        <div class="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-white/95 p-1.5">
+          <svg viewBox="0 0 21 21" class="h-full w-full text-[#150D3A]" fill="currentColor" aria-hidden="true">
+            <path d="M0 0h7v7H0V0Zm2 2v3h3V2H2Zm12-2h7v7h-7V0Zm2 2v3h3V2h-3ZM0 14h7v7H0v-7Zm2 2v3h3v-3H2Zm10-2h2v2h-2v-2Zm4 0h2v2h-2v-2Zm3 0h2v2h-2v-2Zm-7 3h2v2h-2v-2Zm4 0h2v4h-2v-4Zm3 0h2v2h-2v-2Zm-7 3h2v2h-2v-2Zm7 0h2v2h-2v-2ZM9 0h2v2H9V0Zm0 4h2v2H9V4Zm0 5h2v2H9V9Zm-9 0h2v2H0V9Zm4 0h2v2H4V9Zm10 0h2v2h-2V9Zm5 0h2v2h-2V9Z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Ticket link</p>
+          <p class="mt-1 truncate font-mono text-[13px] text-white/85">
+            salato.co/e/<span data-event-form-target="previewSlug">…</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p class="mt-4 text-[13px] leading-5 text-[#150D3A]/50">
+      Every buyer gets this as a PDF with their name, ticket number and a scannable code.
+    </p>
+  </aside>
+  </div>
+<% end %>

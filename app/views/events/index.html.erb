@@ -1,0 +1,53 @@
+<% content_for :main_class, "block" %>
+<% content_for :title, "Upcoming events — Salato" %>
+<%= render 'shared/header' %>
+
+
+<section class="pt-32 lg:pt-40 pb-24 lg:pb-32">
+  <div class="max-w-shell mx-auto px-5 lg:px-8">
+
+    <%# ── Header ─────────────────────────────────────────────── %>
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div class="max-w-2xl">
+        <p class="eyebrow text-magenta">What's on</p>
+        <h1 class="mt-4 text-[36px] lg:text-[52px] leading-[1.06] font-semibold">
+          Upcoming <span class="grad-text">events</span>
+        </h1>
+        <p class="mt-4 text-[17px] leading-relaxed text-ink-soft">
+          Pick an event, pay with M-Pesa or card, and your ticket lands in your inbox straight away.
+        </p>
+      </div>
+
+      <% if @events.any? %>
+        <p class="font-mono text-[13px] text-ink-soft/70 pb-2">
+          <%= pluralize(@events.size, "event") %> on sale
+        </p>
+      <% end %>
+    </div>
+
+    <%# ── Empty state ────────────────────────────────────────── %>
+    <% if @events.empty? %>
+      <div class="mt-14 rounded-[22px] border-2 border-dashed border-ink/15 bg-mist px-8 py-16 text-center">
+        <span class="inline-grid place-items-center w-14 h-14 rounded-2xl grad-bg mb-6">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9V7a1 1 0 011-1h16a1 1 0 011 1v2a2 2 0 000 4v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a2 2 0 000-4z"/>
+            <path d="M14 6v2M14 11v2M14 16v2"/>
+          </svg>
+        </span>
+        <h2 class="text-[24px] font-semibold">Nothing on sale right now</h2>
+        <p class="mt-3 text-[16px] text-ink-soft max-w-md mx-auto leading-relaxed">
+          Check back soon — new events go live here the moment an organiser publishes them.
+        </p>
+        <%= link_to "Run an event yourself", root_path(anchor: "pricing"),
+              class: "mt-7 inline-flex items-center px-6 py-3 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition" %>
+      </div>
+
+    <%# ── Grid ───────────────────────────────────────────────── %>
+    <% else %>
+      <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <%= render partial: "events/event_card", collection: @events, as: :event %>
+      </div>
+    <% end %>
+
+  </div>
+</section>

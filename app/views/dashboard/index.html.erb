@@ -1,0 +1,212 @@
+<%#
+  The sidebar is rendered first, as a sibling of .app-main — not inside it.
+  .app-main carries the offset via --sidebar-w, so collapsing the rail widens
+  the content instead of leaving a dead gutter. Do NOT add sm:ml-64 here.
+%>
+<%= render 'shared/sidebar' %>
+
+<div class="app-main min-h-dvh bg-mist">
+  <div class="app-inner">
+
+    <%
+      revenue_values  = @revenue_series.map { |(_day, amount)| amount.to_f }
+      revenue_ceiling = nice_max(revenue_values)
+      chart_w, chart_h = 720, 200
+    %>
+
+    <%# One gradient definition, referenced by every chart on the page. %>
+    <svg width="0" height="0" class="absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="sparkGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#7620B1"/>
+          <stop offset="50%"  stop-color="#E13765"/>
+          <stop offset="100%" stop-color="#FC8027"/>
+        </linearGradient>
+        <linearGradient id="areaStroke" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#7620B1"/>
+          <stop offset="55%"  stop-color="#E13765"/>
+          <stop offset="100%" stop-color="#FC8027"/>
+        </linearGradient>
+        <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#E13765" stop-opacity=".22"/>
+          <stop offset="100%" stop-color="#E13765" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <%# ══════════════ HEADER ══════════════ %>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="min-w-0">
+        <p class="eyebrow text-magenta">Last 30 days</p>
+        <h1 class="mt-2 text-[28px] sm:text-[34px] font-semibold leading-tight truncate">
+          <%= "Karibu, #{current_user.email.to_s.split('@').first}" %>
+        </h1>
+        <p class="mt-1.5 text-[15px] text-ink-soft">
+          <%= @revenue.to_i.positive? ? "Here's how your events are selling." : "Nothing sold yet — your numbers will fill in here." %>
+        </p>
+      </div>
+
+      <%= link_to "Create event",
+                  new_event_path,
+                  class: "shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_10px_28px_-12px_rgba(225,55,101,.85)]" %>
+    </div>
+
+    <%# ══════════════ KPI CARDS ══════════════
+        4-up from md rather than lg — with the rail collapsed there's room
+        for four cards well before the lg breakpoint. %>
+    <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <%= render "dashboard/stat_card",
+                 label: "Gross revenue",
+                 value: kes(@revenue),
+                 caption: "before our fee",
+                 delta: percent_change(@revenue, @prev_revenue),
+                 series: revenue_values %>
+
+      <%= render "dashboard/stat_card",
+                 label: "Tickets sold",
+                 value: number_with_delimiter(@tickets_sold),
+                 caption: "across all events",
+                 delta: percent_change(@tickets_sold, @prev_tickets),
+                 series: @tickets_series %>
+
+      <%= render "dashboard/stat_card",
+                 label: "Orders",
+                 value: number_with_delimiter(@order_count),
+                 caption: @order_count.to_i.positive? ? "avg #{kes(@revenue.to_f / @order_count)}" : nil,
+                 delta: percent_change(@order_count, @prev_orders),
+                 series: [] %>
+
+      <%= render "dashboard/stat_card",
+                 label: "Upcoming events",
+                 value: @upcoming.size,
+                 caption: @upcoming.first ? "next: #{@upcoming.first.start_at.strftime('%-d %b')}" : "none scheduled",
+                 delta: nil,
+                 series: [] %>
+    </div>
+
+    <%# ══════════════ REVENUE + TOP EVENTS ══════════════ %>
+    <div class="mt-6 grid xl:grid-cols-[1.7fr_1fr] gap-6 items-start">
+
+      <div class="rounded-[18px] bg-white ring-1 ring-ink/10 p-5 sm:p-6 min-w-0">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-[18px] font-semibold">Revenue</h2>
+            <p class="mt-1 text-[13px] text-ink-soft/70">Daily gross, last 30 days</p>
+          </div>
+          <p class="font-display text-[24px] font-semibold grad-text leading-none"><%= kes(@revenue) %></p>
+        </div>
+
+        <% if revenue_values.any?(&:positive?) %>
+          <div class="mt-6 flex gap-3">
+            <%# y-axis %>
+            <div class="flex flex-col justify-between h-[200px] shrink-0 font-mono text-[10px] text-ink-soft/50 text-right">
+              <span><%= kes_short(revenue_ceiling) %></span>
+              <span><%= kes_short(revenue_ceiling / 2) %></span>
+              <span>0</span>
+            </div>
+
+            <%# min-w-0 is what lets this shrink when the rail expands %>
+            <div class="flex-1 min-w-0">
+              <svg viewBox="0 0 <%= chart_w %> <%= chart_h %>" preserveAspectRatio="none"
+                   class="w-full h-[200px] overflow-visible"
+                   role="img" aria-label="Daily revenue for the last 30 days">
+                <% [0, 0.5, 1].each do |fraction| %>
+                  <line x1="0" x2="<%= chart_w %>"
+                        y1="<%= (chart_h * fraction).round %>" y2="<%= (chart_h * fraction).round %>"
+                        stroke="#150D3A" stroke-opacity=".08" stroke-width="1"
+                        vector-effect="non-scaling-stroke"/>
+                <% end %>
+
+                <path d="<%= chart_area_path(revenue_values, width: chart_w, height: chart_h, max: revenue_ceiling) %>"
+                      fill="url(#areaFill)"/>
+                <path d="<%= chart_line_path(revenue_values, width: chart_w, height: chart_h, max: revenue_ceiling) %>"
+                      fill="none" stroke="url(#areaStroke)" stroke-width="2.5"
+                      stroke-linecap="round" stroke-linejoin="round"
+                      vector-effect="non-scaling-stroke"/>
+              </svg>
+
+              <div class="mt-2 flex justify-between font-mono text-[10px] text-ink-soft/50">
+                <span><%= @revenue_series.first&.first&.strftime("%-d %b") %></span>
+                <span class="hidden sm:inline"><%= @revenue_series[@revenue_series.length / 2]&.first&.strftime("%-d %b") %></span>
+                <span>Today</span>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <div class="mt-6 h-[200px] rounded-xl border-2 border-dashed border-ink/12 grid place-items-center">
+            <p class="text-[14px] text-ink-soft/70">No revenue in this period yet</p>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="rounded-[18px] bg-white ring-1 ring-ink/10 p-5 sm:p-6 min-w-0">
+        <h2 class="text-[18px] font-semibold">Top events</h2>
+        <p class="mt-1 text-[13px] text-ink-soft/70">By gross revenue</p>
+
+        <% if @top_events.blank? %>
+          <p class="mt-8 mb-6 text-center text-[14px] text-ink-soft/70">Nothing to rank yet.</p>
+        <% else %>
+          <% leader = @top_events.first.gross.to_f %>
+          <ul class="mt-5 space-y-4">
+            <% @top_events.each_with_index do |event, i| %>
+              <li>
+                <div class="flex items-baseline justify-between gap-3">
+                  <div class="flex items-baseline gap-2.5 min-w-0">
+                    <span class="font-mono text-[11px] text-ink-soft/50"><%= format("%02d", i + 1) %></span>
+                    <p class="text-[14px] font-medium truncate"><%= event.name %></p>
+                  </div>
+                  <p class="shrink-0 font-mono text-[13px]"><%= kes_short(event.gross) %></p>
+                </div>
+                <div class="mt-2 h-1.5 rounded-full bg-ink/8 overflow-hidden">
+                  <div class="h-full grad-bg rounded-full"
+                       style="width: <%= leader.positive? ? (event.gross.to_f / leader * 100).round : 0 %>%"></div>
+                </div>
+                <p class="mt-1 text-[11px] text-ink-soft/60"><%= event.sold %> sold</p>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    </div>
+
+    <%# ══════════════ ORDERS + UPCOMING ══════════════ %>
+    <div class="mt-6 grid xl:grid-cols-[1.7fr_1fr] gap-6 items-start">
+      <div class="min-w-0">
+        <%= render "dashboard/recent_orders", orders: @recent_orders %>
+      </div>
+
+      <div class="rounded-[18px] bg-ink text-white p-5 sm:p-6 min-w-0">
+        <h2 class="text-[18px] font-semibold">Coming up</h2>
+        <p class="mt-1 text-[13px] text-white/60">Your next scheduled events</p>
+
+        <% if @upcoming.blank? %>
+          <p class="mt-8 mb-4 text-center text-[14px] text-white/60">Nothing scheduled.</p>
+        <% else %>
+          <ul class="mt-5 space-y-3">
+            <% @upcoming.each do |event| %>
+              <li>
+                <%= link_to event_path(event), class: "flex items-center gap-4 p-3 rounded-xl hover:bg-white/[.07] transition" do %>
+                  <div class="shrink-0 w-11 text-center">
+                    <p class="font-mono text-[10px] tracking-[.14em] text-ember"><%= event.start_at.strftime("%b").upcase %></p>
+                    <p class="font-display text-[19px] font-semibold leading-none"><%= event.start_at.strftime("%-d") %></p>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-[14px] font-medium truncate"><%= event.name %></p>
+                    <p class="text-[12px] text-white/55 truncate"><%= event.venue %></p>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+
+        <div class="my-5 relative"><div class="tear tear-ink"></div></div>
+
+        <p class="text-[13px] text-white/60 leading-relaxed">
+          Gate scanning opens automatically two hours before doors.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>

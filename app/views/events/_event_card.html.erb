@@ -1,0 +1,79 @@
+<%#
+  One event, drawn as a ticket stub.
+
+  .stub masks two circular notches out of the card edges, level with the tear
+  line above the footer. Masking clips box-shadows, so depth comes from the
+  ring plus a hover lift rather than a drop shadow.
+%>
+<article class="group relative stub rounded-[20px] bg-white ring-1 ring-ink/10 flex flex-col
+                transition duration-300 hover:-translate-y-1 hover:ring-ink/20
+                focus-within:-translate-y-1 border"
+         style="--ty: calc(100% - 84px)">
+
+  <%# ── Poster / gradient header ── %>
+  <div class="relative h-40 overflow-hidden rounded-t-[20px] grad-bg">
+    <% if (poster = event.poster_variant(resize_to_fill: [800, 320])) %>
+      <%= image_tag poster,
+            alt: "No Poster",
+            loading: "lazy",
+            style: "max-width:100%;",
+            class: "absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100" %>
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"></div>
+    <% end %>
+
+    <%# Date block — the thing people scan for first %>
+    <div class="absolute top-4 left-4 rounded-xl bg-white/95 backdrop-blur px-3 py-2 text-center shadow-sm">
+      <p class="font-mono text-[10px] tracking-[.16em] text-magenta"><%= event_month(event) %></p>
+      <p class="font-display text-[22px] font-semibold leading-none text-ink"><%= event_day(event) %></p>
+    </div>
+
+    <span class="absolute top-4 right-4 font-mono text-[10px] tracking-[.16em] px-2.5 py-1.5 rounded-lg
+                 bg-white/95 backdrop-blur text-ink">
+      <%= event_countdown(event) %>
+    </span>
+  </div>
+
+  <%# ── Body ── %>
+  <div class="px-6 pt-6 pb-5 flex-1">
+    <h2 class="text-[21px] leading-tight font-semibold">
+      <%# The stretched link makes the whole card clickable while keeping one
+          real focusable element for keyboard and screen-reader users. %>
+      <%= link_to event.name, event_path(event.slug),
+            class: "transition group-hover:text-magenta after:absolute after:inset-0 after:content-['']" %>
+    </h2>
+
+    <p class="mt-2.5 flex items-start gap-2 text-[14px] text-ink-soft">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-flare" aria-hidden="true">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span><%= event.venue %></span>
+    </p>
+
+    <% if event.description.present? %>
+      <p class="mt-4 text-[15px] leading-relaxed text-ink-soft/90">
+        <%= truncate(strip_tags(event.description), length: 120, separator: " ") %>
+      </p>
+    <% end %>
+  </div>
+
+  <%# ── Tear + footer ── %>
+  <div class="relative px-6"><div class="tear"></div></div>
+
+  <div class="px-6 pt-5 pb-6 flex items-center justify-between gap-4">
+    <div class="min-w-0">
+      <p class="eyebrow text-ink-soft/55">Doors</p>
+      <p class="font-mono text-[13px] mt-1 truncate"><%= event_time(event) %></p>
+    </div>
+
+    <span class="shrink-0 inline-flex items-center gap-1.5 text-[14px] font-medium text-ink
+                 transition group-hover:text-magenta">
+      Buy tickets
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round"
+           class="transition-transform group-hover:translate-x-0.5" aria-hidden="true">
+        <path d="M5 12h13M13 6l6 6-6 6"/>
+      </svg>
+    </span>
+  </div>
+</article>

@@ -4,4 +4,17 @@ class ApplicationController < ActionController::Base
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
+
+  # Handle authorization errors by redirecting to root with an alert
+  rescue_from CanCan::AccessDenied do |exception|
+    redirect_to root_path, alert: exception.message
+  end
+
+  before_action :update_allowed_parameters, if: :devise_controller?
+
+  def update_allowed_parameters
+    devise_parameter_sanitizer.permit(:sign_up) { |u| u.permit(:first_name, :last_name, :email, :password) }
+    devise_parameter_sanitizer.permit(:account_update) { |u| u.permit(:first_name, :last_name, :email, :password, :current_password) }
+    devise_parameter_sanitizer.permit(:invite, keys: %i[email first_name last_name phone_number role])
+  end
 end

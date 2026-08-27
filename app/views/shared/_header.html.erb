@@ -1,0 +1,94 @@
+<%#
+  Nav. The mobile toggle is driven by data-menu-toggle / data-menu-panel and a
+  single delegated listener in the layout — no ids, so a second header (or a
+  stray script in a view) can't fight it.
+%>
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <nav class="mt-3 lg:mt-4 flex items-center justify-between gap-3 rounded-2xl bg-white/85 backdrop-blur-xl ring-1 ring-ink/10 shadow-[0_8px_30px_-12px_rgba(21,13,58,.18)] pl-4 pr-3 py-2.5"
+         aria-label="Main">
+      <%= link_to root_path, class: "shrink-0 tap-inline", "aria-label": "Salato home" do %>
+        <%= image_tag "salato_logo/salato-logo-horizontal.png", alt: "Salato", class: "h-7 sm:h-8 lg:h-9 w-auto" %>
+      <% end %>
+
+      <ul class="hidden lg:flex items-center gap-8 text-[15px] font-medium text-ink2">
+        <li>
+          <%= link_to "Home", nav_anchor_path("hero"),
+                        class: "navlink hover:text-ink transition",
+                        data: { nav_spy_target: "link", section: "hero" } %>
+        </li>
+
+        <li>
+          <%= link_to "Events", events_path,
+                        class: "navlink hover:text-ink transition",
+                        aria: { current: ("true" if controller_name == "events") } %>
+        </li>
+
+
+        <% { "about" => "About us", "how" => "How it works",
+             "pricing" => "Pricing", "contact" => "Contact" }.each do |anchor, label| %>
+          <li>
+            <%= link_to label, nav_anchor_path(anchor),
+                          class: "navlink hover:text-ink transition",
+                          data: { nav_spy_target: "link", section: anchor } %>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="flex items-center gap-2">
+        <% if defined?(user_signed_in?) && user_signed_in? %>
+          <%= link_to "Dashboard", (defined?(dashboard_index_path) ? dashboard_index_path : root_path),
+                      class: "hidden sm:inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-ink hover:bg-ink/5 transition" %>
+          <%= button_to "Sign out", destroy_user_session_path, method: :delete,
+                        form: { data: { turbo: false }, class: "hidden sm:block" },
+                        class: "inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_6px_20px_-8px_rgba(225,55,101,.9)]" %>
+        <% else %>
+          <button type="button" data-open-auth="signin"
+                  class="hidden sm:inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-ink hover:bg-ink/5 transition">Sign in</button>
+          <button type="button" data-open-auth="signup"
+                  class="hidden sm:inline-flex items-center px-4 py-2 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_6px_20px_-8px_rgba(225,55,101,.9)]">Start selling</button>
+        <% end %>
+
+        <button type="button" data-menu-toggle
+                class="lg:hidden p-2 rounded-lg hover:bg-ink/5 transition"
+                aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <div id="mobileMenu" data-menu-panel
+         class="lg:hidden hidden mt-2 rounded-2xl bg-white ring-1 ring-ink/10 shadow-xl p-4 max-h-[70dvh] overflow-y-auto">
+      <ul class="flex flex-col gap-1 text-[16px] font-medium">
+        <li><%= link_to "Home", nav_anchor_path("hero"),
+                        class: "flex items-center px-3 py-2.5 rounded-lg hover:bg-mist",
+                        data: { nav_spy_target: "link", section: "hero" } %></li>
+
+        <li><%= link_to "Events", events_path,
+                        class: "flex items-center px-3 py-2.5 rounded-lg hover:bg-mist",
+                        aria: { current: ("true" if controller_name == "events") } %></li>
+
+        <% { "about" => "About us", "how" => "How it works",
+             "pricing" => "Pricing", "contact" => "Contact" }.each do |anchor, label| %>
+          <li>
+            <%= link_to label, nav_anchor_path(anchor),
+                        class: "flex items-center px-3 py-2.5 rounded-lg hover:bg-mist",
+                        data: { nav_spy_target: "link", section: anchor } %></li>
+        <% end %>
+      </ul>
+
+      <div class="mt-3 pt-3 border-t border-ink/10 flex flex-col sm:flex-row gap-2">
+        <% if defined?(user_signed_in?) && user_signed_in? %>
+          <%= link_to "Dashboard", (defined?(dashboard_index_path) ? dashboard_index_path : root_path),
+                      class: "flex-1 text-center px-4 py-2.5 rounded-xl font-medium ring-1 ring-ink/15" %>
+          <%= button_to "Sign out", destroy_user_session_path, method: :delete,
+                        form: { data: { turbo: false }, class: "flex-1" },
+                        class: "w-full px-4 py-2.5 rounded-xl font-medium text-white grad-bg" %>
+        <% else %>
+          <button type="button" data-open-auth="signin" class="flex-1 px-4 py-2.5 rounded-xl font-medium ring-1 ring-ink/15">Sign in</button>
+          <button type="button" data-open-auth="signup" class="flex-1 px-4 py-2.5 rounded-xl font-medium text-white grad-bg">Start selling</button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</header>

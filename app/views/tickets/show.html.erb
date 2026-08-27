@@ -1,0 +1,56 @@
+<% content_for :title, "#{@ticket.ticket_number} — #{@ticket.event.name} — Salato" %>
+<%= render 'shared/header' %>
+
+<%= render "shared/ticket_print_styles" %>
+
+<section class="ticket-shell bg-mist min-h-screen pt-28 lg:pt-32 pb-20">
+  <div class="max-w-shell mx-auto px-5 lg:px-8">
+
+    <%= link_to event_order_path(@ticket.event, @ticket.order),
+                class: "no-print inline-flex items-center gap-2 text-[14px] text-ink2/70 hover:text-ink transition
+                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet rounded" do %>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H6M11 18l-6-6 6-6"/></svg>
+      <%= @order_size > 1 ? "All #{@order_size} tickets" : "Back to order" %>
+    <% end %>
+
+    <div class="mt-8 mx-auto max-w-[440px]">
+
+      <%= render "tickets/ticket",
+                 ticket: @ticket,
+                 position: @position,
+                 total: @order_size %>
+
+      <div class="no-print mt-7 flex flex-col sm:flex-row gap-3">
+        <%= link_to download_ticket_path(@ticket),
+                    class: "grad-bg text-white rounded-xl px-5 py-3.5 text-[15px] font-medium
+                            flex-1 inline-flex items-center justify-center gap-2
+                            hover:opacity-90 transition focus-visible:outline-none
+                            focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2" do %>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12M7 11l5 5 5-5M4 20h16"/>
+          </svg>
+          Download this ticket
+        <% end %>
+
+        <button type="button" onclick="window.print()"
+                class="rounded-xl px-5 py-3.5 text-[15px] font-medium bg-white ring-1 ring-ink/12
+                       text-ink hover:ring-ink/25 transition focus-visible:outline-none
+                       focus-visible:ring-2 focus-visible:ring-violet">
+          Print
+        </button>
+      </div>
+
+      <% if @order_size > 1 %>
+        <p class="no-print mt-5 text-[14px] text-ink2">
+          This is ticket <%= @position %> of <%= @order_size %> in the order.
+          <%= link_to "See all of them",
+                      event_order_path(@ticket.event, @ticket.order),
+                      class: "font-medium text-violet hover:text-magenta underline underline-offset-2" %>.
+        </p>
+      <% end %>
+
+    </div>
+  </div>
+</section>

@@ -1,31 +1,455 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title><%= content_for(:title) || "Salato" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Salato">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#150D3A">
 
-    <%= yield :head %>
+  <title><%= content_for(:title) || "Salato — sell tickets to your event in Kenya" %></title>
+  <meta name="description" content="<%= content_for(:meta_description) || "Salato turns your event into a page people can buy from in minutes. M-Pesa and card payments, QR-coded tickets, and a gate scanner that works offline." %>">
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+  <%# ── Favicons / app icons ───────────────────────────────── %>
+  <link rel="icon" href="<%= asset_path("salato_logo/salato-favicon.ico") %>" sizes="any">
+  <link rel="icon" type="image/png" href="<%= asset_path("salato_logo/salato-favicon.png") %>">
+  <link rel="apple-touch-icon" href="<%= asset_path("salato_logo/salato-icon-180.png") %>">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
-  </head>
+  <%# ── Open Graph ─────────────────────────────────────────── %>
+  <meta property="og:title" content="<%= content_for(:title) || "Salato — sell tickets to your event in Kenya" %>">
+  <meta property="og:description" content="Sell out your event. Get paid the same day.">
+  <meta property="og:image" content="<%= asset_path("salato_logo/salato-icon-512.png") %>">
+  <meta property="og:type" content="website">
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
-      <%= yield %>
-    </main>
-  </body>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <%# Swap the CDN for tailwindcss-rails in production — see README notes %>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      violet:  '#7620B1',
+                      magenta: '#AB2692',
+                      pink:    '#E13765',
+                      coral:   '#F2613F',
+                      orange:  '#FC8027',
+                      ink:     '#150D3A',
+                      ink2:    '#3A3260',
+                      mist:    '#F7F4FB',
+                      paper:   '#FFFFFF'
+                  },
+                  fontFamily: {
+                      display: ['Outfit', 'system-ui', 'sans-serif'],
+                      body: ['Inter Tight', 'system-ui', 'sans-serif'],
+                      mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+                  },
+                  maxWidth: { shell: '1180px' }
+              }
+          }
+      }
+  </script>
+
+  <style>
+      :root{
+          --grad: linear-gradient(105deg,#7620B1 0%,#AB2692 34%,#E13765 62%,#FC8027 100%);
+          --page:#FFFFFF;
+          --shell-x: 1.25rem;
+      }
+      @media (min-width:1024px){ :root{ --shell-x: 2rem } }
+
+      html,body{max-width:100%;overflow-x:clip}
+      body{
+          font-family:'Inter Tight',system-ui,sans-serif;color:#150D3A;background:var(--page);
+          -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+          padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)
+      }
+      h1,h2,h3,.display{font-family:'Outfit',system-ui,sans-serif;letter-spacing:-.022em}
+      .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+      img{max-width:100%;height:auto}
+
+      /* ── fluid type: one scale, no jumps between breakpoints ── */
+      .t-hero{font-size:clamp(2.35rem,1.55rem + 3.6vw,4rem);line-height:1.04}
+      .t-h2{font-size:clamp(2rem,1.5rem + 2.2vw,2.875rem);line-height:1.08}
+      .t-h3{font-size:clamp(1.3rem,1.16rem + .6vw,1.5rem);line-height:1.25}
+      .t-lead{font-size:clamp(1.02rem,.97rem + .3vw,1.1875rem);line-height:1.7}
+      .t-body{font-size:clamp(.97rem,.94rem + .18vw,1.0625rem);line-height:1.75}
+
+      .grad-bg{background:var(--grad)}
+      .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .grad-edge{position:relative;background:var(--page)}
+      .grad-edge::before{content:"";position:absolute;inset:0;padding:1.5px;border-radius:inherit;background:var(--grad);
+          -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+
+      /* ── signature: the perforation ───────────────────────────── */
+      .tear{position:relative;height:2px;background-image:linear-gradient(90deg,rgba(21,13,58,.22) 0 8px,transparent 8px 16px);background-size:16px 2px}
+      .tear::before,.tear::after{content:"";position:absolute;top:-13px;width:26px;height:26px;border-radius:999px;background:var(--page);box-shadow:inset 0 0 0 1px rgba(21,13,58,.08)}
+      .tear::before{left:-13px}
+      .tear::after{right:-13px}
+      .tear-mist::before,.tear-mist::after{background:#F7F4FB}
+      .tear-ink::before,.tear-ink::after{background:#150D3A;box-shadow:none}
+      .tear-ink{background-image:linear-gradient(90deg,rgba(255,255,255,.24) 0 8px,transparent 8px 16px)}
+
+      /* ticket stub: real punched notches */
+      .stub{--ty:50%;
+          -webkit-mask-image:radial-gradient(circle 15px at 0 var(--ty),transparent 97%,#000 100%),radial-gradient(circle 15px at 100% var(--ty),transparent 97%,#000 100%);
+          -webkit-mask-composite:source-in;
+          mask-image:radial-gradient(circle 15px at 0 var(--ty),transparent 97%,#000 100%),radial-gradient(circle 15px at 100% var(--ty),transparent 97%,#000 100%);
+          mask-composite:intersect}
+
+      .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+
+      .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+      .reveal.in{opacity:1;transform:none}
+
+      @keyframes drift{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(-3deg) translateY(-10px)}}
+      .drift{animation:drift 7s ease-in-out infinite}
+
+      .navlink{position:relative;padding-bottom:2px}
+      .navlink::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;background:var(--grad);transition:width .28s ease}
+      .navlink:hover::after,.navlink[aria-current="true"]::after{width:100%}
+
+      /* comfortable tap targets on touch devices */
+      @media (pointer:coarse){
+          a,button,summary,[role="tab"]{min-height:44px}
+          .tap-inline{min-height:0}
+      }
+
+      :focus-visible{outline:2px solid #E13765;outline-offset:3px;border-radius:4px}
+      details[open] .chev{transform:rotate(45deg)}
+      summary::-webkit-details-marker{display:none}
+
+      /* modal is scrollable on short screens */
+      #authModal .modal-scroll{max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+
+      @media (prefers-reduced-motion: reduce){
+          *,*::before,*::after{animation:none!important;transition:none!important}
+          .reveal{opacity:1;transform:none}
+          html{scroll-behavior:auto}
+      }
+  </style>
+
+  <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%= yield :head %>
+</head>
+
+<body class="antialiased"
+      data-auth-open="<%= params[:auth].presence || (flash[:alert].present? ? "signin" : nil) %>">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:bg-ink focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to content</a>
+
+<%# ══════════════ FLASH ══════════════ %>
+<% if flash.any? %>
+  <div class="fixed top-3 inset-x-0 z-[65] px-5 lg:px-8 pointer-events-none">
+    <div class="max-w-shell mx-auto flex flex-col gap-2 items-center">
+      <% flash.each do |type, message| %>
+        <% next if message.blank? %>
+        <div role="status"
+             class="pointer-events-auto w-full sm:w-auto px-5 py-3 rounded-xl text-[14px] font-medium shadow-lg
+                      <%= type.to_s == "notice" ? "bg-ink text-white" : "text-white grad-bg" %>">
+          <%= message %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# ══════════════ NAV ══════════════ %>
+<main id="main">
+  <!-- Logged in Users -->
+  <% if defined?(user_signed_in?) && user_signed_in? %>
+    <%= yield %>
+  <% else %>
+    <%= render 'shared/header' %>
+    <%= yield %>
+  <% end %>
+</main>
+
+<%# ══════════════ FOOTER ══════════════ %>
+<footer class="bg-ink text-white pt-16 pb-10">
+  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
+    <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
+      <div class="sm:col-span-2 md:col-span-1">
+        <%= image_tag "salato_logo/salato-logo-horizontal-on-dark.png", alt: "Salato", class: "h-8 lg:h-9 w-auto" %>
+        <p class="mt-5 text-[15px] text-white/65 max-w-xs leading-relaxed">Ticketing built in Nairobi for the way events actually run here.</p>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Product</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><%= link_to "How it works", nav_anchor_path("how"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Pricing", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Gate scanner", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Refunds", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Company</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <li><%= link_to "About us", nav_anchor_path("about"), class: "hover:text-orange transition" %></li>
+          <li><%= link_to "Contact", nav_anchor_path("contact"), class: "hover:text-orange transition" %></li>
+          <li><a href="#" class="hover:text-orange transition">Terms</a></li>
+          <li><a href="#" class="hover:text-orange transition">Privacy</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow text-white/40">Organisers</p>
+        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
+          <% if defined?(user_signed_in?) && user_signed_in? %>
+            <li><%= link_to "Dashboard", (defined?(dashboard_path) ? dashboard_path : root_path), class: "hover:text-orange transition" %></li>
+            <li><%= button_to "Sign out", destroy_user_session_path, method: :delete,
+                              form: { data: { turbo: false } }, class: "hover:text-orange transition" %></li>
+          <% else %>
+            <li><button type="button" data-open-auth="signin" class="hover:text-orange transition">Sign in</button></li>
+            <li><button type="button" data-open-auth="signup" class="hover:text-orange transition">Create account</button></li>
+          <% end %>
+          <li><%= link_to "Talk to sales", nav_anchor_path("contact"), class: "hover:text-orange transition" %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 relative"><div class="tear tear-ink"></div></div>
+
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left text-[14px] text-white/50">
+      <p>&copy; <%= Date.current.year %> Salato. Nairobi, Kenya.</p>
+      <p class="mono text-[12px]">Events. Tickets. Experiences.</p>
+    </div>
+  </div>
+</footer>
+
+<%# ══════════════ SIGN IN / SIGN UP (Devise) ══════════════ %>
+<%= render 'shared/auth_modal' %>
+
+<script>
+    /* ══════════════════════════════════════════════════════════════
+       MENU + MODAL — delegated, bound once, per-event de-duped.
+
+       Every handler below lives on `document` and is registered inside an
+       IIFE that runs at parse time, not on DOMContentLoaded/turbo:load. A
+       second copy of this script (or a leftover inline script in a view)
+       therefore cannot double-toggle anything: both copies see the SAME
+       Event object, the first marks it, the second bails.
+       ══════════════════════════════════════════════════════════════ */
+    (function(){
+        if(window.__salatoNavBound) return;
+        window.__salatoNavBound = true;
+
+        const $  = (s,c=document)=>c.querySelector(s);
+        const $$ = (s,c=document)=>[...c.querySelectorAll(s)];
+
+        const closeAllMenus = ()=>{
+            $$('[data-menu-panel]').forEach(p=>p.classList.add('hidden'));
+            $$('[data-menu-toggle]').forEach(t=>t.setAttribute('aria-expanded','false'));
+        };
+
+        /* ── one click listener runs the mobile menu AND the auth modal ── */
+        document.addEventListener('click', (e)=>{
+            if(e.__salatoHandled) return;
+            e.__salatoHandled = true;
+
+            /* hamburger */
+            const toggle = e.target.closest('[data-menu-toggle]');
+            if(toggle){
+                const panel = toggle.closest('header')?.querySelector('[data-menu-panel]');
+                if(panel){
+                    const open = panel.classList.contains('hidden');
+                    panel.classList.toggle('hidden', !open);
+                    toggle.setAttribute('aria-expanded', String(open));
+                }
+                return;
+            }
+
+            /* open the auth modal — works from nav, menu, footer, anywhere */
+            const opener = e.target.closest('[data-open-auth]');
+            if(opener){
+                closeAllMenus();
+                window.SalatoAuth?.open(opener.dataset.openAuth);
+                return;
+            }
+
+            /* close the auth modal */
+            if(e.target.closest('[data-close-auth]')){
+                window.SalatoAuth?.close();
+                return;
+            }
+
+            /* tapping a link inside the open menu closes it */
+            const openPanel = $('[data-menu-panel]:not(.hidden)');
+            if(openPanel){
+                if(openPanel.contains(e.target)){
+                    if(e.target.closest('a, button')) closeAllMenus();
+                } else {
+                    closeAllMenus();   // tapped outside
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (e)=>{
+            if(e.key !== 'Escape') return;
+            closeAllMenus();
+            window.SalatoAuth?.close();
+        });
+
+        window.addEventListener('resize', ()=>{
+            if(window.innerWidth >= 1024) closeAllMenus();
+        }, {passive:true});
+
+        /* ── nav lift on scroll ── */
+        const onScroll = ()=>{
+            const nav = $('#nav');
+            if(nav) nav.classList.toggle('translate-y-[-2px]', window.scrollY > 20);
+        };
+        window.addEventListener('scroll', onScroll, {passive:true});
+
+        /* ── shared field validation helpers ── */
+        const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+        function setError(input, msg){
+            const p = input.closest('div')?.querySelector('.err');
+            if(p){ p.textContent = msg; p.classList.remove('hidden'); }
+            input.classList.add('ring-pink'); input.classList.remove('ring-ink/12');
+            input.setAttribute('aria-invalid','true');
+        }
+        function clearError(input){
+            const p = input.closest('div')?.querySelector('.err');
+            if(p) p.classList.add('hidden');
+            input.classList.remove('ring-pink'); input.classList.add('ring-ink/12');
+            input.removeAttribute('aria-invalid');
+        }
+        function clearErrors(scope){ $$('input, textarea', scope).forEach(clearError); }
+
+        /* delegated, so it covers fields rendered after load too */
+        document.addEventListener('input', (e)=>{
+            if(e.target.matches('input, textarea')) clearError(e.target);
+        });
+
+        window.SalatoForms = { emailOk, setError, clearError, clearErrors };
+
+        /* ── auth modal ── */
+        let lastFocus = null, mode = 'signin';
+
+        const paint = ()=>{
+            const modal = $('#authModal');
+            if(!modal) return;
+            const up = mode === 'signup';
+            const base = 'auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition ';
+            const tabIn = $('#tabSignin'), tabUp = $('#tabSignup');
+            if(tabIn && tabUp){
+                tabIn.className = base + (up ? 'text-ink2 hover:text-ink' : 'bg-white shadow-sm text-ink');
+                tabUp.className = base + (up ? 'bg-white shadow-sm text-ink' : 'text-ink2 hover:text-ink');
+                tabIn.setAttribute('aria-selected', String(!up));
+                tabUp.setAttribute('aria-selected', String(up));
+            }
+            $('#signinPane')?.classList.toggle('hidden', up);
+            $('#signupPane')?.classList.toggle('hidden', !up);
+            const t = $('#authTitle'), s = $('#authSub');
+            if(t) t.textContent = up ? 'Start selling tickets' : 'Welcome back';
+            if(s) s.textContent = up ? 'Free to set up. You pay only when a ticket sells.' : "Sign in to see tonight's sales.";
+            clearErrors(modal);
+        };
+
+        window.SalatoAuth = {
+            open(m){
+                const modal = $('#authModal');
+                if(!modal) return;
+                mode = (m === 'signup') ? 'signup' : 'signin';
+                paint();
+                lastFocus = document.activeElement;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                setTimeout(()=> (mode === 'signup' ? $('#signup_name') : $('#signin_email'))?.focus(), 40);
+            },
+            close(){
+                const modal = $('#authModal');
+                if(!modal || modal.classList.contains('hidden')) return;
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+                lastFocus?.focus();
+            },
+            setMode(m){ mode = m; paint(); }
+        };
+
+        /* tab switching + focus trap */
+        document.addEventListener('click', (e)=>{
+            if(e.target.closest('#tabSignin')){ SalatoAuth.setMode('signin'); $('#signin_email')?.focus(); }
+            if(e.target.closest('#tabSignup')){ SalatoAuth.setMode('signup'); $('#signup_name')?.focus(); }
+        });
+
+        document.addEventListener('keydown', (e)=>{
+            const modal = $('#authModal');
+            if(!modal || modal.classList.contains('hidden') || e.key !== 'Tab') return;
+            const f = $$('button, input, a[href], [tabindex]:not([tabindex="-1"])', modal)
+              .filter(el => el.offsetParent !== null && !el.disabled);
+            if(!f.length) return;
+            const first = f[0], last = f[f.length-1];
+            if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+            else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        });
+
+        /* client-side guard — Devise still does the real validation server-side */
+        document.addEventListener('submit', (e)=>{
+            const form = e.target;
+            let bad = null;
+
+            if(form.id === 'signinForm'){
+                const email = $('#signin_email'), pass = $('#signin_password');
+                if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
+                if(!pass.value){ setError(pass, 'Enter your password'); bad ||= pass; }
+            }
+
+            if(form.id === 'signupForm'){
+                const name = $('#signup_name'), email = $('#signup_email'),
+                  pass = $('#signup_password'), conf = $('#signup_password_confirmation');
+                if(!name.value.trim()){ setError(name, 'Enter your name'); bad ||= name; }
+                if(!emailOk(email.value)){ setError(email, email.value.trim() ? 'That email address looks incomplete' : 'Enter your email'); bad ||= email; }
+                if(pass.value.length < 8){ setError(pass, pass.value ? 'Use at least 8 characters' : 'Choose a password'); bad ||= pass; }
+                if(conf.value !== pass.value){ setError(conf, 'The two passwords do not match'); bad ||= conf; }
+            }
+
+            if(bad){ e.preventDefault(); bad.focus(); }
+        });
+
+        /* ── per-page setup: scroll reveal, nav spy, modal auto-open ── */
+        const setupPage = ()=>{
+            onScroll();
+            closeAllMenus();
+
+            const io = new IntersectionObserver((entries)=>{
+                entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+            }, {rootMargin:'0px 0px -8% 0px', threshold:.08});
+            $$('.reveal:not(.in)').forEach((el,i)=>{ el.style.transitionDelay = (i%4)*70 + 'ms'; io.observe(el); });
+
+            const links = $$('#nav ul a[href*="#"]');
+            const sections = links
+              .map(a=>{ const h = a.getAttribute('href').split('#')[1]; return h ? document.getElementById(h) : null; })
+              .filter(Boolean);
+            if(sections.length){
+                const spy = new IntersectionObserver((entries)=>{
+                    entries.forEach(en=>{
+                        if(!en.isIntersecting) return;
+                        links.forEach(a=>a.removeAttribute('aria-current'));
+                        links.find(a=>a.getAttribute('href').split('#')[1] === en.target.id)
+                          ?.setAttribute('aria-current','true');
+                    });
+                }, {rootMargin:'-45% 0px -50% 0px'});
+                sections.forEach(s=>spy.observe(s));
+            }
+
+            /* reopen after a failed Devise attempt, or via ?auth=signup */
+            const want = document.body.dataset.authOpen;
+            if(want) SalatoAuth.open(want);
+        };
+
+        document.addEventListener('DOMContentLoaded', setupPage);
+        document.addEventListener('turbo:load', setupPage);
+    })();
+</script>
+</body>
 </html>
