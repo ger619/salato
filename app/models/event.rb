@@ -61,6 +61,25 @@ class Event < ApplicationRecord
     poster.variable? ? poster.variant(**) : poster
   end
 
+  CHECK_IN_OPENS_BEFORE = 10.hours # doors open
+  CHECK_IN_CLOSES_AFTER = 10.hours # grace period once it's over
+
+  def check_in_opens_at
+    start_at && (start_at - CHECK_IN_OPENS_BEFORE)
+  end
+
+  def check_in_closes_at
+    return unless start_at
+
+    try(:end_at) || (start_at + CHECK_IN_CLOSES_AFTER)
+  end
+
+  def check_in_open?(at = Time.current)
+    return false unless check_in_opens_at
+
+    at.between?(check_in_opens_at, check_in_closes_at)
+  end
+
   private
 
   def assign_slug

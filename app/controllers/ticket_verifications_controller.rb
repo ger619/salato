@@ -2,6 +2,7 @@ class TicketVerificationsController < ApplicationController
   before_action :authenticate_user!, only: :check_in
   before_action :set_ticket, only: %i[show check_in]
   before_action :authorise_scanner!, only: :check_in
+  before_action :ensure_check_in_window!, only: :check_in
 
   def new
     @query = params[:token].to_s.strip
@@ -19,7 +20,14 @@ class TicketVerificationsController < ApplicationController
 
   def show
     # Drives whether the view renders the check-in button or just the status.
-    @can_check_in = user_signed_in? && @ticket.event
+    # Same window the controller enforces, so the button never appears when
+    # pressing it would only produce an error.
+    @event = @ticket.event
+    @check_in_open = @event&.check_in_open?
+    @can_check_in = user_signed_in? && @event.present? && @check_in_open
+
+    # Lets the view say *when* scanning starts rather than just refusing.
+    @check_in_opens_at = @event&.check_in_opens_at
   end
 
   def check_in
@@ -60,5 +68,25 @@ class TicketVerificationsController < ApplicationController
 
     redirect_to verify_ticket_path(@ticket.qr_token),
                 alert: "You can't check in tickets for this event."
+  end
+
+  def ensure_check_in_window!
+    event = @ticket.event
+
+    if event.start_at.blank?
+      return redirect_to verify_ticket_path(@ticket.qr_token),
+                         alert: "This event has no start time set, so tickets can't be scanned yet."
+    end
+
+    return if event.check_in_open?
+
+    message =
+      if Time.current < event.check_in_opens_at
+        "Too early — scanning opens #{event.check_in_opens_at.strftime('%-l:%M %p on %a %-d %b')}."
+      else
+        "Too late — check-in for this event closed #{event.check_in_closes_at.strftime('%-l:%M %p')}."
+      end
+
+    redirect_to verify_ticket_path(@ticket.qr_token), alert: message
   end
 end
