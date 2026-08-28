@@ -1,4 +1,4 @@
-<%= form_with model: client, class: "space-y-5" do |f| %>
+<%= form_with model: client, url: onboarding_client_path(client), class: "space-y-5" do |f| %>
 
   <% if client.errors.any? %>
     <div class="rounded-2xl bg-[#FC8027]/10 px-4 py-3 ring-1 ring-[#FC8027]/30">
@@ -40,9 +40,10 @@
 
   <div class="flex items-center gap-3 pt-1">
     <%= f.submit submit_label,
-          class: "cursor-pointer rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+          class: "cursor-pointer rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-[#7620B1] border border-[#7620B1] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
 
-    <%= link_to "Cancel", client.persisted? ? client_path(client) : clients_path,
-          class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5" %>
+    <%= link_to "Cancel", client.persisted? ? onboarding_clients_path(client) : onboarding_clients_path,
+          class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5 border border-[#7620B1]/25"
+    %>
   </div>
 <% end %>

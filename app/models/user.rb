@@ -13,6 +13,8 @@ class User < ApplicationRecord
                           join_table: :events_users # events they work the door on
   attr_accessor :role
 
+  def organiser? = has_role?(:organiser)
+
   ROLES = %w[admin organiser scanner].freeze
 
   # Who each role may invite. An organiser can't mint an admin, and a scanner
@@ -36,5 +38,9 @@ class User < ApplicationRecord
 
   def full_name
     [first_name, last_name].compact_blank.join(' ').presence
+  end
+
+  def onboarding_complete?
+    !organiser? || client.present?
   end
 end
