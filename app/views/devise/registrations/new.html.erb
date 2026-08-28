@@ -1,29 +1,52 @@
-<h2>Sign up</h2>
+<%# app/views/users/registrations/new.html.erb %>
+<div class="max-w-md mx-auto px-4 py-10">
+  <p class="text-xs font-mono uppercase tracking-widest text-[#7620B1]">Step 1 of 2</p>
+  <h1 class="mt-2 text-3xl font-semibold text-[#150D3A]">Create your account</h1>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
+               html: { class: "mt-8 space-y-4" }) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
-  </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <%= f.label :first_name, class: "block text-sm font-medium text-[#150D3A]" %>
+        <%= f.text_field :first_name, required: true,
+                         class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+      </div>
+      <div>
+        <%= f.label :last_name, class: "block text-sm font-medium text-[#150D3A]" %>
+        <%= f.text_field :last_name, required: true,
+                         class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+      </div>
+    </div>
 
-  <div class="field">
-    <p><%= f.label :password %></p>
-    <% if @minimum_password_length %>
-      <p><em>(<%= @minimum_password_length %> characters minimum)</em></p>
-    <% end %>
-    <p><%= f.password_field :password, autocomplete: "new-password" %></p>
-  </div>
+    <div>
+      <%= f.label :email, class: "block text-sm font-medium text-[#150D3A]" %>
+      <%= f.email_field :email, autocomplete: "email", required: true,
+                        class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+    </div>
 
-  <div class="field">
-    <p><%= f.label :password_confirmation %></p>
-    <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
-  </div>
+    <div>
+      <%= f.label :phone_number, class: "block text-sm font-medium text-[#150D3A]" %>
+      <%= f.telephone_field :phone_number, placeholder: "+254 7XX XXX XXX",
+                            class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+    </div>
 
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
-<% end %>
+    <div>
+      <%= f.label :password, class: "block text-sm font-medium text-[#150D3A]" %>
+      <%= f.password_field :password, autocomplete: "new-password", required: true,
+                           class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+    </div>
 
-<%= render "devise/shared/links" %>
+    <div>
+      <%= f.label :password_confirmation, "Confirm password", class: "block text-sm font-medium text-[#150D3A]" %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password", required: true,
+                           class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+    </div>
+
+
+    <%= f.submit "Continue",
+                 class: "w-full rounded-lg bg-gradient-to-r from-[#7620B1] to-[#FC8027]
+                  py-3 font-semibold text-[7620B1] hover:opacity-90" %>
+  <% end %>
+</div>

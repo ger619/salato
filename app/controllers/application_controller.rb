@@ -26,7 +26,7 @@ class ApplicationController < ActionController::Base
     return if devise_controller?
     return if current_user.onboarding_complete?
 
-    redirect_to new_client_path,
+    redirect_to new_onboarding_client_path,
                 alert: 'Finish setting up your organiser profile.'
   end
 end

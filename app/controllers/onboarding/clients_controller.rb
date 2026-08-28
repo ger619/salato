@@ -26,7 +26,7 @@ module Onboarding
       @client = Client.new(client_params)
 
       if @client.save
-        redirect_to onboarding_clients_path, notice: 'Client added.'
+        redirect_to onboarding_client_path, notice: 'Client added.'
       else
         render :new, status: 422
       end
