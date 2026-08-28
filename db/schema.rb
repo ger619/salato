@@ -58,7 +58,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_094822) do
     t.string "settlement_bank"
     t.string "tax_pin"
     t.datetime "updated_at", null: false
-    t.string "website"
   end
 
   create_table "events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

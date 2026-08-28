@@ -1,6 +1,5 @@
 class AddDetailsToClient < ActiveRecord::Migration[8.1]
   def change
-    add_column :clients, :website, :string
     add_column :clients, :country, :string
     add_column :clients, :city, :string
     add_column :clients, :registration_number, :string
