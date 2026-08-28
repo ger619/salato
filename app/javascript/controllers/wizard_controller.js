@@ -11,13 +11,12 @@ export default class extends Controller {
 
   next() {
     const current = this.stepTargets[this.index];
-    const fields = current.querySelectorAll('input, select, textarea');
-    // eslint-disable-next-line
-    for (const field of fields) {
-      if (!field.checkValidity()) {
-        field.reportValidity();
-        return;
-      }
+    const fields = Array.from(current.querySelectorAll('input, select, textarea'));
+    const invalid = fields.find((field) => !field.checkValidity());
+
+    if (invalid) {
+      invalid.reportValidity();
+      return;
     }
 
     this.index = 1;
