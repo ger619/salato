@@ -2,7 +2,6 @@ module Onboarding
   class ClientsController < ApplicationController
     before_action :authenticate_user!
     before_action :set_client, only: %i[show edit update]
-    skip_before_action :require_onboarding
 
     def index
       @clients = Client.order(created_at: :desc)

@@ -1,130 +1,200 @@
 <%# app/views/users/registrations/new.html.erb %>
 <%
   client_error = resource.errors.attribute_names.any? { |a| a.to_s.start_with?("client") }
+  field = "mt-1.5 w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-[#150D3A] " \
+    "font-['Inter_Tight'] ring-1 ring-[#150D3A]/10 placeholder:text-[#150D3A]/35 " \
+    "focus:ring-2 focus:ring-[#7620B1] focus:outline-none transition"
+  lbl   = "block text-sm font-medium text-[#150D3A] font-['Inter_Tight']"
 %>
 
-<div class="max-w-md mx-auto px-4 py-10"
-     data-controller="wizard"
-     data-wizard-error-step="<%= client_error ? "2" : "1" %>">
+<div class="min-h-screen bg-[#F7F4FB] pt-20 pb-16 sm:pt-28">
+  <div class="mx-auto max-w-lg px-4"
+       data-controller="wizard"
+       data-wizard-error-step="<%= client_error ? "2" : "1" %>">
 
-  <div class="flex gap-4 text-xs font-mono uppercase tracking-widest">
-    <span data-wizard-target="indicator">1. Your account</span>
-    <span data-wizard-target="indicator">2. Organisation</span>
-  </div>
-
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
-               html: { class: "mt-8" }) do |f| %>
-    <%= render "devise/shared/error_messages", resource: resource %>
-
-    <%# ---------- PAGE 1 ---------- %>
-    <div data-wizard-target="step" class="space-y-4">
-      <h1 class="text-3xl font-semibold text-[#150D3A]">Create your account</h1>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <%= f.label :first_name, class: "block text-sm font-medium text-[#150D3A]" %>
-          <%= f.text_field :first_name, required: true,
-                           class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-        </div>
-        <div>
-          <%= f.label :last_name, class: "block text-sm font-medium text-[#150D3A]" %>
-          <%= f.text_field :last_name, required: true,
-                           class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-        </div>
+    <div class="mb-8 text-center">
+      <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 ring-1 ring-[#150D3A]/10">
+        <span class="h-2 w-2 rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027]"></span>
+        <span class="font-['JetBrains_Mono'] text-[11px] uppercase tracking-[0.18em] text-[#150D3A]/60">
+          Organiser sign up
+        </span>
       </div>
-
-      <div>
-        <%= f.label :email, class: "block text-sm font-medium text-[#150D3A]" %>
-        <%= f.email_field :email, autocomplete: "email", required: true,
-                          class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-      </div>
-
-      <div>
-        <%= f.label :phone_number, class: "block text-sm font-medium text-[#150D3A]" %>
-        <%= f.telephone_field :phone_number, placeholder: "+254 7XX XXX XXX",
-                              class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-      </div>
-
-      <div>
-        <%= f.label :password, class: "block text-sm font-medium text-[#150D3A]" %>
-        <%= f.password_field :password, autocomplete: "new-password", required: true,
-                             minlength: 6,
-                             class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-      </div>
-
-      <div>
-        <%= f.label :password_confirmation, "Confirm password", class: "block text-sm font-medium text-[#150D3A]" %>
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", required: true,
-                             class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-      </div>
-
-      <button type="button" data-action="wizard#next"
-              class="w-full rounded-lg bg-gradient-to-r from-[#7620B1] to-[#FC8027]
-                     py-3 font-semibold text-white hover:opacity-90">
-        Next
-      </button>
     </div>
 
-    <%# ---------- PAGE 2 ---------- %>
-    <div data-wizard-target="step" class="hidden space-y-4">
-      <h1 class="text-3xl font-semibold text-[#150D3A]">Your organisation</h1>
-      <p class="text-sm text-gray-600">This appears on your event pages and ticket PDFs.</p>
+    <div class="overflow-hidden rounded-3xl bg-white shadow-[0_20px_60px_-20px_rgba(21,13,58,0.25)] ring-1 ring-[#150D3A]/5">
+      <div class="h-1.5 w-full bg-gradient-to-r from-[#7620B1] to-[#FC8027]"></div>
 
-      <%= f.fields_for :client do |cf| %>
-        <div>
-          <%= cf.label :name, "Organisation name", class: "block text-sm font-medium text-[#150D3A]" %>
-          <%= cf.text_field :name, required: true,
-                            class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+      <%# ---------- STEP INDICATOR ---------- %>
+      <div class="flex items-center gap-3 px-6 pt-6 sm:px-8">
+        <div data-wizard-target="indicator" class="flex flex-1 items-center gap-2.5 text-[#7620B1]">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-current
+                       font-['JetBrains_Mono'] text-xs font-bold text-current">1</span>
+          <span class="font-['JetBrains_Mono'] text-[10px] uppercase tracking-[0.15em] text-current">Account</span>
+        </div>
+        <div class="h-px flex-1 bg-[#150D3A]/10"></div>
+        <div data-wizard-target="indicator" class="flex flex-1 items-center justify-end gap-2.5 text-gray-400">
+          <span class="font-['JetBrains_Mono'] text-[10px] uppercase tracking-[0.15em] text-current">Organisation</span>
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-current
+                       font-['JetBrains_Mono'] text-xs font-bold text-current">2</span>
+        </div>
+      </div>
+
+      <%# ---------- PERFORATED TEAR ---------- %>
+      <div class="relative mt-6">
+        <div class="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]"></div>
+        <div class="absolute -right-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]"></div>
+        <div class="mx-6 border-t-2 border-dashed border-[#150D3A]/10 sm:mx-8"></div>
+      </div>
+
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
+                   html: { class: "px-6 pb-8 pt-7 sm:px-8" }) do |f| %>
+
+        <% if resource.errors.any? %>
+          <div class="mb-6 rounded-2xl bg-[#FC8027]/8 px-4 py-3 ring-1 ring-[#FC8027]/25">
+            <p class="font-[Outfit] text-sm font-semibold text-[#150D3A]">
+              <%= pluralize(resource.errors.count, "field needs", plural: "fields need") %> fixing
+            </p>
+            <ul class="mt-1.5 space-y-0.5 font-['Inter_Tight'] text-sm text-[#150D3A]/70">
+              <% resource.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%# ---------- PAGE 1 ---------- %>
+        <div data-wizard-target="step" class="space-y-5">
+          <div>
+            <h1 class="font-[Outfit] text-2xl font-bold tracking-tight text-[#150D3A] sm:text-3xl">
+              Create your account
+            </h1>
+            <p class="mt-1.5 font-['Inter_Tight'] text-sm text-[#150D3A]/60">
+              Start selling tickets in minutes.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <%= f.label :first_name, class: lbl %>
+              <%= f.text_field :first_name, required: true, class: field %>
+            </div>
+            <div>
+              <%= f.label :last_name, class: lbl %>
+              <%= f.text_field :last_name, required: true, class: field %>
+            </div>
+          </div>
+
+          <div>
+            <%= f.label :email, class: lbl %>
+            <%= f.email_field :email, autocomplete: "email", required: true,
+                              placeholder: "you@example.com", class: field %>
+          </div>
+
+          <div>
+            <%= f.label :phone_number, "Phone number", class: lbl %>
+            <%= f.telephone_field :phone_number, placeholder: "+254 7XX XXX XXX", class: field %>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <%= f.label :password, class: lbl %>
+              <%= f.password_field :password, autocomplete: "new-password", required: true,
+                                   minlength: 6, placeholder: "At least 6 characters", class: field %>
+            </div>
+            <div>
+              <%= f.label :password_confirmation, "Confirm password", class: lbl %>
+              <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                                   required: true, class: field %>
+            </div>
+          </div>
+
+          <button type="button" data-action="wizard#next"
+                  class="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl
+                         bg-gradient-to-r from-[#7620B1] to-[#FC8027] py-3.5
+                         font-[Outfit] font-semibold text-[#7620B1] border border-[#7620B1]
+                         shadow-lg shadow-[#7620B1]/25 transition hover:opacity-90 active:scale-[0.99]">
+            Continue
+            <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+          </button>
+
+          <p class="text-center font-['Inter_Tight'] text-sm text-[#150D3A]/55">
+            Already have an account?
+            <%= link_to "Sign in", new_session_path(resource_name),
+                        class: "font-semibold text-[#7620B1] hover:underline" %>
+          </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <%# ---------- PAGE 2 ---------- %>
+        <div data-wizard-target="step" class="hidden space-y-5">
           <div>
-            <%= cf.label :phone, class: "block text-sm font-medium text-[#150D3A]" %>
-            <%= cf.telephone_field :phone, required: true,
-                                   class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+            <h1 class="font-[Outfit] text-2xl font-bold tracking-tight text-[#150D3A] sm:text-3xl">
+              Your organisation
+            </h1>
+            <p class="mt-1.5 font-['Inter_Tight'] text-sm text-[#150D3A]/60">
+              This appears on your event pages and ticket PDFs.
+            </p>
           </div>
-          <div>
-            <%= cf.label :email, "Billing email", class: "block text-sm font-medium text-[#150D3A]" %>
-            <%= cf.email_field :email,
-                               class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-          </div>
-        </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <%= cf.label :city, class: "block text-sm font-medium text-[#150D3A]" %>
-            <%= cf.text_field :city,
-                              class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-          </div>
-          <div>
-            <%= cf.label :country, class: "block text-sm font-medium text-[#150D3A]" %>
-            <%= cf.text_field :country, value: cf.object.country.presence || "Kenya",
-                              class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-          </div>
-        </div>
+          <%= f.fields_for :client do |cf| %>
+            <div>
+              <%= cf.label :name, "Organisation name", class: lbl %>
+              <%= cf.text_field :name, required: true,
+                                placeholder: "e.g. Salato Events Ltd", class: field %>
+            </div>
 
-        <div>
-          <%= cf.label :website, class: "block text-sm font-medium text-[#150D3A]" %>
-          <%= cf.url_field :website, placeholder: "https://",
-                           class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
-        </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <%= cf.label :phone, "Business phone", class: lbl %>
+                <%= cf.telephone_field :phone, required: true,
+                                       placeholder: "+254 7XX XXX XXX", class: field %>
+              </div>
+              <div>
+                <%= cf.label :email, "Billing email", class: lbl %>
+                <%= cf.email_field :email, class: field %>
+              </div>
+            </div>
 
-        <div>
-          <%= cf.label :description, "Short description", class: "block text-sm font-medium text-[#150D3A]" %>
-          <%= cf.text_area :description, rows: 3,
-                           class: "mt-1 w-full rounded-lg border-gray-300 focus:border-[#7620B1] focus:ring-[#7620B1]" %>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <%= cf.label :city, class: lbl %>
+                <%= cf.text_field :city, placeholder: "Nairobi", class: field %>
+              </div>
+              <div>
+                <%= cf.label :country, class: lbl %>
+                <%= cf.text_field :country, value: cf.object.country.presence || "Kenya", class: field %>
+              </div>
+            </div>
+
+            <div>
+              <%= cf.label :website, class: lbl %>
+              <%= cf.url_field :website, placeholder: "https://", class: field %>
+            </div>
+
+            <div>
+              <%= cf.label :description, "Short description", class: lbl %>
+              <%= cf.text_area :description, rows: 3,
+                               placeholder: "What kind of events do you run?", class: field %>
+            </div>
+          <% end %>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" data-action="wizard#back"
+                    class="w-1/3 rounded-xl bg-[#F7F4FB] py-3.5 font-[Outfit] font-semibold
+                           text-[#150D3A] ring-1 ring-[#150D3A]/10 transition
+                           hover:bg-[#150D3A]/5 active:scale-[0.99]">
+              Back
+            </button>
+            <%= f.submit "Register",
+                         class: "w-2/3 cursor-pointer rounded-xl bg-gradient-to-r from-[#7620B1] to-[#FC8027]
+                          py-3.5 font-[Outfit] font-semibold text-[#7620b1] border border-[#7620B1]
+                          shadow-lg shadow-[#7620B1]/25 transition hover:opacity-90 active:scale-[0.99]" %>
+          </div>
         </div>
       <% end %>
-
-      <div class="flex gap-3 pt-2">
-        <button type="button" data-action="wizard#back"
-                class="w-1/3 rounded-lg border border-gray-300 py-3 font-semibold text-[#150D3A] hover:bg-gray-50">
-          Back
-        </button>
-        <%= f.submit "Register",
-                     class: "w-2/3 rounded-lg bg-gradient-to-r from-[#7620B1] to-[#FC8027]
-                      py-3 font-semibold text-white hover:opacity-90 cursor-pointer" %>
-      </div>
     </div>
-  <% end %>
+
+    <p class="mt-6 text-center font-['Inter_Tight'] text-xs text-[#150D3A]/45">
+      By registering you agree to Salato's terms and privacy policy.
+    </p>
+  </div>
 </div>
