@@ -1,0 +1,97 @@
+<%= render 'shared/sidebar' %>
+
+<div class="app-main bg-mist">
+  <section class="app-inner">
+
+  <%# ── Header ───────────────────────────────────────────── %>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.16em] text-[#7620B1]">
+        Salato
+      </p>
+      <h1 class="mt-1 font-[Outfit] text-2xl font-semibold text-[#150D3A]">
+        Clients
+      </h1>
+      <p class="mt-1 text-sm text-[#150D3A]/60">
+        <%#= pluralize(@clients.size || 0, "client") %> on file
+      </p>
+    </div>
+
+    <%= link_to "Add a client", new_client_path,
+          class: "inline-flex rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+  </div>
+
+  <%# ── Search ───────────────────────────────────────────── %>
+  <%= form_with url: clients_path, method: :get, class: "mt-6" do |f| %>
+    <div class="relative max-w-sm">
+      <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#150D3A]/35" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.4 9.84l3.13 3.13a.75.75 0 1 0 1.06-1.06l-3.13-3.13A5.5 5.5 0 0 0 9 3.5Zm-4 5.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd"/>
+      </svg>
+      <%= f.search_field :q, value: params[:q], placeholder: "Search name, email or phone",
+            class: "w-full rounded-full border-0 bg-white py-2.5 pl-10 pr-4 text-sm text-[#150D3A] ring-1 ring-[#150D3A]/10 placeholder:text-[#150D3A]/35 focus:outline-none focus:ring-2 focus:ring-[#7620B1]" %>
+    </div>
+  <% end %>
+
+  <% if @clients.present? %>
+
+    <%# ── List ───────────────────────────────────────────── %>
+    <div class="mt-6 overflow-hidden rounded-2xl bg-white ring-1 ring-[#150D3A]/10">
+      <% @clients.each_with_index do |client, i| %>
+
+        <% if i.positive? %>
+          <div class="relative">
+            <span class="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]" aria-hidden="true"></span>
+            <span class="absolute -right-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]" aria-hidden="true"></span>
+            <div class="border-t border-dashed border-[#150D3A]/15"></div>
+          </div>
+        <% end %>
+
+        <article class="group relative isolate flex items-center gap-4 px-5 py-4 transition hover:bg-[#F7F4FB]/70">
+
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#7620B1] to-[#FC8027] font-[Outfit] text-sm font-bold text-white">
+            <%= client.name.to_s.first&.upcase %>
+          </span>
+
+          <div class="min-w-0 flex-1">
+            <h2 class="font-[Outfit] text-base font-semibold leading-snug text-[#150D3A]">
+              <%= link_to client.name, client_path(client),
+                    class: "after:absolute after:inset-0 focus:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#7620B1]" %>
+            </h2>
+            <p class="mt-0.5 truncate font-[JetBrains_Mono] text-xs text-[#150D3A]/55">
+              <%= [client.email, client.phone].compact_blank.join(" · ").presence || "No contact details yet" %>
+            </p>
+          </div>
+
+          <%= link_to "Edit", edit_client_path(client),
+                class: "relative z-10 shrink-0 rounded-full px-3 py-1.5 text-sm font-medium text-[#7620B1] transition hover:bg-[#7620B1]/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1]" %>
+        </article>
+      <% end %>
+    </div>
+
+  <% else %>
+
+    <%# ── Empty state ────────────────────────────────────── %>
+    <div class="mt-6 rounded-2xl border border-dashed border-[#150D3A]/20 bg-white/60 px-6 py-16 text-center">
+      <h2 class="font-[Outfit] text-xl font-semibold text-[#150D3A]">
+        <%= params[:q].present? ? "No clients match that search" : "No clients yet" %>
+      </h2>
+      <p class="mx-auto mt-2 max-w-sm text-sm text-[#150D3A]/60">
+        <% if params[:q].present? %>
+          Try a different name, email or phone number.
+        <% else %>
+          Add the organisers and companies you sell events for, and their details stay one click away.
+        <% end %>
+      </p>
+
+      <% if params[:q].present? %>
+        <%= link_to "Clear search", clients_path,
+              class: "mt-6 inline-flex rounded-full px-5 py-2.5 text-sm font-semibold text-[#7620B1] ring-1 ring-[#7620B1]/30 transition hover:bg-[#7620B1]/8" %>
+      <% else %>
+        <%= link_to "Add a client", new_client_path,
+              class: "mt-6 inline-flex rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+      <% end %>
+    </div>
+
+  <% end %>
+  </section>
+</div>

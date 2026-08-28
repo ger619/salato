@@ -1,0 +1,89 @@
+<%= render 'shared/sidebar' %>
+
+<% details = [
+     "Name: #{@client.name}",
+     ("Email: #{@client.email}" if @client.email.present?),
+     ("Phone: #{@client.phone}" if @client.phone.present?),
+     ("Address: #{@client.address}" if @client.address.present?)
+   ].compact.join("\n") %>
+
+<div class="mx-auto max-w-2xl px-6 py-10">
+  <%= link_to "← Clients", clients_path,
+        class: "font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#7620B1] hover:underline" %>
+
+  <%# ── Stub card ────────────────────────────────────────── %>
+  <div class="mt-4 overflow-hidden rounded-2xl bg-white ring-1 ring-[#150D3A]/10">
+
+    <div class="flex items-center gap-4 bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-6 py-6">
+      <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20 font-[Outfit] text-lg font-bold text-white backdrop-blur">
+        <%= @client.name.to_s.first&.upcase %>
+      </span>
+      <div class="min-w-0">
+        <h1 class="truncate font-[Outfit] text-xl font-semibold text-white"><%= @client.name %></h1>
+        <p class="font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-white/70">
+          Client since <%= @client.created_at.strftime("%b %Y") %>
+        </p>
+      </div>
+    </div>
+
+    <div class="relative">
+      <span class="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]" aria-hidden="true"></span>
+      <span class="absolute -right-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#F7F4FB]" aria-hidden="true"></span>
+      <div class="border-t border-dashed border-[#150D3A]/15"></div>
+    </div>
+
+    <dl class="divide-y divide-[#150D3A]/8 px-6 py-2">
+      <% {
+           "Email"   => @client.email,
+           "Phone"   => @client.phone,
+           "Address" => @client.address
+         }.each do |label, value| %>
+        <div class="flex gap-4 py-3.5">
+          <dt class="w-24 shrink-0 pt-0.5 font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/45">
+            <%= label %>
+          </dt>
+          <dd class="min-w-0 flex-1 text-sm text-[#150D3A]">
+            <% if value.present? %>
+              <% if label == "Email" %>
+                <%= mail_to value, value, class: "text-[#7620B1] hover:underline" %>
+              <% elsif label == "Phone" %>
+                <%= link_to value, "tel:#{value.gsub(/\s+/, '')}", class: "text-[#7620B1] hover:underline" %>
+              <% else %>
+                <span class="whitespace-pre-line"><%= value %></span>
+              <% end %>
+            <% else %>
+              <span class="text-[#150D3A]/35">Not set</span>
+            <% end %>
+          </dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <%# ── Share ───────────────────────────────────────────── %>
+  <div class="mt-5 flex flex-wrap items-center gap-3">
+    <%= link_to "Email details",
+          "mailto:?subject=#{u("Client details — #{@client.name}")}&body=#{u(details)}",
+          class: "rounded-full bg-[#150D3A] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+
+    <button type="button"
+            id="copy-client-details"
+            data-details="<%= details %>"
+            class="rounded-full px-4 py-2.5 text-sm font-semibold text-[#7620B1] ring-1 ring-[#7620B1]/30 transition hover:bg-[#7620B1]/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1]">
+      Copy details
+    </button>
+
+    <%= link_to "Edit", edit_client_path(@client),
+          class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5" %>
+  </div>
+</div>
+
+<script>
+  document.getElementById("copy-client-details")?.addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    await navigator.clipboard.writeText(btn.dataset.details);
+    const original = btn.textContent;
+    btn.textContent = "Copied";
+    setTimeout(() => { btn.textContent = original; }, 1600);
+  });
+</script>

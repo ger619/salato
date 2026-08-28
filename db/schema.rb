@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_165035) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_164249) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -43,6 +43,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_165035) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "clients", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "address"
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "name"
+    t.string "phone"
+    t.datetime "updated_at", null: false
+  end
+
   create_table "events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -56,6 +65,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_165035) do
     t.string "venue"
     t.index ["slug"], name: "index_events_on_slug", unique: true
     t.index ["user_id"], name: "index_events_on_user_id"
+  end
+
+  create_table "events_users", id: false, force: :cascade do |t|
+    t.uuid "event_id", null: false
+    t.uuid "user_id", null: false
+    t.index ["event_id", "user_id"], name: "index_events_users_on_event_id_and_user_id", unique: true
+    t.index ["user_id", "event_id"], name: "index_events_users_on_user_id_and_event_id", unique: true
   end
 
   create_table "orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -124,6 +140,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_165035) do
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "client_id"
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"
     t.datetime "confirmed_at"
@@ -154,6 +171,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_165035) do
     t.string "unconfirmed_email"
     t.string "unlock_token"
     t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_users_on_client_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
@@ -180,4 +198,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_165035) do
   add_foreign_key "tickets", "events"
   add_foreign_key "tickets", "orders"
   add_foreign_key "tickets", "ticket_types"
+  add_foreign_key "users", "clients"
 end

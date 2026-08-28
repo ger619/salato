@@ -2,6 +2,13 @@
 
 <%= render "shared/sidebar" %>
 
+<%
+  # An admin invites across every client and picks one; anyone else invites
+  # into their own, which the controller supplies — so no picker is rendered
+  # and a hand-posted client_id is ignored server side.
+  admin = current_user.has_role?(:admin)
+%>
+
 <div class="app-main bg-mist min-h-dvh">
   <section class="app-inner">
 
@@ -66,30 +73,13 @@
                                        focus:ring-2 focus:ring-violet transition" %>
             </div>
           </div>
+
+          <%# ── Role ────────────────────────────────────────────────── %>
           <div>
             <%= f.label :role, "Role",
                         class: "block text-[14px] font-medium text-ink mb-1.5" %>
 
             <%= f.select :role,
-                         current_user.assignable_roles.map { |r| [r.humanize, r] },
-                         { prompt: "Choose a role" },
-                         class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
-                       ring-1 ring-ink/12 focus:outline-none
-                       focus:ring-2 focus:ring-violet transition
-                       appearance-none bg-[length:16px] bg-no-repeat
-                       bg-[right_1rem_center]",
-                         style: "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23150D3A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")" %>
-
-            <p class="mt-1.5 text-[13px] text-ink2/70">
-              Scanners can check tickets in at the gate. Organisers can also
-              create and manage events.
-            </p>
-          </div>
-
-          <div>
-            <%= f.label :role, "Role",
-                        class: "block text-[14px] font-medium text-ink mb-1.5" %>
-            <%#= select_tag :role, options_for_select(Role.where.not(name: %w[creator editor admin observer sales]).distinct.pluck(:name, :name)),
                          current_user.assignable_roles.map { |r| [r.humanize, r] },
                          { prompt: "Choose a role" },
                          class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
@@ -103,7 +93,34 @@
               Scanners can check tickets in at the gate. Organisers can also
               create and manage events.
             </p>
+
+            <% unless admin %>
+              <p class="mt-1.5 text-[13px] text-ink2/70">
+                They'll join <strong class="font-medium text-ink"><%= current_user.client&.name || "your client" %></strong>.
+              </p>
+            <% end %>
           </div>
+
+          <%# ── Client — admins only, and hidden when inviting an admin ── %>
+          <% if admin %>
+            <div data-client-field>
+              <%= f.label :client_id, "Client",
+                          class: "block text-[14px] font-medium text-ink mb-1.5" %>
+
+              <%= f.collection_select :client_id, Client.order(:name), :id, :name,
+                                      { prompt: "Choose a client" },
+                                      class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
+                                              ring-1 ring-ink/12 focus:outline-none
+                                              focus:ring-2 focus:ring-violet transition
+                                              appearance-none bg-[length:16px] bg-no-repeat
+                                              bg-[right_1rem_center]",
+                                      style: "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23150D3A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")" %>
+
+              <p class="mt-1.5 text-[13px] text-ink2/70">
+                Which organisation this person works for.
+              </p>
+            </div>
+          <% end %>
 
           <div>
             <%= f.label :phone_number, "Mobile number",
@@ -137,3 +154,24 @@
 
   </section>
 </div>
+
+<script>
+    /* An admin needs no client, so the field goes away when that role is
+       picked. The controller blanks it regardless — this only keeps the form
+       from asking for something it will ignore. */
+    (function () {
+        const role  = document.querySelector('select[name="user[role]"]');
+        const field = document.querySelector('[data-client-field]');
+        if (!role || !field) return;
+
+        const sync = () => {
+            const isAdmin = role.value === 'admin';
+            field.hidden = isAdmin;
+            const select = field.querySelector('select');
+            if (select && isAdmin) select.value = '';
+        };
+
+        role.addEventListener('change', sync);
+        sync();
+    })();
+</script>

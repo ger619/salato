@@ -4,7 +4,13 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
-  has_many :events, dependent: :restrict_with_error
+
+  belongs_to :client, optional: true
+
+  has_many :events, dependent: :restrict_with_error # events they own
+  has_and_belongs_to_many :staffed_events,
+                          class_name: 'Event',
+                          join_table: :events_users # events they work the door on
   attr_accessor :role
 
   ROLES = %w[admin organiser scanner].freeze

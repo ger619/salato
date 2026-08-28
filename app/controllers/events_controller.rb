@@ -1,6 +1,7 @@
 class EventsController < ApplicationController
-  before_action :authenticate_user!, only: %i[new create edit update organiser organiser_show]
-  before_action :set_owned_event, only: %i[edit update organiser_show]
+  before_action :authenticate_user!, only: %i[new create edit update organiser organiser_show
+                                              assign_user unassign_user]
+  before_action :set_owned_event, only: %i[edit update organiser_show assign_user unassign_user]
   before_action :set_visible_event, only: %i[show]
   load_and_authorize_resource
 
@@ -29,6 +30,9 @@ class EventsController < ApplicationController
     @event = current_user.events.new(event_params)
 
     if @event.save
+      @event.users << current_user if current_user.has_role?(:organiser) &&
+                                      !current_user.has_role?(:admin)
+
       redirect_to organiser_show_event_path(@event), notice: "#{@event.name} is published."
     else
       @event.ticket_types.build(active: true) if @event.ticket_types.empty?
@@ -46,11 +50,45 @@ class EventsController < ApplicationController
     end
   end
 
+  # The id is looked up *through* assignable_users, so an organiser who posts
+  # an admin's id gets the same rejection as a tampered id — the role rule is
+  # enforced here, not just hidden in the dropdown.
+  def assign_user
+    user = assignable_users.find_by(id: params[:user_id])
+
+    if user.nil?
+      redirect_to organiser_show_event_path(@event),
+                  alert: "You can't add that user to this event."
+    else
+      @event.users << user
+      redirect_to organiser_show_event_path(@event),
+                  notice: "#{display_name(user)} can now scan tickets for #{@event.name}."
+    end
+  end
+
+  def unassign_user
+    user = @event.users.find_by(id: params[:user_id])
+
+    if user.nil?
+      redirect_to organiser_show_event_path(@event),
+                  alert: "That user isn't on this event."
+    elsif !can_manage_team?
+      redirect_to organiser_show_event_path(@event),
+                  alert: "You can't change the door team for this event."
+    else
+      @event.users.delete(user)
+      redirect_to organiser_show_event_path(@event),
+                  notice: "#{display_name(user)} removed from #{@event.name}."
+    end
+  end
+
   def organiser
     @events = Event.all
       .includes(:ticket_types)
       .with_attached_poster
       .order(start_at: :desc)
+
+    @events = @events.joins(:users).where(users: { id: current_user.id }) unless current_user&.has_any_role?(:admin)
   end
 
   def organiser_show
@@ -63,7 +101,7 @@ class EventsController < ApplicationController
 
   # Editing, updating and deleting are limited to the organiser who owns it.
   def set_owned_event
-    @event = current_user.events.find_by!(slug: event_slug)
+    @event = Event.find_by!(slug: event_slug)
   end
 
   # The ticket page is public, but a draft stays visible to its organiser
@@ -81,6 +119,35 @@ class EventsController < ApplicationController
     scope = @event.ticket_types
     scope = scope.where(active: true)
     scope.order(:price)
+  end
+
+  # Who the signed-in user may put on the door.
+  #   admin         — anyone
+  #   organiser     — scanners only
+  #   anyone else   — nobody, so the button never renders
+  def assignable_users
+    return User.none unless current_user && @event
+
+    available = User.where.not(id: @event.users.select(:id))
+
+    if current_user.has_role?(:admin)
+      available
+    elsif current_user.has_role?(:organiser)
+      available.joins(:roles).where(roles: { name: 'scanner' }).distinct
+    else
+      User.none
+    end
+  end
+
+  helper_method :assignable_users
+
+  def can_manage_team?
+    current_user&.has_role?(:admin) || current_user&.has_role?(:organiser)
+  end
+  helper_method :can_manage_team?
+
+  def display_name(user)
+    user.try(:full_name).presence || user.email
   end
 
   helper_method :organiser?

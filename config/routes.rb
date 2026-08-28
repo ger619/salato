@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   resources :dashboard, only: %w[index]
   resources :ticket_types, only: %w[index show]
   resources :users, only: %w[index new create show]
+  resources :clients, only: %w[index new create show edit update]
 
   resources :events, param: :slug do
     collection do
@@ -27,6 +28,8 @@ Rails.application.routes.draw do
     end
     member do
       get :organiser_show # show → /events/:slug/organiser_show
+      post   :assign_user
+      delete :unassign_user
     end
     resources :orders, only: [:new, :create, :show] do
       member do

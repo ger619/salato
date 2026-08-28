@@ -4,6 +4,7 @@ class Event < ApplicationRecord
   has_many :ticket_types, dependent: :destroy
   has_many :orders, dependent: :destroy
   has_many :tickets, dependent: :destroy
+  has_and_belongs_to_many :users, join_table: :events_users
 
   # The poster. Without this declaration `event.poster` doesn't exist, the
   # form field has nothing to write to, and the file is dropped on submit.
@@ -59,6 +60,25 @@ class Event < ApplicationRecord
     return nil unless poster_previewable?
 
     poster.variable? ? poster.variant(**) : poster
+  end
+
+  CHECK_IN_OPENS_BEFORE = 10.hours # doors open
+  CHECK_IN_CLOSES_AFTER = 10.hours # grace period once it's over
+
+  def check_in_opens_at
+    start_at && (start_at - CHECK_IN_OPENS_BEFORE)
+  end
+
+  def check_in_closes_at
+    return unless start_at
+
+    try(:end_at) || (start_at + CHECK_IN_CLOSES_AFTER)
+  end
+
+  def check_in_open?(at = Time.current)
+    return false unless check_in_opens_at
+
+    at.between?(check_in_opens_at, check_in_closes_at)
   end
 
   private
