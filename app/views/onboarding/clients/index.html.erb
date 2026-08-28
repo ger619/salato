@@ -17,12 +17,12 @@
       </p>
     </div>
 
-    <%= link_to "Add a client", new_client_path,
+    <%= link_to "Add a client", new_onboarding_client_path,
           class: "inline-flex rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
   </div>
 
   <%# ── Search ───────────────────────────────────────────── %>
-  <%= form_with url: clients_path, method: :get, class: "mt-6" do |f| %>
+  <%= form_with url: onboarding_clients_path, method: :get, class: "mt-6" do |f| %>
     <div class="relative max-w-sm">
       <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#150D3A]/35" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
         <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.4 9.84l3.13 3.13a.75.75 0 1 0 1.06-1.06l-3.13-3.13A5.5 5.5 0 0 0 9 3.5Zm-4 5.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd"/>
@@ -54,7 +54,7 @@
 
           <div class="min-w-0 flex-1">
             <h2 class="font-[Outfit] text-base font-semibold leading-snug text-[#150D3A]">
-              <%= link_to client.name, client_path(client),
+              <%= link_to client.name, onboarding_client_path(client),
                     class: "after:absolute after:inset-0 focus:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#7620B1]" %>
             </h2>
             <p class="mt-0.5 truncate font-[JetBrains_Mono] text-xs text-[#150D3A]/55">
@@ -62,7 +62,7 @@
             </p>
           </div>
 
-          <%= link_to "Edit", edit_client_path(client),
+          <%= link_to "Edit", edit_onboarding_client_path(client),
                 class: "relative z-10 shrink-0 rounded-full px-3 py-1.5 text-sm font-medium text-[#7620B1] transition hover:bg-[#7620B1]/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1]" %>
         </article>
       <% end %>

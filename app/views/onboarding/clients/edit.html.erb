@@ -1,7 +1,7 @@
 <%= render 'shared/sidebar' %>
 
 <div class="mx-auto max-w-2xl px-6 py-10">
-  <%= link_to "← #{@client.name}", client_path(@client),
+  <%= link_to "← #{@client.name}", onboarding_client_path(@client),
         class: "font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#7620B1] hover:underline" %>
 
   <h1 class="mt-3 font-[Outfit] text-2xl font-semibold text-[#150D3A]">Edit client</h1>
