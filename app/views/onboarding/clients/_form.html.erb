@@ -1,5 +1,7 @@
-<%= form_with model: client, url: onboarding_client_path(client), class: "space-y-5" do |f| %>
-
+<%= form_with model: client,
+              url: client.persisted? ? onboarding_client_path(client) : onboarding_clients_path,
+              method: client.persisted? ? :patch : :post,
+              class: "space-y-5" do |f| %>
   <% if client.errors.any? %>
     <div class="rounded-2xl bg-[#FC8027]/10 px-4 py-3 ring-1 ring-[#FC8027]/30">
       <p class="font-[Outfit] text-sm font-semibold text-[#150D3A]">

@@ -2,6 +2,7 @@ module Onboarding
   class ClientsController < ApplicationController
     before_action :authenticate_user!
     before_action :set_client, only: %i[show edit update]
+    skip_before_action :require_onboarding
 
     def index
       @clients = Client.order(created_at: :desc)
@@ -26,7 +27,7 @@ module Onboarding
       @client = Client.new(client_params)
 
       if @client.save
-        redirect_to onboarding_client_path, notice: 'Client added.'
+        redirect_to onboarding_client_path(@client), notice: 'Client added.'
       else
         render :new, status: 422
       end

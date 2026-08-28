@@ -24,9 +24,10 @@ class ApplicationController < ActionController::Base
   def require_onboarding
     return unless user_signed_in?
     return if devise_controller?
+    return if controller_path.start_with?('onboarding/')
     return if current_user.onboarding_complete?
 
     redirect_to new_onboarding_client_path,
-                alert: 'Finish setting up your organiser profile.'
+                alert: 'Finish setting up your organisation.'
   end
 end
