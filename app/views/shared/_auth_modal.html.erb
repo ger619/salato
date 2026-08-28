@@ -14,88 +14,46 @@
         </div>
 
         <div class="px-6 sm:px-7 pt-7 pb-8">
-          <div class="flex gap-1 p-1 rounded-xl bg-mist" role="tablist">
-            <button type="button" role="tab" id="tabSignin" aria-selected="true"  aria-controls="signinPane" class="auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition">Sign in</button>
-            <button type="button" role="tab" id="tabSignup" aria-selected="false" aria-controls="signupPane" class="auth-tab flex-1 py-2.5 rounded-lg text-[15px] font-medium transition">Create account</button>
+          <h2 id="authTitle" class="text-[24px] font-semibold">Welcome back</h2>
+          <p class="mt-1.5 text-[15px] text-ink2">Sign in to see tonight's sales.</p>
+
+          <%# Server error lands here — no page reload, no redirect. %>
+          <div id="authError" class="hidden mt-5 rounded-xl bg-pink/8 px-4 py-3 ring-1 ring-pink/25">
+            <p class="text-[14px] text-ink" data-auth-error-text></p>
           </div>
 
-          <h2 id="authTitle" class="mt-7 text-[24px] font-semibold">Welcome back</h2>
-          <p id="authSub" class="mt-1.5 text-[15px] text-ink2">Sign in to see tonight's sales.</p>
+          <%= form_with url: user_session_path, method: :post, scope: :user,
+                        html: { id: "signinForm", novalidate: true, class: "mt-6 space-y-4",
+                                data: { turbo: false } } do |f| %>
+            <div>
+              <%= f.label :email, "Email", for: "signin_email", class: "block text-[14px] font-medium mb-2" %>
+              <%= f.email_field :email, id: "signin_email", autocomplete: "email", inputmode: "email",
+                                placeholder: "you@example.com",
+                                class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+              <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+            </div>
 
-          <%# ── SIGN IN → Devise SessionsController#create ── %>
-          <div id="signinPane" role="tabpanel" aria-labelledby="tabSignin">
-            <%= form_with url: user_session_path, method: :post, scope: :user,
-                          html: { id: "signinForm", novalidate: true, class: "mt-6 space-y-4",
-                                  data: { turbo: false } } do |f| %>
-              <div>
-                <%= f.label :email, "Email", for: "signin_email", class: "block text-[14px] font-medium mb-2" %>
-                <%= f.email_field :email, id: "signin_email", autocomplete: "email", inputmode: "email",
-                                  placeholder: "you@example.com",
-                                  class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
-                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+            <div>
+              <div class="flex items-baseline justify-between mb-2">
+                <%= f.label :password, "Password", for: "signin_password", class: "block text-[14px] font-medium" %>
+                <%= link_to "Forgot it?", new_user_password_path, class: "text-[13px] text-magenta hover:underline tap-inline" %>
               </div>
+              <%= f.password_field :password, id: "signin_password", autocomplete: "current-password",
+                                   placeholder: "••••••••",
+                                   class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
+              <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
+            </div>
 
-              <div>
-                <div class="flex items-baseline justify-between mb-2">
-                  <%= f.label :password, "Password", for: "signin_password", class: "block text-[14px] font-medium" %>
-                  <%= link_to "Forgot it?", new_user_password_path, class: "text-[13px] text-magenta hover:underline tap-inline" %>
-                </div>
-                <%= f.password_field :password, id: "signin_password", autocomplete: "current-password",
-                                     placeholder: "••••••••",
-                                     class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
-                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
-              </div>
+            <label class="flex items-center gap-2.5 text-[14px] text-ink2 select-none tap-inline">
+              <%= f.check_box :remember_me, class: "w-4 h-4 rounded border-ink/25 text-pink focus:ring-pink" %>
+              Keep me signed in
+            </label>
 
-              <label class="flex items-center gap-2.5 text-[14px] text-ink2 select-none tap-inline">
-                <%= f.check_box :remember_me, class: "w-4 h-4 rounded border-ink/25 text-pink focus:ring-pink" %>
-                Keep me signed in
-              </label>
-
-              <%= f.submit "Sign in",
-                           class: "w-full py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition cursor-pointer" %>
-            <% end %>
-          </div>
-
-          <%# ── SIGN UP → Devise RegistrationsController#create ── %>
-          <div id="signupPane" role="tabpanel" aria-labelledby="tabSignup" class="hidden">
-            <%= form_with url: user_registration_path, method: :post, scope: :user,
-                          html: { id: "signupForm", novalidate: true, class: "mt-6 space-y-4",
-                                  data: { turbo: false } } do |f| %>
-              <div>
-                <%= f.label :name, "Your name", for: "signup_name", class: "block text-[14px] font-medium mb-2" %>
-                <%= f.text_field :name, id: "signup_name", autocomplete: "name", placeholder: "Wanjiru Kamau",
-                                 class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
-                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
-              </div>
-
-              <div>
-                <%= f.label :email, "Email", for: "signup_email", class: "block text-[14px] font-medium mb-2" %>
-                <%= f.email_field :email, id: "signup_email", autocomplete: "email", inputmode: "email",
-                                  placeholder: "you@example.com",
-                                  class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
-                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
-              </div>
-
-              <div>
-                <%= f.label :password, "Password", for: "signup_password", class: "block text-[14px] font-medium mb-2" %>
-                <%= f.password_field :password, id: "signup_password", autocomplete: "new-password",
-                                     placeholder: "At least 8 characters",
-                                     class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
-                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
-              </div>
-
-              <div>
-                <%= f.label :password_confirmation, "Confirm password", for: "signup_password_confirmation", class: "block text-[14px] font-medium mb-2" %>
-                <%= f.password_field :password_confirmation, id: "signup_password_confirmation", autocomplete: "new-password",
-                                     placeholder: "Type it once more",
-                                     class: "w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-pink outline-none transition" %>
-                <p class="err hidden mt-1.5 text-[13px] text-pink"></p>
-              </div>
-
-              <%= f.submit "Create account",
-                           class: "w-full py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition cursor-pointer" %>
-            <% end %>
-          </div>
+            <button type="submit" data-auth-submit
+                    class="w-full py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition cursor-pointer disabled:opacity-60 disabled:cursor-wait">
+              <span data-auth-submit-label>Sign in</span>
+            </button>
+          <% end %>
 
           <% if defined?(user_omniauth_authorize_path) %>
             <div class="my-5 flex items-center gap-3 text-[13px] text-ink2/60">
@@ -110,7 +68,11 @@
             <% end %>
           <% end %>
 
-          <p id="authFoot" class="mt-6 text-[13px] text-ink2/75 leading-relaxed">Buying a ticket? You don't need an account — your ticket arrives by email straight after payment.</p>
+          <p class="mt-6 text-[13px] text-ink2/75 leading-relaxed">
+            New organiser?
+            <%= link_to "Create an account", new_user_registration_path, class: "text-magenta font-medium hover:underline" %>
+            — it takes two minutes.
+          </p>
         </div>
       </div>
     </div>
