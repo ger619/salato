@@ -136,7 +136,8 @@
   <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
   <%= yield :head %>
-</head>
+  <%= Sentry.get_trace_propagation_meta.html_safe %>
+  </head>
 
 <body class="antialiased"
       data-auth-open="<%= params[:auth].presence || (flash[:alert].present? ? "signin" : nil) %>">
