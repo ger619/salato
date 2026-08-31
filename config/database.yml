@@ -87,14 +87,18 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database:<%= ENV['PG_DATABASE'] || 'salato_production' %>
-
+    database: salato_production
+    username: salato
+    password: <%= ENV["SALATO_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
-    database: <%= ENV['PG_CACHE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_production_cache' %>
+    database: salato_production_cache
+    migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: <%= ENV['PG_QUEUE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_production_queue' %>
+    database: salato_production_queue
+    migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: <%= ENV['PG_CABLE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_production_cable' %>
+    database: salato_production_cable
+    migrations_paths: db/cable_migrate
