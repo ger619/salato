@@ -233,6 +233,7 @@
             <th class="px-6 py-3 font-medium">Guest</th>
             <th class="px-6 py-3 font-medium">Type</th>
             <th class="px-6 py-3 font-medium text-right">At the door</th>
+            <th class="px-6 py-3 font-medium text-right">Checked in At</th>
             <th class="px-6 py-3 font-medium text-right">Checked In By</th>
 
           </tr>
@@ -256,6 +257,9 @@
                 <% else %>
                   <span class="text-xs text-[#150D3A]/40">Not scanned</span>
                 <% end %>
+              </td>
+              <td class="px-6 py-4 text-right text-[#150D3A]/70">
+                <%= ticket.checked_in_at&.strftime("%-d %b, %H:%M") || "—" %>
               </td>
               <td class="px-6 py-4 text-right text-[#150D3A]/70">
                 <%= ticket.checked_in_by&.full_name || "—" %>
