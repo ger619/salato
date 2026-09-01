@@ -41,7 +41,7 @@
 
       <%# ---------- STEP INDICATOR ---------- %>
       <div class="flex items-center gap-2.5 px-6 pt-6 sm:gap-3 sm:px-8">
-        <% ["Account", "Organisation", "Review"].each_with_index do |label, i| %>
+        <% %w[Account Organisation Review].each_with_index do |label, i| %>
           <% if i.positive? %>
             <div class="h-0.5 flex-1 rounded-full bg-[#150D3A]/8"></div>
           <% end %>
