@@ -113,6 +113,10 @@
       .navlink::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;background:var(--grad);transition:width .28s ease}
       .navlink:hover::after,.navlink[aria-current="true"]::after{width:100%}
 
+      /* ── flash: shows for 3s, then fades out ── */
+      .flash{transition:opacity .4s ease, transform .4s ease}
+      .flash.leaving{opacity:0;transform:translateY(-8px)}
+
       /* comfortable tap targets on touch devices */
       @media (pointer:coarse){
           a,button,summary,[role="tab"]{min-height:44px}
@@ -146,12 +150,13 @@
 
 <%# ══════════════ FLASH ══════════════ %>
 <% if flash.any? %>
-  <div class="fixed top-3 inset-x-0 z-[65] px-5 lg:px-8 pointer-events-none">
+  <div class="fixed top-3 inset-x-0 z-[65] px-5 lg:px-8 pointer-events-none" data-turbo-temporary>
     <div class="max-w-shell mx-auto flex flex-col gap-2 items-center">
       <% flash.each do |type, message| %>
         <% next if message.blank? %>
         <div role="status"
-             class="pointer-events-auto w-full sm:w-auto px-5 py-3 rounded-xl text-[14px] font-medium shadow-lg
+             data-flash
+             class="flash pointer-events-auto w-full sm:w-auto px-5 py-3 rounded-xl text-[14px] font-medium shadow-lg
                       <%= type.to_s == "notice" ? "bg-ink text-white" : "text-white grad-bg" %>">
           <%= message %>
         </div>
@@ -249,6 +254,36 @@
             $$('[data-menu-panel]').forEach(p=>p.classList.add('hidden'));
             $$('[data-menu-toggle]').forEach(t=>t.setAttribute('aria-expanded','false'));
         };
+
+        /* ══════════ FLASH: visible 3s, then fade out and remove ══════════ */
+        const FLASH_MS = 3000;
+
+        function dismissFlash(el){
+            if(el.dataset.flashLeaving) return;
+            el.dataset.flashLeaving = '1';
+            el.classList.add('leaving');
+            /* a timer, not transitionend — prefers-reduced-motion kills the
+               transition, and transitionend would then never fire */
+            setTimeout(()=> el.remove(), 450);
+        }
+
+        function armFlashes(){
+            $$('[data-flash]').forEach(el=>{
+                if(el.dataset.flashArmed) return;   /* don't stack timers */
+                el.dataset.flashArmed = '1';
+                setTimeout(()=> dismissFlash(el), FLASH_MS);
+            });
+        }
+
+        /* tapping a message dismisses it right away */
+        document.addEventListener('click', (e)=>{
+            const flash = e.target.closest('[data-flash]');
+            if(flash) dismissFlash(flash);
+        });
+
+        /* arm as soon as the markup exists, so the 3s starts on first paint
+           rather than waiting for turbo:load */
+        armFlashes();
 
         /* ── one click listener runs the mobile menu AND the auth modal ── */
         document.addEventListener('click', (e)=>{
@@ -421,6 +456,7 @@
         const setupPage = ()=>{
             onScroll();
             closeAllMenus();
+            armFlashes();
 
             const io = new IntersectionObserver((entries)=>{
                 entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
