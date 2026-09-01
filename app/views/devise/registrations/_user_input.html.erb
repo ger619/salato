@@ -1,0 +1,89 @@
+<div data-wizard-target="step" class="space-y-5">
+  <div>
+    <h1 class="font-[Outfit] text-2xl font-bold tracking-tight text-[#150D3A] sm:text-3xl">
+      Create your account
+    </h1>
+    <p class="mt-1.5 font-['Inter_Tight'] text-sm text-[#150D3A]/65">
+      Start selling tickets in minutes.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <%= f.label :first_name, class: lbl %>
+      <%= f.text_field :first_name, required: true, class: field %>
+    </div>
+    <div>
+      <%= f.label :last_name, class: lbl %>
+      <%= f.text_field :last_name, required: true, class: field %>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <%= f.label :id_number, "ID Number / Passport", class: lbl %>
+      <%= f.text_field :id_number, autocomplete: "off", required: true,
+                       placeholder: "ID Number / Passport",
+                       class: "#{field} h-11 py-0 leading-6" %>
+    </div>
+
+    <div>
+      <p class="flex items-center gap-1.5">
+        <%= f.label :id_photo, "ID photo or passport", class: lbl %>
+        <span class="mt-1.5 font-['Inter_Tight'] text-xs text-[#150D3A]/50">
+          JPG, PNG or PDF. Max 5 MB.
+        </span>
+      </p>
+      <%= f.file_field :id_photo,
+                       accept: "image/*,application/pdf",
+                       class: "mt-1.5 w-full cursor-pointer rounded-xl bg-white px-3.5 py-2 " \
+                         "font-['Inter_Tight'] text-xs text-[#150D3A]/60 " \
+                         "ring-1 ring-[#150D3A]/12 transition " \
+                         "file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 " \
+                         "file:bg-[#7620B1]/10 file:px-3.5 file:py-1.5 " \
+                         "file:font-[Outfit] file:text-[13px] file:font-bold file:text-[#7620B1] " \
+                         "hover:file:bg-[#7620B1]/20 " \
+                         "focus:ring-2 focus:ring-[#AB2692] focus:outline-none" %>
+    </div>
+  </div>
+
+
+
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <%= f.label :email, class: lbl %>
+      <%= f.email_field :email, autocomplete: "email", required: true,
+                        placeholder: "you@example.com", class: field %>
+    </div>
+    <div>
+      <%= f.label :phone_number, "Phone number", class: lbl %>
+      <%= f.telephone_field :phone_number, placeholder: "+254 7XX XXX XXX", class: field %>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <%= f.label :password, class: lbl %>
+      <%= f.password_field :password, autocomplete: "new-password", required: true,
+                           minlength: 6, placeholder: "At least 6 characters", class: field %>
+    </div>
+    <div>
+      <%= f.label :password_confirmation, "Confirm password", class: lbl %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                           required: true, class: field %>
+    </div>
+  </div>
+
+  <button type="button" data-action="wizard#next"
+          class="group mt-2 flex w-full items-center justify-center gap-2 <%= cta %>">
+    Continue
+    <span class="transition-transform group-hover:translate-x-1">&rarr;</span>
+  </button>
+
+  <p class="text-center font-['Inter_Tight'] text-sm text-[#150D3A]/65">
+    Already have an account?
+    <%= link_to "Sign in", new_session_path(resource_name),
+                class: "font-bold text-[#AB2692] hover:underline" %>
+  </p>
+</div>

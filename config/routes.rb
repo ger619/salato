@@ -7,9 +7,14 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
 
+
   root "home#index"
   # config/routes.rb
-  resources :users, only: %w[new create show]
+  resources :users, only: %w[new create edit update show] do
+    member do
+      patch :status
+    end
+  end
   resources :dashboard, only: %w[index]
   resources :ticket_types, only: %w[index show]
   resources :users, only: %w[index new create show]

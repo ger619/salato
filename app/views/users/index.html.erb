@@ -1,5 +1,3 @@
-
-
 <% content_for :title, "People — Salato" %>
 <%= render 'shared/sidebar' %>
 
@@ -11,75 +9,111 @@
       <%= pluralize(@users.size, "person", plural: "people") %> on Salato
     </h1>
 
-    <div class="mt-8 rounded-2xl bg-white ring-1 ring-ink/10 overflow-hidden
+    <div class="mt-8 overflow-hidden rounded-2xl bg-white ring-1 ring-ink/10
                 shadow-[0_18px_40px_-20px_rgba(21,13,58,.35)]">
 
-      <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-mist
-            border-b border-ink/8">
-        <p class="col-span-3 eyebrow text-ink2/60">Name</p>
-        <p class="col-span-3 eyebrow text-ink2/60">Organisation</p>
-        <p class="col-span-3 eyebrow text-ink2/60">Email</p>
-        <p class="col-span-1 eyebrow text-ink2/60">Mobile</p>
-        <p class="col-span-2 eyebrow text-ink2/60">Roles</p>
+      <%# tables do not reflow, so let narrow screens scroll sideways %>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[880px] border-collapse text-left">
+          <thead>
+            <tr class="border-b border-ink/8 bg-mist">
+              <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Name</th>
+              <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Organisation</th>
+              <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Email</th>
+              <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Mobile</th>
+              <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Roles</th>
+              <th scope="col" class="eyebrow px-6 py-3 text-center font-normal text-ink2/60">Status</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-ink/8">
+            <% @users.each do |user| %>
+              <tr class="transition hover:bg-mist/60">
+
+                <%# ---- Name ---- %>
+                <td class="max-w-[220px] px-6 py-4">
+                  <%= link_to user.full_name.presence || "Unnamed",
+                              user_path(user),
+                              class: "block truncate text-[15px] font-medium transition
+                                      hover:text-violet rounded focus-visible:outline-none
+                                      focus-visible:ring-2 focus-visible:ring-violet" %>
+                </td>
+
+                <%# ---- Organisation ---- %>
+                <td class="max-w-[200px] px-6 py-4">
+                  <% if user.client %>
+                    <span class="block truncate text-[14px] text-ink2"><%= user.client.name %></span>
+                  <% else %>
+                    <span class="text-[14px] text-ink2/40">—</span>
+                  <% end %>
+                </td>
+
+                <%# ---- Email ---- %>
+                <td class="max-w-[220px] px-6 py-4">
+                  <%= mail_to user.email, user.email,
+                              class: "block truncate text-[14px] text-ink2 transition hover:text-ink" %>
+                </td>
+
+                <%# ---- Mobile ---- %>
+                <td class="px-6 py-4">
+                  <% if user.phone_number.present? %>
+                    <%= link_to user.phone_number,
+                                "tel:#{user.phone_number.gsub(/\s+/, '')}",
+                                class: "mono block whitespace-nowrap text-[13px] text-ink2 transition hover:text-ink" %>
+                  <% else %>
+                    <span class="text-[14px] text-ink2/40">—</span>
+                  <% end %>
+                </td>
+
+                <%# ---- Roles ---- %>
+                <td class="px-6 py-4">
+                  <% if user.roles.any? %>
+                    <div class="flex flex-wrap gap-1.5">
+                      <% user.roles.each do |role| %>
+                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5
+                                     text-[11px] font-medium <%= role_pill_classes(role) %>">
+                          <%= role_label(role) %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="text-[13px] text-ink2/40">No role</span>
+                  <% end %>
+                </td>
+                <% if (current_user.admin? || current_user.organiser?) &&
+                      user != current_user &&
+                      !user.admin? %>
+                  <%# ---- Status ---- %>
+                  <td class="px-6 py-4">
+                    <%= form_with url: status_user_path(user), method: :patch,
+                                  data: { turbo_confirm: "Change #{user.full_name.presence || 'this user'}'s status?" },
+                                  class: "flex justify-center" do |form| %>
+                      <label class="relative inline-block h-7 w-12 shrink-0 cursor-pointer rounded-full">
+                        <span class="sr-only">Active</span>
+                        <%= form.check_box :active,
+                                           checked: user.status,
+                                           class: "peer sr-only",
+                                           onchange: "this.form.requestSubmit()" %>
+                        <span class="absolute inset-0 rounded-full bg-slate-300 transition-colors duration-300 peer-checked:bg-[#0D9C66] peer-focus-visible:ring-2 peer-focus-visible:ring-violet peer-focus-visible:ring-offset-2"></span>
+                        <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-300 peer-checked:translate-x-full"></span>
+                      </label>
+                    <% end %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <%= render 'users/pagination' %>
+
       </div>
 
-      <ul class="divide-y divide-ink/8">
-        <% @users.each do |user| %>
-          <li class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4
-               px-6 py-4 hover:bg-mist/60 transition">
 
-            <%# Name — 3 %>
-            <div class="md:col-span-3 min-w-0">
-              <%= link_to user.full_name || "Unnamed",
-                          user_path(user),
-                          class: "block truncate text-[15px] font-medium hover:text-violet
-                            transition focus-visible:outline-none
-                            focus-visible:ring-2 focus-visible:ring-violet rounded" %>
-            </div>
-
-            <%# Organisation — 3 %>
-            <div class="md:col-span-3 min-w-0">
-              <% if user.client %>
-                <span class="block truncate text-[14px] text-ink2"><%= user.client.name %></span>
-              <% else %>
-                <span class="text-[14px] text-ink2/40">—</span>
-              <% end %>
-            </div>
-
-            <%# Email — 3 %>
-            <div class="md:col-span-3 min-w-0">
-              <%= mail_to user.email, user.email,
-                          class: "block truncate text-[14px] text-ink2 hover:text-ink transition" %>
-            </div>
-
-            <%# Mobile — 1 %>
-            <div class="md:col-span-1 min-w-0">
-              <% if user.phone_number.present? %>
-                <%= link_to user.phone_number,
-                            "tel:#{user.phone_number.gsub(/\s+/, '')}",
-                            class: "mono block truncate text-[13px] text-ink2 hover:text-ink transition" %>
-              <% else %>
-                <span class="text-[14px] text-ink2/40">—</span>
-              <% end %>
-            </div>
-
-            <%# Roles — 2 %>
-            <div class="md:col-span-2 flex flex-wrap gap-1.5">
-              <% if user.roles.any? %>
-                <% user.roles.each do |role| %>
-            <span class="inline-flex items-center rounded-full px-2.5 py-0.5
-                         text-[11px] font-medium <%= role_pill_classes(role) %>">
-              <%= role_label(role) %>
-            </span>
-                <% end %>
-              <% else %>
-                <span class="text-[13px] text-ink2/40">No role</span>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
-      </ul>
-
+      <% if @users.empty? %>
+        <p class="px-6 py-12 text-center text-[14px] text-ink2/60">
+          No one here yet.
+        </p>
+      <% end %>
     </div>
   </section>
 </div>

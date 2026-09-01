@@ -5,10 +5,11 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :invitable, :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable, :lockable, :timeoutable, :trackable # , :confirmable
 
   belongs_to :client, optional: true
   accepts_nested_attributes_for :client
+  has_one_attached :id_photo
 
   attr_accessor :role
 
@@ -54,6 +55,10 @@ class User < ApplicationRecord
     return true if admin? || scanner?
 
     client.present?
+  end
+
+  def toggle_boolean(attribute)
+    update(attribute => !self[attribute])
   end
 
   private

@@ -48,7 +48,8 @@
             <%= f.email_field :email,
                               autofocus: true,
                               autocomplete: "off",
-                              placeholder: "name@example.com",
+                              required: true,
+                              placeholder: "name@salato.event",
                               class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
                                       ring-1 ring-ink/12 focus:outline-none
                                       focus:ring-2 focus:ring-violet transition" %>
@@ -59,6 +60,7 @@
               <%= f.label :first_name, "First name",
                           class: "block text-[14px] font-medium text-ink mb-1.5" %>
               <%= f.text_field :first_name,
+                               required: true,
                                class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
                                        ring-1 ring-ink/12 focus:outline-none
                                        focus:ring-2 focus:ring-violet transition" %>
@@ -66,8 +68,10 @@
 
             <div>
               <%= f.label :last_name, "Last name",
+                          required: true,
                           class: "block text-[14px] font-medium text-ink mb-1.5" %>
               <%= f.text_field :last_name,
+                               required: true,
                                class: "w-full rounded-xl px-4 py-3 text-[15px] bg-mist
                                        ring-1 ring-ink/12 focus:outline-none
                                        focus:ring-2 focus:ring-violet transition" %>
@@ -87,6 +91,7 @@
                                  focus:ring-2 focus:ring-violet transition
                                  appearance-none bg-[length:16px] bg-no-repeat
                                  bg-[right_1rem_center]",
+                         required: true,
                          style: "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23150D3A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")" %>
 
             <p class="mt-1.5 text-[13px] text-ink2/70">
@@ -114,6 +119,7 @@
                                               focus:ring-2 focus:ring-violet transition
                                               appearance-none bg-[length:16px] bg-no-repeat
                                               bg-[right_1rem_center]",
+                                      required: true,
                                       style: "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23150D3A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")" %>
 
               <p class="mt-1.5 text-[13px] text-ink2/70">

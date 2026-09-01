@@ -1,14 +1,29 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
   before_action :require_people_access!, only: %i[index show]
-
   def index
-    # includes(:roles) — without it rolify fires a query per row.
-    @users = visible_users.includes(:roles).order(:first_name, :last_name, :email)
+    users_scope = visible_users.includes(:roles).order(:first_name, :last_name, :email)
+
+    @per_page = 10
+    @page = (params[:page] || 1).to_i
+    offset = (@page - 1) * @per_page
+
+    @total_count = users_scope.count
+    @total_pages = (@total_count / @per_page.to_f).ceil
+    @start_count = offset + 1
+    @end_count = [offset + @per_page, @total_count].min
+
+    @users = users_scope.limit(@per_page).offset(offset)
   end
 
   def show
     @user = visible_users.includes(:roles).find(params[:id])
+  end
+
+  def status
+    @user = User.find(params[:id])
+    @user.toggle_boolean(:status)
+    redirect_to users_path, notice: 'User status was successfully updated.'
   end
 
   private

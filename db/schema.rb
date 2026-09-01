@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_28_094822) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_113432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -58,6 +58,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_094822) do
     t.string "settlement_bank"
     t.string "tax_pin"
     t.datetime "updated_at", null: false
+    t.string "website"
   end
 
   create_table "events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -159,6 +160,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_094822) do
     t.string "encrypted_password", default: "", null: false
     t.integer "failed_attempts", default: 0, null: false
     t.string "first_name"
+    t.string "id_number"
     t.datetime "invitation_accepted_at"
     t.datetime "invitation_created_at"
     t.integer "invitation_limit"
@@ -176,6 +178,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_094822) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.integer "sign_in_count", default: 0, null: false
+    t.boolean "status"
     t.string "unconfirmed_email"
     t.string "unlock_token"
     t.datetime "updated_at", null: false
