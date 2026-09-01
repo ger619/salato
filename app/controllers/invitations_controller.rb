@@ -19,10 +19,6 @@ class InvitationsController < Devise::InvitationsController
   def requested_role
     params.dig(:user, :role).to_s
   end
-
-  # An organiser can only ever invite into their own client — the form doesn't
-  # offer a picker, and this ignores one if it's posted anyway. Only an admin
-  # chooses, and only when the invitee isn't an admin.
   def resolved_client_id
     return nil if requested_role == 'admin'
 
@@ -33,9 +29,6 @@ class InvitationsController < Devise::InvitationsController
       current_user.client_id
     end
   end
-
-  # devise_invitable builds the invitee from this, so merging the client here
-  # sets it as part of the same save rather than patching it afterwards.
   def invite_params
     params.require(:user)
       .permit(:email, :first_name, :last_name, :phone_number)
