@@ -5,17 +5,12 @@ class InvitationsController < Devise::InvitationsController
   def create
     requested = requested_role
 
-    # Re-checked server side. The select only offers permitted roles, but
-    # the select is not a security boundary.
     return reject_with(:role, "isn't a role you can assign") unless current_user.assignable_roles.include?(requested)
-
-    # Admins belong to Salato, not to a client, so their client stays blank.
-    # Everyone else must land in one — otherwise an organiser or scanner
-    # exists with nothing to work on.
     return reject_with(:client_id, 'must be chosen for this role') if requested != 'admin' && resolved_client_id.blank?
 
     super do |user|
       user.add_role(requested) if user.persisted? && user.errors.empty?
+      return redirect_to users_path, notice: 'Invitation sent successfully.' if user.persisted? && user.errors.empty?
     end
   end
 
