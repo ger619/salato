@@ -1,19 +1,13 @@
-<div class="rounded-2xl bg-white ring-1 ring-ink/10 p-5">
-  <p class="eyebrow text-ink2/60">Enter the ticket number</p>
-
-  <%= form_with url: verify_path, method: :get, class: "mt-3 flex gap-2" do |f| %>
-    <%= f.text_field :token,
-                     value: local_assigns[:query],
-                     autofocus: true,
-                     autocomplete: "off",
-                     autocapitalize: "characters",
-                     placeholder: "TXT-…",
-                     class: "flex-1 min-w-0 rounded-xl px-4 py-3 text-[15px] mono
-                             bg-mist ring-1 ring-ink/12 focus:outline-none
-                             focus:ring-2 focus:ring-violet" %>
-
-    <%= f.submit "Check",
-                 class: "grad-bg text-white rounded-xl px-5 py-3 text-[15px]
-                         font-medium cursor-pointer hover:opacity-90 transition" %>
-  <% end %>
-</div>
+<%= form_with url: lookup_verification_path, method: :post,
+              id: "ticket_lookup_form", class: "space-y-2" do |f| %>
+  <%= f.label :token, "Or enter the ticket number",
+              class: "block text-[13px] text-ink2" %>
+  <%= f.text_field :token, id: "ticket_query",
+                   value: local_assigns[:query],
+                   autocomplete: "off", autocapitalize: "characters", spellcheck: false,
+                   class: "mono w-full rounded-xl bg-white px-4 py-3 text-[15px]
+                           ring-1 ring-ink/15 focus:ring-2 focus:ring-ink outline-none" %>
+  <%= f.submit "Look up ticket",
+               class: "w-full rounded-xl bg-white py-3 font-[Outfit] text-[15px]
+                       font-bold text-ink ring-1 ring-ink/15 hover:bg-mist transition" %>
+<% end %>

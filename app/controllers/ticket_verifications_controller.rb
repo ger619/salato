@@ -4,9 +4,19 @@ class TicketVerificationsController < ApplicationController
   before_action :authorise_scanner!, only: :check_in
   before_action :ensure_check_in_window!, only: :check_in
 
+  # GET /verify
+  # Just the scanner page. No lookup happens here any more.
   def new
-    @query = params[:token].to_s.strip
-    return if @query.blank?
+    @query = ''
+  end
+
+  # POST /verify/lookup
+  # One entry point for both paths: the camera fills the form and submits it,
+  # and typing a number by hand submits the same form.
+  def lookup
+    @query = extract_token(params[:token])
+
+    return redirect_to new_verification_path, alert: 'Nothing was scanned. Try again.' if @query.blank?
 
     ticket = Ticket.find_by(qr_token: @query) ||
              Ticket.find_by(ticket_number: @query.upcase)
@@ -14,10 +24,13 @@ class TicketVerificationsController < ApplicationController
     if ticket
       redirect_to verify_ticket_path(ticket.qr_token)
     else
-      render :invalid, status: :not_found
+      # 422, not 404 — Turbo only renders the body of a failed form submission
+      # when the status is in the 4xx range it treats as a form error.
+      render :invalid, status: :unprocessable_entity
     end
   end
 
+  # GET /verify/:token
   def show
     # Drives whether the view renders the check-in button or just the status.
     # Same window the controller enforces, so the button never appears when
@@ -30,6 +43,7 @@ class TicketVerificationsController < ApplicationController
     @check_in_opens_at = @event&.check_in_opens_at
   end
 
+  # POST /verify/:token/check_in
   def check_in
     # Atomic: the WHERE clause is the guard. Only one concurrent request can
     # match a row that is still 'valid', so a double scan can't double check in.
@@ -60,7 +74,27 @@ class TicketVerificationsController < ApplicationController
 
     return if @ticket
 
+    @query = params[:token].to_s
     render :invalid, status: :not_found
+  end
+
+  # A QR code usually carries a full URL, not a bare token. Accepts:
+  #   "SAL-4F2A9C"                       -> as typed
+  #   "https://salato.co/verify/abc123"  -> abc123
+  #   "https://salato.co/v?token=abc123" -> abc123
+  def extract_token(raw)
+    value = raw.to_s.strip
+    return value unless value.match?(%r{\Ahttps?://}i)
+
+    uri = begin
+      URI.parse(value)
+    rescue URI::InvalidURIError
+      nil
+    end
+    return value unless uri
+
+    from_query = Rack::Utils.parse_nested_query(uri.query.to_s)['token']
+    from_query.presence || uri.path.split('/').reject(&:blank?).last.to_s
   end
 
   def authorise_scanner!
