@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   root "home#index"
   # config/routes.rb
-  resources :users, only: %w[new create show] do
+  resources :users, only: %w[new create edit update show] do
     member do
       patch :status
     end
