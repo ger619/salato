@@ -50,11 +50,13 @@ class TicketVerificationsController < ApplicationController
 
   # POST /verify/:token/check_in
   def check_in
-    # Atomic: the WHERE clause is the guard. Only one concurrent request can
-    # match a row that is still 'valid', so a double scan can't double check in.
     claimed = Ticket
-      .where(id: @ticket.id, status: 'valid')
-      .update_all(status: 'checked_in', checked_in_at: Time.current)
+                .where(id: @ticket.id, status: 'valid')
+                .update_all(
+                  status: 'checked_in',
+                  checked_in_at: Time.current,
+                  checked_in_by_id: current_user.id
+                )
 
     @ticket.reload
 

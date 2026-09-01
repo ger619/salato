@@ -8,6 +8,7 @@ class Ticket < ApplicationRecord
   validates :ticket_number, presence: true, uniqueness: true
   validates :attendee_name, presence: true
   validates :status, inclusion: { in: STATUSES }
+  belongs_to :checked_in_by, class_name: 'User', optional: true
 
   def valid_ticket?
     status == 'valid'

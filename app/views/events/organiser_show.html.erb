@@ -233,6 +233,8 @@
             <th class="px-6 py-3 font-medium">Guest</th>
             <th class="px-6 py-3 font-medium">Type</th>
             <th class="px-6 py-3 font-medium text-right">At the door</th>
+            <th class="px-6 py-3 font-medium text-right">Checked In By</th>
+
           </tr>
           </thead>
           <tbody class="divide-y divide-[#150D3A]/6">
@@ -254,6 +256,9 @@
                 <% else %>
                   <span class="text-xs text-[#150D3A]/40">Not scanned</span>
                 <% end %>
+              </td>
+              <td class="px-6 py-4 text-right text-[#150D3A]/70">
+                <%= ticket.checked_in_by&.full_name || "—" %>
               </td>
             </tr>
           <% end %>
