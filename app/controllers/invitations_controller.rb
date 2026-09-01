@@ -19,6 +19,7 @@ class InvitationsController < Devise::InvitationsController
   def requested_role
     params.dig(:user, :role).to_s
   end
+
   def resolved_client_id
     return nil if requested_role == 'admin'
 
@@ -29,6 +30,7 @@ class InvitationsController < Devise::InvitationsController
       current_user.client_id
     end
   end
+
   def invite_params
     params.require(:user)
       .permit(:email, :first_name, :last_name, :phone_number)
@@ -36,9 +38,7 @@ class InvitationsController < Devise::InvitationsController
   end
 
   def reject_with(field, message)
-    self.resource = User.new(
-      params.require(:user).permit(:email, :first_name, :last_name, :phone_number)
-    )
+    self.resource = User.new
     resource.errors.add(field, message)
     render :new, status: :unprocessable_entity
   end

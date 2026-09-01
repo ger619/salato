@@ -104,7 +104,10 @@
             <% end %>
           </tbody>
         </table>
+        <%= render 'users/pagination' %>
+
       </div>
+
 
       <% if @users.empty? %>
         <p class="px-6 py-12 text-center text-[14px] text-ink2/60">
