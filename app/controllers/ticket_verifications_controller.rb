@@ -51,12 +51,12 @@ class TicketVerificationsController < ApplicationController
   # POST /verify/:token/check_in
   def check_in
     claimed = Ticket
-                .where(id: @ticket.id, status: 'valid')
-                .update_all(
-                  status: 'checked_in',
-                  checked_in_at: Time.current,
-                  checked_in_by_id: current_user.id
-                )
+      .where(id: @ticket.id, status: 'valid')
+      .update_all(
+        status: 'checked_in',
+        checked_in_at: Time.current,
+        checked_in_by_id: current_user.id
+      )
 
     @ticket.reload
 

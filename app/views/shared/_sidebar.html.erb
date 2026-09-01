@@ -50,8 +50,8 @@
     path: "#", active: controller_name == "orders" },
 
   { label: "Tickets", icon: :tickets,
-    path: (defined?(tickets_path) ? tickets_path : "#"),
-    active: controller_name == "tickets" },
+    path: tickets_path,
+    active: controller_name == "tickets_controller" },
 
   { label: "Gate scanner", icon: :scanner,
     path: verify_path,

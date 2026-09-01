@@ -46,7 +46,7 @@ Rails.application.routes.draw do
   post "/payments/paystack/webhook",
        to: "payments#webhook"
 
-  resources :tickets, only: [:show] do
+  resources :tickets, only: [:show, :index] do
     member do
       get :download
     end
