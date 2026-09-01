@@ -57,6 +57,11 @@ Rails.application.routes.draw do
       to: "ticket_verifications#new",
       as: :verify
 
+  post "verify/lookup",
+       to: "ticket_verifications#lookup",
+       as: :lookup_verification
+
+
   get "/verify/:token",
       to: "ticket_verifications#show",
       as: :verify_ticket
