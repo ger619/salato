@@ -1,0 +1,305 @@
+<%# app/views/users/show.html.erb %>
+<%
+  card  = "overflow-hidden rounded-2xl bg-white ring-1 ring-ink/10 " \
+          "shadow-[0_18px_40px_-20px_rgba(21,13,58,.35)]"
+  grad  = "bg-[linear-gradient(105deg,#7620B1_0%,#AB2692_34%,#E13765_62%,#FC8027_100%)]"
+  dt_c  = "eyebrow text-ink2/60"
+  dd_c  = "mt-1 text-[15px] text-ink"
+  muted = "mt-1 text-[15px] text-ink2/40"
+
+  initials = [@user.first_name, @user.last_name].compact_blank.map { |n| n[0] }.join.upcase
+%>
+
+<% content_for :title, "#{@user.full_name.presence || @user.email} — Salato" %>
+<%= render 'shared/sidebar' %>
+
+<div class="app-main min-h-dvh bg-mist">
+  <section class="app-inner">
+
+    <%= link_to users_path,
+                class: "inline-flex items-center gap-1.5 text-[13px] font-medium text-ink2/60
+                        transition hover:text-violet" do %>
+      <span aria-hidden="true">&larr;</span> All people
+    <% end %>
+
+    <%# ══════════ HEADER ══════════ %>
+    <div class="mt-4 <%= card %>">
+      <div class="h-2 w-full <%= grad %>"></div>
+
+      <div class="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:gap-6">
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl
+                    <%= grad %> font-[Outfit] text-xl font-bold text-white">
+          <%= initials.presence || "?" %>
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <h1 class="truncate text-[26px] font-semibold leading-tight text-ink">
+            <%= @user.full_name.presence || "Unnamed" %>
+          </h1>
+
+          <p class="mt-1 truncate text-[14px] text-ink2">
+            <% if @user.client %>
+              <%= @user.client.name %>
+            <% else %>
+              <span class="text-ink2/40">No organisation</span>
+            <% end %>
+          </p>
+
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            <% if @user.roles.any? %>
+              <% @user.roles.each do |role| %>
+                <span class="inline-flex items-center rounded-full px-2.5 py-0.5
+                             text-[11px] font-medium <%= role_pill_classes(role) %>">
+                  <%= role_label(role) %>
+                </span>
+              <% end %>
+            <% else %>
+              <span class="text-[13px] text-ink2/40">No role</span>
+            <% end %>
+          </div>
+        </div>
+
+        <%# ---- status toggle ---- %>
+        <div class="shrink-0 sm:text-right">
+          <p class="<%= dt_c %>">Status</p>
+          <div class="mt-2 flex items-center gap-3 sm:justify-end">
+            <span class="text-[14px] font-medium <%= @user.status ? "text-[#0D9C66]" : "text-ink2/50" %>">
+              <%= @user.status ? "Active" : "Inactive" %>
+            </span>
+
+            <%= form_with url: status_user_path(@user), method: :patch,
+                          data: { turbo_confirm: "Change #{@user.full_name.presence || 'this user'}'s status?" } do |form| %>
+              <label class="relative inline-block h-7 w-12 shrink-0 cursor-pointer rounded-full">
+                <span class="sr-only">Active</span>
+                <%= form.check_box :active,
+                                   checked: @user.status,
+                                   class: "peer sr-only",
+                                   onchange: "this.form.requestSubmit()" %>
+                <span class="absolute inset-0 rounded-full bg-slate-300 transition-colors duration-300
+                             peer-checked:bg-[#0D9C66]
+                             peer-focus-visible:ring-2 peer-focus-visible:ring-violet peer-focus-visible:ring-offset-2"></span>
+                <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow
+                             transition-transform duration-300 peer-checked:translate-x-full"></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+
+      <%# ══════════ CONTACT ══════════ %>
+      <div class="<%= card %>">
+        <div class="h-1 w-full <%= grad %>"></div>
+        <div class="p-6">
+          <h2 class="font-[Outfit] text-base font-semibold text-ink">Contact</h2>
+
+          <dl class="mt-5 grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2 min-w-0">
+              <dt class="<%= dt_c %>">Email</dt>
+              <dd class="<%= dd_c %> truncate">
+                <%= mail_to @user.email, @user.email, class: "transition hover:text-violet" %>
+              </dd>
+            </div>
+
+            <div>
+              <dt class="<%= dt_c %>">Mobile</dt>
+              <% if @user.phone_number.present? %>
+                <dd class="<%= dd_c %> mono">
+                  <%= link_to @user.phone_number,
+                              "tel:#{@user.phone_number.gsub(/\s+/, '')}",
+                              class: "transition hover:text-violet" %>
+                </dd>
+              <% else %>
+                <dd class="<%= muted %>">Not provided</dd>
+              <% end %>
+            </div>
+
+            <div>
+              <dt class="<%= dt_c %>">Email confirmed</dt>
+              <% if @user.confirmed_at %>
+                <dd class="<%= dd_c %>"><%= @user.confirmed_at.strftime("%d %b %Y") %></dd>
+              <% else %>
+                <dd class="mt-1 text-[15px] font-medium text-coral">Pending</dd>
+              <% end %>
+            </div>
+
+            <% if @user.unconfirmed_email.present? %>
+              <div class="sm:col-span-2 min-w-0">
+                <dt class="<%= dt_c %>">Awaiting confirmation</dt>
+                <dd class="<%= dd_c %> truncate"><%= @user.unconfirmed_email %></dd>
+              </div>
+            <% end %>
+          </dl>
+        </div>
+      </div>
+
+      <%# ══════════ IDENTITY ══════════ %>
+      <div class="<%= card %>">
+        <div class="h-1 w-full <%= grad %>"></div>
+        <div class="p-6">
+          <h2 class="font-[Outfit] text-base font-semibold text-ink">Identity</h2>
+
+          <dl class="mt-5 space-y-5">
+            <div>
+              <dt class="<%= dt_c %>">ID number / passport</dt>
+              <% if @user.id_number.present? %>
+                <dd class="<%= dd_c %> mono"><%= @user.id_number %></dd>
+              <% else %>
+                <dd class="<%= muted %>">Not provided</dd>
+              <% end %>
+            </div>
+
+            <div>
+              <dt class="<%= dt_c %>">ID document</dt>
+              <% if @user.respond_to?(:id_photo) && @user.id_photo.attached? %>
+                <dd class="mt-2">
+                  <% if @user.id_photo.image? %>
+                    <%= link_to rails_blob_path(@user.id_photo, disposition: "inline"),
+                                target: "_blank", rel: "noopener",
+                                class: "block w-fit overflow-hidden rounded-xl ring-1 ring-ink/10
+                                        transition hover:ring-violet/40" do %>
+                      <%= image_tag @user.id_photo, class: "h-32 w-auto object-cover" %>
+                    <% end %>
+                  <% else %>
+                    <%= link_to rails_blob_path(@user.id_photo, disposition: "inline"),
+                                target: "_blank", rel: "noopener",
+                                class: "inline-flex items-center gap-2 rounded-xl bg-violet/10 px-3.5 py-2
+                                        font-[Outfit] text-[13px] font-bold text-violet
+                                        transition hover:bg-violet/20" do %>
+                      View document
+                    <% end %>
+                  <% end %>
+                </dd>
+              <% else %>
+                <dd class="<%= muted %>">Not uploaded</dd>
+              <% end %>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <%# ══════════ ACCOUNT ACTIVITY ══════════ %>
+      <div class="<%= card %>">
+        <div class="h-1 w-full <%= grad %>"></div>
+        <div class="p-6">
+          <h2 class="font-[Outfit] text-base font-semibold text-ink">Account activity</h2>
+
+          <dl class="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
+              <dt class="<%= dt_c %>">Member since</dt>
+              <dd class="<%= dd_c %>"><%= @user.created_at.strftime("%d %b %Y") %></dd>
+            </div>
+
+            <div>
+              <dt class="<%= dt_c %>">Sign-ins</dt>
+              <dd class="<%= dd_c %> mono"><%= @user.sign_in_count %></dd>
+            </div>
+
+            <div>
+              <dt class="<%= dt_c %>">Last sign-in</dt>
+              <% if @user.last_sign_in_at %>
+                <dd class="<%= dd_c %>"><%= @user.last_sign_in_at.strftime("%d %b %Y, %H:%M") %></dd>
+              <% else %>
+                <dd class="<%= muted %>">Never</dd>
+              <% end %>
+            </div>
+
+            <div class="min-w-0">
+              <dt class="<%= dt_c %>">Last IP</dt>
+              <% if @user.last_sign_in_ip.present? %>
+                <dd class="<%= dd_c %> mono truncate"><%= @user.last_sign_in_ip %></dd>
+              <% else %>
+                <dd class="<%= muted %>">—</dd>
+              <% end %>
+            </div>
+
+            <div class="sm:col-span-2">
+              <dt class="<%= dt_c %>">Last updated</dt>
+              <dd class="<%= dd_c %>"><%= @user.updated_at.strftime("%d %b %Y, %H:%M") %></dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <%# ══════════ SECURITY ══════════ %>
+      <div class="<%= card %>">
+        <div class="h-1 w-full <%= grad %>"></div>
+        <div class="p-6">
+          <h2 class="font-[Outfit] text-base font-semibold text-ink">Security</h2>
+
+          <% if @user.locked_at %>
+            <div class="mt-4 rounded-xl bg-pink/10 px-4 py-3 ring-1 ring-pink/25">
+              <p class="text-[14px] font-semibold text-pink">Account locked</p>
+              <p class="mt-0.5 text-[13px] text-ink2">
+                Locked <%= @user.locked_at.strftime("%d %b %Y, %H:%M") %>
+              </p>
+            </div>
+          <% end %>
+
+          <dl class="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
+              <dt class="<%= dt_c %>">Failed attempts</dt>
+              <dd class="mt-1 text-[15px] mono <%= @user.failed_attempts.to_i.positive? ? "text-coral" : "text-ink" %>">
+                <%= @user.failed_attempts %>
+              </dd>
+            </div>
+
+            <div>
+              <dt class="<%= dt_c %>">Password reset sent</dt>
+              <% if @user.reset_password_sent_at %>
+                <dd class="<%= dd_c %>"><%= @user.reset_password_sent_at.strftime("%d %b %Y") %></dd>
+              <% else %>
+                <dd class="<%= muted %>">Never</dd>
+              <% end %>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <%# ══════════ INVITATION ══════════ %>
+      <% if @user.invitation_created_at.present? %>
+        <div class="<%= card %> lg:col-span-2">
+          <div class="h-1 w-full <%= grad %>"></div>
+          <div class="p-6">
+            <h2 class="font-[Outfit] text-base font-semibold text-ink">Invitation</h2>
+
+            <dl class="mt-5 grid gap-5 sm:grid-cols-3">
+              <div>
+                <dt class="<%= dt_c %>">Sent</dt>
+                <% if @user.invitation_sent_at %>
+                  <dd class="<%= dd_c %>"><%= @user.invitation_sent_at.strftime("%d %b %Y") %></dd>
+                <% else %>
+                  <dd class="<%= muted %>">—</dd>
+                <% end %>
+              </div>
+
+              <div>
+                <dt class="<%= dt_c %>">Accepted</dt>
+                <% if @user.invitation_accepted_at %>
+                  <dd class="<%= dd_c %>"><%= @user.invitation_accepted_at.strftime("%d %b %Y") %></dd>
+                <% else %>
+                  <dd class="mt-1 text-[15px] font-medium text-coral">Not yet accepted</dd>
+                <% end %>
+              </div>
+
+              <div class="min-w-0">
+                <dt class="<%= dt_c %>">Invited by</dt>
+                <% if @user.invited_by %>
+                  <dd class="<%= dd_c %> truncate">
+                    <%= @user.invited_by.try(:full_name) ||
+                          @user.invited_by.try(:name) ||
+                          @user.invited_by.try(:email) || "—" %>
+                  </dd>
+                <% else %>
+                  <dd class="<%= muted %>">—</dd>
+                <% end %>
+              </div>
+            </dl>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

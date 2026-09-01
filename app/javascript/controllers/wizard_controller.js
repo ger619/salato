@@ -39,6 +39,7 @@ export default class extends Controller {
   onSubmit(event) {
     for (let i = 0; i < this.stepTargets.length; i += 1) {
       const invalid = this.invalidFieldIn(i);
+      // eslint-disable-next-line
       if (!invalid) continue;
 
       event.preventDefault();
@@ -58,9 +59,9 @@ export default class extends Controller {
     this.previewTargets.forEach((el) => {
       const ids = (el.dataset.previewSource || '').split(' ').filter(Boolean);
       const value = ids
-          .map((id) => (document.getElementById(id)?.value || '').trim())
-          .filter(Boolean)
-          .join(' ');
+        .map((id) => (document.getElementById(id)?.value || '').trim())
+        .filter(Boolean)
+        .join(' ');
 
       el.textContent = value || 'Not provided';
       el.classList.toggle('text-[#150D3A]/35', !value);

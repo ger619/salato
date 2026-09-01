@@ -9,6 +9,7 @@ class User < ApplicationRecord
 
   belongs_to :client, optional: true
   accepts_nested_attributes_for :client
+  has_one_attached :id_photo
 
   attr_accessor :role
 

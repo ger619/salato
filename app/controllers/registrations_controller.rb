@@ -13,7 +13,7 @@ class RegistrationsController < Devise::RegistrationsController
 
   def sign_up_params
     params.require(:user).permit(
-      :first_name, :last_name, :email, :phone_number,
+      :first_name, :last_name, :email, :phone_number, :id_photo,
       :password, :password_confirmation,
       client_attributes: %i[name phone email website country city description]
     )
