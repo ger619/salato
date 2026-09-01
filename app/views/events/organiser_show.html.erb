@@ -174,7 +174,7 @@
           </tr>
           </thead>
           <tbody class="divide-y divide-[#150D3A]/6">
-          <% orders.first(50).each do |order| %>
+          <% orders.first(10).each do |order| %>
             <tr class="transition hover:bg-[#F7F4FB]/60">
               <td class="whitespace-nowrap px-6 py-4 font-[JetBrains_Mono] text-xs text-[#150D3A]">
                 <%= order_ref.call(order) %>
@@ -239,7 +239,7 @@
           </tr>
           </thead>
           <tbody class="divide-y divide-[#150D3A]/6">
-          <% tickets.first(100).each do |ticket| %>
+          <% tickets.first(10).each do |ticket| %>
             <tr class="transition hover:bg-[#F7F4FB]/60">
               <td class="whitespace-nowrap px-6 py-4 font-[JetBrains_Mono] text-xs font-medium text-[#150D3A]">
                 <%= ticket_code.call(ticket) %>
