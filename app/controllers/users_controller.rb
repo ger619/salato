@@ -11,6 +11,12 @@ class UsersController < ApplicationController
     @user = visible_users.includes(:roles).find(params[:id])
   end
 
+  def status
+    @user = User.find(params[:id])
+    @user.toggle_boolean(:status)
+    redirect_to users_path, notice: 'User status was successfully updated.'
+  end
+
   private
 
   # Admins see everyone. An organiser sees their own client's people only —

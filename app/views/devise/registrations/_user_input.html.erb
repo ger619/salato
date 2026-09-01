@@ -21,6 +21,32 @@
 
   <div class="grid gap-3 sm:grid-cols-2">
     <div>
+      <%= f.label :id_number, "ID Number / Passport", class: lbl %>
+      <%= f.text_field :id_number, autocomplete: "ID Number", required: true,
+                        placeholder: "ID Number/ Passport", class: field %>
+    </div>
+    <div>
+      <p class="flex items-center gap-1.5">
+        <%= f.label :id_photo, "ID photo or passport", class: lbl %>
+        <span class="mt-1.5 font-['Inter_Tight'] text-xs text-[#150D3A]/50">
+          JPG, PNG or PDF. Max 5 MB.
+        </span>
+      </p>
+      <%= f.file_field :id_photo,
+                       accept: "image/*,application/pdf",
+                       class: "mt-1.5 w-full cursor-pointer rounded-xl bg-white px-3.5 py-1.5 " \
+                         "font-['Inter_Tight'] text-sm text-[#150D3A]/60 " \
+                         "ring-1 ring-[#150D3A]/12 transition " \
+                         "file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 " \
+                         "file:bg-[#7620B1]/10 file:px-3.5 file:py-1.5 " \
+                         "file:font-[Outfit] file:text-[13px] file:font-bold file:text-[#7620B1] " \
+                         "hover:file:bg-[#7620B1]/20 " \
+                         "focus:ring-2 focus:ring-[#AB2692] focus:outline-none" %>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
       <%= f.label :email, class: lbl %>
       <%= f.email_field :email, autocomplete: "email", required: true,
                         placeholder: "you@example.com", class: field %>
