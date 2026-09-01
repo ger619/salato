@@ -1,0 +1,58 @@
+<div data-wizard-target="step" class="space-y-5">
+  <div>
+    <h1 class="font-[Outfit] text-2xl font-bold tracking-tight text-[#150D3A] sm:text-3xl">
+      Create your account
+    </h1>
+    <p class="mt-1.5 font-['Inter_Tight'] text-sm text-[#150D3A]/65">
+      Start selling tickets in minutes.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <%= f.label :first_name, class: lbl %>
+      <%= f.text_field :first_name, required: true, class: field %>
+    </div>
+    <div>
+      <%= f.label :last_name, class: lbl %>
+      <%= f.text_field :last_name, required: true, class: field %>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <%= f.label :email, class: lbl %>
+      <%= f.email_field :email, autocomplete: "email", required: true,
+                        placeholder: "you@example.com", class: field %>
+    </div>
+    <div>
+      <%= f.label :phone_number, "Phone number", class: lbl %>
+      <%= f.telephone_field :phone_number, placeholder: "+254 7XX XXX XXX", class: field %>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <%= f.label :password, class: lbl %>
+      <%= f.password_field :password, autocomplete: "new-password", required: true,
+                           minlength: 6, placeholder: "At least 6 characters", class: field %>
+    </div>
+    <div>
+      <%= f.label :password_confirmation, "Confirm password", class: lbl %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                           required: true, class: field %>
+    </div>
+  </div>
+
+  <button type="button" data-action="wizard#next"
+          class="group mt-2 flex w-full items-center justify-center gap-2 <%= cta %>">
+    Continue
+    <span class="transition-transform group-hover:translate-x-1">&rarr;</span>
+  </button>
+
+  <p class="text-center font-['Inter_Tight'] text-sm text-[#150D3A]/65">
+    Already have an account?
+    <%= link_to "Sign in", new_session_path(resource_name),
+                class: "font-bold text-[#AB2692] hover:underline" %>
+  </p>
+</div>
