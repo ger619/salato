@@ -11,9 +11,10 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
   static targets = ['video', 'canvas', 'stage', 'status', 'startButton'];
+
   static values = {
-    input: String,   // CSS selector for the manual-entry text field
-    form: String,    // CSS selector for the form to submit
+    input: String, // CSS selector for the manual-entry text field
+    form: String, // CSS selector for the form to submit
   };
 
   connect() {
@@ -98,6 +99,7 @@ export default class extends Controller {
         }
       } catch (error) {
         // a single dropped frame is not worth stopping over
+        // eslint-disable-next-line
         console.debug('scan frame failed', error);
       }
     }
@@ -126,6 +128,7 @@ export default class extends Controller {
 
   // QR codes often hold a full URL rather than a bare number.
   // https://salato.co.ke/t/ABC-12345  →  ABC-12345
+  // eslint-disable-next-line
   extractCode(raw) {
     try {
       const url = new URL(raw);
@@ -173,7 +176,7 @@ export default class extends Controller {
   }
 
   // ── helpers ─────────────────────────────────────────────────
-
+  // eslint-disable-next-line
   permissionMessage(error) {
     switch (error.name) {
       case 'NotAllowedError':
