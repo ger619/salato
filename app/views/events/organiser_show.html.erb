@@ -242,7 +242,9 @@
           <% tickets.first(10).each do |ticket| %>
             <tr class="transition hover:bg-[#F7F4FB]/60">
               <td class="whitespace-nowrap px-6 py-4 font-[JetBrains_Mono] text-xs font-medium text-[#150D3A]">
-                <%= ticket_code.call(ticket) %>
+                <%= link_to ticket_path(ticket), class: "text-[#7620B1] hover:underline" do %>
+                  <%= ticket_code.call(ticket) %>
+                <% end %>
               </td>
               <td class="px-6 py-4 text-[#150D3A]"><%= ticket_holder.call(ticket) %></td>
               <td class="px-6 py-4 text-[#150D3A]/70"><%= ticket.ticket_type&.name || "—" %></td>
