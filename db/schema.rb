@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_01_113432) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_184259) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -133,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_113432) do
     t.string "attendee_email", null: false
     t.string "attendee_name", null: false
     t.datetime "checked_in_at"
+    t.uuid "checked_in_by_id"
     t.datetime "created_at", null: false
     t.uuid "event_id", null: false
     t.uuid "order_id", null: false
@@ -141,6 +142,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_113432) do
     t.string "ticket_number", null: false
     t.uuid "ticket_type_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["checked_in_by_id"], name: "index_tickets_on_checked_in_by_id"
     t.index ["event_id"], name: "index_tickets_on_event_id"
     t.index ["order_id"], name: "index_tickets_on_order_id"
     t.index ["qr_token"], name: "index_tickets_on_qr_token", unique: true
@@ -209,5 +211,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_113432) do
   add_foreign_key "tickets", "events"
   add_foreign_key "tickets", "orders"
   add_foreign_key "tickets", "ticket_types"
+  add_foreign_key "tickets", "users", column: "checked_in_by_id"
   add_foreign_key "users", "clients"
 end

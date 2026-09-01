@@ -1,5 +1,5 @@
 class TicketVerificationsController < ApplicationController
-  before_action :authenticate_user!, only: :check_in
+  before_action :authenticate_user!
   before_action :set_ticket, only: %i[show check_in]
   before_action :authorise_scanner!, only: :check_in
   before_action :ensure_check_in_window!, only: :check_in
@@ -18,16 +18,21 @@ class TicketVerificationsController < ApplicationController
 
     return redirect_to new_verification_path, alert: 'Nothing was scanned. Try again.' if @query.blank?
 
-    ticket = Ticket.find_by(qr_token: @query) ||
-             Ticket.find_by(ticket_number: @query.upcase)
+    ticket = Ticket.includes(:event).find_by(qr_token: @query) ||
+             Ticket.includes(:event).find_by(ticket_number: @query.upcase)
 
-    if ticket
-      redirect_to verify_ticket_path(ticket.qr_token)
-    else
+    if ticket.nil?
       # 422, not 404 — Turbo only renders the body of a failed form submission
       # when the status is in the 4xx range it treats as a form error.
-      render :invalid, status: :unprocessable_entity
+      return render :invalid, status: :unprocessable_entity
     end
+
+    unless current_user&.has_any_role?(:admin)
+      allowed = ticket.event&.users&.where(id: current_user.id)&.exists?
+      return render :invalid, status: :unprocessable_entity unless allowed
+    end
+
+    redirect_to verify_ticket_path(ticket.qr_token)
   end
 
   # GET /verify/:token
@@ -45,11 +50,13 @@ class TicketVerificationsController < ApplicationController
 
   # POST /verify/:token/check_in
   def check_in
-    # Atomic: the WHERE clause is the guard. Only one concurrent request can
-    # match a row that is still 'valid', so a double scan can't double check in.
     claimed = Ticket
       .where(id: @ticket.id, status: 'valid')
-      .update_all(status: 'checked_in', checked_in_at: Time.current)
+      .update_all(
+        status: 'checked_in',
+        checked_in_at: Time.current,
+        checked_in_by_id: current_user.id
+      )
 
     @ticket.reload
 

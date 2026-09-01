@@ -46,11 +46,12 @@
     active: controller_name == "events" },
 
   { label: "Orders", icon: :orders,
+    visible: !scanner_only,
     path: "#", active: controller_name == "orders" },
 
   { label: "Tickets", icon: :tickets,
-    path: (defined?(tickets_path) ? tickets_path : "#"),
-    active: controller_name == "tickets" },
+    path: tickets_path,
+    active: controller_name == "tickets_controller" },
 
   { label: "Gate scanner", icon: :scanner,
     path: verify_path,
@@ -63,11 +64,11 @@
 
   { label: "Clients", icon: :users,
     path: onboarding_clients_path,
-    visible: !scanner_only,
-    visible: !organiser_only,
+    visible: !scanner_only && !organiser_only,
     active: controller_name == "clients" },
 
   { label: "Settings", icon: :settings,
+    visible: !scanner_only,
     path: "#", active: controller_name == "settings" }
 ] %>
 
