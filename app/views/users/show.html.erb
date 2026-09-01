@@ -60,30 +60,34 @@
         </div>
 
         <%# ---- status toggle ---- %>
-        <div class="shrink-0 sm:text-right">
-          <p class="<%= dt_c %>">Status</p>
-          <div class="mt-2 flex items-center gap-3 sm:justify-end">
-            <span class="text-[14px] font-medium <%= @user.status ? "text-[#0D9C66]" : "text-ink2/50" %>">
-              <%= @user.status ? "Active" : "Inactive" %>
-            </span>
+        <% if current_user.admin? && @user != current_user %>
+          <div class="shrink-0 sm:text-right">
+            <p class="<%= dt_c %>">Status</p>
+            <div class="mt-2 flex items-center gap-3 sm:justify-end">
+              <span class="text-[14px] font-medium <%= @user.status ? "text-[#0D9C66]" : "text-ink2/50" %>">
+                <%= @user.status ? "Active" : "Inactive" %>
+              </span>
 
-            <%= form_with url: status_user_path(@user), method: :patch,
-                          data: { turbo_confirm: "Change #{@user.full_name.presence || 'this user'}'s status?" } do |form| %>
-              <label class="relative inline-block h-7 w-12 shrink-0 cursor-pointer rounded-full">
-                <span class="sr-only">Active</span>
-                <%= form.check_box :active,
-                                   checked: @user.status,
-                                   class: "peer sr-only",
-                                   onchange: "this.form.requestSubmit()" %>
-                <span class="absolute inset-0 rounded-full bg-slate-300 transition-colors duration-300
-                             peer-checked:bg-[#0D9C66]
-                             peer-focus-visible:ring-2 peer-focus-visible:ring-violet peer-focus-visible:ring-offset-2"></span>
-                <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow
-                             transition-transform duration-300 peer-checked:translate-x-full"></span>
-              </label>
-            <% end %>
+
+              <%= form_with url: status_user_path(@user), method: :patch,
+                            data: { turbo_confirm: "Change #{@user.full_name.presence || 'this user'}'s status?" } do |form| %>
+                <label class="relative inline-block h-7 w-12 shrink-0 cursor-pointer rounded-full">
+                  <span class="sr-only">Active</span>
+                  <%= form.check_box :active,
+                                     checked: @user.status,
+                                     class: "peer sr-only",
+                                     onchange: "this.form.requestSubmit()" %>
+                  <span class="absolute inset-0 rounded-full bg-slate-300 transition-colors duration-300
+                               peer-checked:bg-[#0D9C66]
+                               peer-focus-visible:ring-2 peer-focus-visible:ring-violet peer-focus-visible:ring-offset-2"></span>
+                  <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow
+                               transition-transform duration-300 peer-checked:translate-x-full"></span>
+                </label>
+              <% end %>
+            </div>
           </div>
-        </div>
+
+        <% end %>
       </div>
     </div>
 
