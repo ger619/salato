@@ -6,12 +6,18 @@ module Onboarding
     def index
       @clients = Client.order(created_at: :desc)
 
-      return unless params[:q].present?
+      if params[:q].present?
+        @clients = @clients.where(
+          'name ILIKE :q OR email ILIKE :q OR phone ILIKE :q',
+          q: "%#{params[:q]}%"
+        )
+      end
 
-      @clients = @clients.where(
-        'name ILIKE :q OR email ILIKE :q OR phone ILIKE :q',
-        q: "%#{params[:q]}%"
-      )
+      @per_page = 10
+      @page = [params[:page].to_i, 1].max
+      @total_count = @clients.count
+      @total_pages = (@total_count / @per_page.to_f).ceil
+      @clients = @clients.offset((@page - 1) * @per_page).limit(@per_page)
     end
 
     def show; end
