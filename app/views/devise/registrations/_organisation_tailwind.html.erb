@@ -45,35 +45,13 @@
       </div>
     </div>
 
-    <%#
-      ── what you do ──
-      data-collapsed on this card is what hides the toolbar. Set
-      collapsed-value to "false" if you'd rather it start open.
-    %>
-    <div data-controller="editor-toolbar"
-         data-editor-toolbar-collapsed-value="true"
-         class="space-y-2 rounded-2xl bg-white p-4 ring-1 ring-[#150D3A]/8 sm:p-5
-                [&[data-collapsed=true]_[class*=toolbar]]:hidden">
-
-      <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+    <%# ── what you do ── %>
+    <div class="space-y-2 rounded-2xl bg-white p-4 ring-1 ring-[#150D3A]/8 sm:p-5">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-3">
         <%= cf.label :description, "Short description", class: lbl %>
-
-        <button type="button"
-                data-action="editor-toolbar#toggle"
-                data-editor-toolbar-target="button"
-                aria-expanded="false"
-                class="flex items-center gap-1 rounded-lg px-2 py-1
-                       font-['Inter_Tight'] text-xs font-medium text-[#150D3A]/55
-                       transition hover:bg-[#7620B1]/8 hover:text-[#7620B1]
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AB2692]">
-          <span data-editor-toolbar-target="label">Formatting</span>
-          <svg data-editor-toolbar-target="chevron"
-               class="h-3 w-3 transition-transform duration-150"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </button>
+        <span class="font-['Inter_Tight'] text-xs text-[#150D3A]/50">
+          Shown on your public organiser page
+        </span>
       </div>
 
       <%#
@@ -88,14 +66,12 @@
 
                   [&_lexxy-editor]:block
 
-                  [&_[class*=toolbar]]:flex-wrap [&_[class*=toolbar]]:gap-0.5
                   [&_[class*=toolbar]]:border-b [&_[class*=toolbar]]:border-[#150D3A]/10
                   [&_[class*=toolbar]]:bg-[#150D3A]/[0.025]
-                  [&_[class*=toolbar]]:px-1.5 [&_[class*=toolbar]]:py-1
+                  [&_[class*=toolbar]]:px-2 [&_[class*=toolbar]]:py-1.5
 
-                  [&_[class*=toolbar]_button]:rounded-md [&_[class*=toolbar]_button]:p-1
+                  [&_[class*=toolbar]_button]:rounded-lg
                   [&_[class*=toolbar]_button]:text-[#150D3A]/60
-                  [&_[class*=toolbar]_svg]:h-3.5 [&_[class*=toolbar]_svg]:w-3.5
                   [&_[class*=toolbar]_button:hover]:bg-[#7620B1]/10
                   [&_[class*=toolbar]_button:hover]:text-[#7620B1]
                   [&_button[aria-pressed=true]]:bg-[#7620B1]/10
@@ -127,7 +103,7 @@
                   [&_figure]:my-2 [&_figure]:overflow-hidden [&_figure]:rounded-lg
                   [&_figure]:ring-1 [&_figure]:ring-[#150D3A]/10">
         <%= cf.lexxy_rich_text_area :description,
-                                    placeholder: "What kind of events do you run? Add a photo of a past event if you have one." %>
+              placeholder: "What kind of events do you run? Add a photo of a past event if you have one." %>
       </div>
 
       <p class="flex items-start gap-1.5 font-['Inter_Tight'] text-xs text-[#150D3A]/50">
@@ -136,8 +112,8 @@
              stroke-linejoin="round" aria-hidden="true">
           <path d="M21.4 11.05 12.25 20.2a5.5 5.5 0 0 1-7.78-7.78l9.2-9.19a3.67 3.67 0 0 1 5.18 5.18l-9.2 9.2a1.83 1.83 0 0 1-2.59-2.6l8.5-8.48"/>
         </svg>
-        Drag an image or PDF straight into the box, or open Formatting to use
-        the upload button.
+        Use the toolbar to add images or a PDF, or just drag a file straight
+        into the box.
       </p>
     </div>
 

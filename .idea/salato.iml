@@ -80,6 +80,7 @@
     <orderEntry type="library" scope="PROVIDED" name="json (v2.21.2, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="kamal (v2.12.0, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="language_server-protocol (v3.17.0.6, rbenv: 3.4.7) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="lexxy (v0.9.31, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="lint_roller (v1.1.0, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="logger (v1.7.0, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="loofah (v2.25.2, rbenv: 3.4.7) [gem]" level="application" />

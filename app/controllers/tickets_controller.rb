@@ -6,38 +6,44 @@ class TicketsController < ApplicationController
     @query = params[:q].to_s.strip
     @status = params[:status].presence
     @event_id = params[:event_id].presence
-    @statuses = Ticket.distinct.order(:status).pluck(:status).compact
 
     @events = Event.all
-    @tickets = Ticket.includes(:event, :ticket_type, :order)
+    scope = Ticket.includes(:event, :ticket_type, :order)
 
     unless current_user&.has_any_role?(:admin)
       @events = @events.joins(:users).where(users: { id: current_user.id }).distinct
-      @tickets = @tickets.joins(event: :users).where(users: { id: current_user.id }).distinct
+      scope = scope.joins(event: :users).where(users: { id: current_user.id }).distinct
     end
 
-    @tickets = @tickets.where(event_id: @event_id) if @event_id.present?
-    @tickets = @tickets.where(status: @status) if @status.present?
+    scope = scope.where(event_id: @event_id) if @event_id.present?
+    scope = scope.where(status: @status) if @status.present?
 
     if @query.present?
       q = "%#{@query.downcase}%"
-      @tickets = @tickets.where(
-        'LOWER(tickets.attendee_name) LIKE :q OR LOWER(tickets.attendee_email) LIKE :q OR LOWER(tickets.ticket_number) LIKE :q OR LOWER(events.name) LIKE :q',
+      scope = scope.joins(:event).where(
+        <<~SQL.squish,
+          LOWER(tickets.attendee_name) LIKE :q
+          OR LOWER(tickets.attendee_email) LIKE :q
+          OR LOWER(tickets.ticket_number) LIKE :q
+          OR LOWER(events.name) LIKE :q
+        SQL
         q: q
-      ).joins(:event)
+      )
     end
 
-    @tickets = @tickets.order(created_at: :desc)
+    scope = scope.order(created_at: :desc)
+
+    @statuses = scope.unscope(:select, :order).distinct.pluck(:status).compact.sort
 
     @per_page = 10
-    @page = (params[:page] || 1).to_i
+    @page = [params[:page].to_i, 1].max
     offset = (@page - 1) * @per_page
 
-    @total_count = @tickets.count
+    @total_count = scope.count
     @total_pages = (@total_count / @per_page.to_f).ceil
     @start_count = @total_count.zero? ? 0 : offset + 1
     @end_count = [offset + @per_page, @total_count].min
-    @tickets = @tickets.limit(@per_page).offset(offset)
+    @tickets = scope.limit(@per_page).offset(offset)
     @total = @total_count
   end
 
