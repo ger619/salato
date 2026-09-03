@@ -24,7 +24,7 @@ deploy_timeout: 120
 # --------------------------------------------------
 
 proxy:
-  ssl: false
+  ssl: true
 
   host:
     salato.app
