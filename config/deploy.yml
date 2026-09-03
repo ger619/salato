@@ -1,29 +1,34 @@
 # config/deploy.yml
-# Salato Events — Kamal deployment to Contabo VPS
-# Server: 207.180.216.54
+# Salato Events
+# Rails 8 + PostgreSQL 16 + Kamal 2
+# Production server: Contabo VPS
 
 service: salato-events
 
 image: ger619/salato-events
 
+# --------------------------------------------------
+# Production server
+# --------------------------------------------------
+
 servers:
   web:
     - 207.180.216.54
 
-# Give the first boot room for db:prepare to create the
-# primary, cache, queue and cable databases.
-deploy_timeout: 60
+# Give Rails/Kamal enough time for the first boot,
+# PostgreSQL startup and database preparation.
+deploy_timeout: 120
 
 # --------------------------------------------------
-# Web / Proxy
+# Proxy / Domain
 # --------------------------------------------------
 
 proxy:
   ssl: true
 
   hosts:
-    - salato.app
-    - www.salato.app
+    #- salato.app
+    #- www.salato.app
 
   healthcheck:
     path: /up
@@ -36,7 +41,9 @@ proxy:
 
 registry:
   server: ghcr.io
+
   username: ger619
+
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -48,25 +55,46 @@ builder:
   arch: amd64
 
 # --------------------------------------------------
-# Environment
+# Application Environment
 # --------------------------------------------------
 
 env:
+
   clear:
     RAILS_ENV: production
 
-    # PostgreSQL runs as the Kamal accessory below, on the shared
-    # `kamal` Docker network. Containers reach it by container name,
-    # which Kamal derives as <service>-<accessory> => salato-events-db.
-    DB_HOST: salato-events-db
-    DB_PORT: 5432
+    # ------------------------------------------------
+    # PostgreSQL connection
+    #
+    # database.yml reads PGHOST/PGPORT/PGUSER/PGPASSWORD.
+    #
+    # The PostgreSQL Kamal accessory is named "db".
+    # Kamal therefore creates the service as:
+    #
+    # salato-events-db
+    # ------------------------------------------------
 
-    SOLID_QUEUE_IN_PUMA: true
-    RAILS_LOG_TO_STDOUT: true
+    PGHOST: salato-events-db
+    PGPORT: "5432"
+
+    PGUSER: salato
+
+    PG_DATABASE: salato_events_production
+    PG_QUEUE_DATABASE: salato_events_production_queue
+    PG_CACHE_DATABASE: salato_events_production_cache
+    PG_CABLE_DATABASE: salato_events_production_cable
+
+    # ------------------------------------------------
+    # Rails / Solid
+    # ------------------------------------------------
+
+    SOLID_QUEUE_IN_PUMA: "true"
+
+    RAILS_LOG_TO_STDOUT: "true"
 
   secret:
     - RAILS_MASTER_KEY
-    - SALATO_DATABASE_PASSWORD
+    - PGPASSWORD
 
 # --------------------------------------------------
 # Persistent Rails Storage
@@ -82,23 +110,38 @@ volumes:
 asset_path: /rails/public/assets
 
 # --------------------------------------------------
-# PostgreSQL
+# PostgreSQL Accessory
 # --------------------------------------------------
 
 accessories:
 
   db:
+
     image: postgres:16
+
+    # PostgreSQL runs on the same Contabo server.
     host: 207.180.216.54
+
+    # Bind PostgreSQL only to localhost on the VPS.
+    #
+    # IMPORTANT:
+    # Do NOT expose PostgreSQL publicly.
+    #
+    # Rails connects to the PostgreSQL container through
+    # the Kamal Docker network using:
+    #
+    # salato-events-db:5432
+    #
     port: "127.0.0.1:5432:5432"
 
     env:
+
       clear:
         POSTGRES_USER: salato
         POSTGRES_DB: salato_events_production
 
       secret:
-        - SALATO_DATABASE_PASSWORD
+        - POSTGRES_PASSWORD
 
     directories:
       - data:/var/lib/postgresql/data

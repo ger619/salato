@@ -4,12 +4,13 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
   url: <%= ENV['DATABASE_URL'] if ENV['DATABASE_URL'].present? %>
-  username: <%= ENV['PGUSER'] || '' %>
-  password: <%= ENV['POSTGRES_PASSWORD'] || ENV['PGPASSWORD'] || '' %>
-  host: <%= ENV['PGHOST'] || 'localhost' %>
-  port: <%= ENV['PGPORT'] || 5432 %>
+  username: <%= ENV['PGUSER'].presence || ENV['DB_USER'].presence || 'salato' %>
+  password: <%= ENV['SALATO_DATABASE_PASSWORD'].presence || ENV['POSTGRES_PASSWORD'].presence || ENV['PGPASSWORD'].presence %>
+  host: <%= ENV['DB_HOST'].presence || ENV['PGHOST'].presence || 'localhost' %>
+  port: <%= ENV['DB_PORT'].presence || ENV['PGPORT'].presence || '5432' %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+
 
 development:
   primary:
@@ -46,16 +47,16 @@ test:
 production:
   primary:
     <<: *default
-    database: <%= ENV['PG_DATABASE'] || 'salato_production' %>
+    database: <%= ENV['PG_DATABASE'] || ENV['DB_NAME'] || 'salato_events_production' %>
 
   queue:
     <<: *default
-    database: <%= ENV['PG_QUEUE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_production' %>
+    database: <%= ENV['PG_QUEUE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_events_production' %>
 
   cache:
     <<: *default
-    database: <%= ENV['PG_CACHE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_production' %>
+    database: <%= ENV['PG_CACHE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_events_production' %>
 
   cable:
     <<: *default
-    database: <%= ENV['PG_CABLE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_production' %>
+    database: <%= ENV['PG_CABLE_DATABASE'] || ENV['PG_DATABASE'] || 'salato_events_production' %>
