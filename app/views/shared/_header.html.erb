@@ -87,7 +87,6 @@
                         form: { data: { turbo: false }, class: "flex-1" },
                         class: "w-full px-4 py-2.5 rounded-xl font-medium text-white grad-bg" %>
         <% else %>
-          <%= link_to "Create an account", new_user_registration_path, class: "flex-1 px-4 py-2.5 rounded-xl font-medium ring-1 ring-ink/15" %>
           <button type="button" data-open-auth="signin" class="flex-1 px-4 py-2.5 rounded-xl font-medium ring-1 ring-ink/15">Sign in</button>
           <button type="button" data-open-auth="signup" class="flex-1 px-4 py-2.5 rounded-xl font-medium text-white grad-bg">Start selling</button>
         <% end %>
