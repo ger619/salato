@@ -26,9 +26,7 @@ deploy_timeout: 120
 proxy:
   ssl: false
 
-  #hosts:
-  #  - salato.app
-  #  - www.salato.app
+  hosts: salato.app
 
   healthcheck:
     path: /up
@@ -95,6 +93,9 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - PGPASSWORD
+    - PAYSTACK_SECRET_KEY
+    - PAYSTACK_PUBLIC_KEY
+    - PAYSTACK_CURRENCY
 
 # --------------------------------------------------
 # Persistent Rails Storage
