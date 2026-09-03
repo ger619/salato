@@ -357,6 +357,8 @@ GEM
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
       logger
+    sitemap_generator (7.1.1)
+      builder (~> 3.0)
     solid_cable (4.0.2)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -463,6 +465,7 @@ DEPENDENCIES
   selenium-webdriver
   sentry-rails
   sentry-ruby
+  sitemap_generator
   solid_cable
   solid_cache
   solid_queue

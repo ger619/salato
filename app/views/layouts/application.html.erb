@@ -6,7 +6,18 @@
   <meta name="theme-color" content="#150D3A">
 
   <title><%= content_for(:title) || "Salato — sell tickets to your event in Kenya" %></title>
-  <meta name="description" content="<%= content_for(:meta_description) || "Salato turns your event into a page people can buy from in minutes. M-Pesa and card payments, QR-coded tickets, and a gate scanner that works offline." %>">
+  <meta name="description" content="<%= content_for(:meta_description) ||
+                                          "Discover events and buy tickets online with Salato" %>">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="<%= request.base_url %><%= request.path %>">
+  <meta property="og:title"
+        content="<%= content_for(:title) || 'Salato — Buy Tickets for Events' %>">
+  <meta property="og:description"
+        content="<%= content_for(:meta_description) || 'Discover events and buy tickets online with Salato.' %>">
+  <meta property="og:url" content="<%= request.original_url %>">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Salato">
+
 
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
