@@ -86,22 +86,23 @@ test:
 #
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
-#
+
 production:
   primary: &primary_production
     <<: *default
-    database: salato_production
+    host: <%= ENV["DB_HOST"] %>
+    database: salato_events_production
     username: salato
     password: <%= ENV["SALATO_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
-    database: salato_production_cache
+    database: salato_events_production_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: salato_production_queue
+    database: salato_events_production_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: salato_production_cable
+    database: salato_events_production_cable
     migrations_paths: db/cable_migrate
