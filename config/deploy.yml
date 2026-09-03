@@ -24,11 +24,11 @@ deploy_timeout: 120
 # --------------------------------------------------
 
 proxy:
-  ssl: true
+  ssl: false
 
-  hosts:
-    #- salato.app
-    #- www.salato.app
+  #hosts:
+  #  - salato.app
+  #  - www.salato.app
 
   healthcheck:
     path: /up
