@@ -1,24 +1,38 @@
 # config/deploy.yml
-# Salato — deployment to Contabo VPS 207.180.216.54
+# Salato Events — Kamal deployment to Contabo VPS
+# Server: 207.180.216.54
 
 service: salato-events
+
 image: ger619/salato-events
 
 servers:
   web:
     - 207.180.216.54
 
+# Give the first boot room for db:prepare to create the
+# primary, cache, queue and cable databases.
+deploy_timeout: 60
+
+# --------------------------------------------------
+# Web / Proxy
+# --------------------------------------------------
+
 proxy:
   ssl: true
+
   hosts:
-    - salato.events
-    - www.salato.events
-  # First boot runs migrations, so give the container room before
-  # the proxy declares it unhealthy. The 30s default is too tight.
+    - salato.app
+    - www.salato.app
+
   healthcheck:
     path: /up
     interval: 3
-    timeout: 90
+    timeout: 10
+
+# --------------------------------------------------
+# Container Registry
+# --------------------------------------------------
 
 registry:
   server: ghcr.io
@@ -26,37 +40,65 @@ registry:
   password:
     - KAMAL_REGISTRY_PASSWORD
 
+# --------------------------------------------------
+# Docker Build
+# --------------------------------------------------
+
 builder:
   arch: amd64
 
+# --------------------------------------------------
+# Environment
+# --------------------------------------------------
+
 env:
   clear:
+    RAILS_ENV: production
+
+    # PostgreSQL runs as the Kamal accessory below, on the shared
+    # `kamal` Docker network. Containers reach it by container name,
+    # which Kamal derives as <service>-<accessory> => salato-events-db.
     DB_HOST: salato-events-db
+    DB_PORT: 5432
+
     SOLID_QUEUE_IN_PUMA: true
     RAILS_LOG_TO_STDOUT: true
+
   secret:
-    # NOTE: this must hold the value of config/credentials/production.key,
-    # NOT config/master.key. See .kamal/secrets for why.
     - RAILS_MASTER_KEY
     - SALATO_DATABASE_PASSWORD
+
+# --------------------------------------------------
+# Persistent Rails Storage
+# --------------------------------------------------
 
 volumes:
   - "salato_storage:/rails/storage"
 
+# --------------------------------------------------
+# Rails Assets
+# --------------------------------------------------
+
 asset_path: /rails/public/assets
 
+# --------------------------------------------------
+# PostgreSQL
+# --------------------------------------------------
+
 accessories:
+
   db:
     image: postgres:16
     host: 207.180.216.54
-    # Bound to loopback so Postgres is NOT exposed to the internet.
-    # Do not change this to a bare "5432".
     port: "127.0.0.1:5432:5432"
+
     env:
       clear:
         POSTGRES_USER: salato
         POSTGRES_DB: salato_events_production
+
       secret:
-        - POSTGRES_PASSWORD
+        - SALATO_DATABASE_PASSWORD
+
     directories:
       - data:/var/lib/postgresql/data
