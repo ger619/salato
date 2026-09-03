@@ -5,7 +5,7 @@ default: &default
   adapter: postgresql
   encoding: unicode
   url: <%= ENV['DATABASE_URL'] if ENV['DATABASE_URL'].present? %>
-  username: <%= ENV['PGUSER'].presence || ENV['DB_USER'].presence || 'salato' %>
+  username: <%= ENV['PGUSER'].presence || ENV['DB_USER'].presence || '' %>
   password: <%= ENV['SALATO_DATABASE_PASSWORD'].presence || ENV['POSTGRES_PASSWORD'].presence || ENV['PGPASSWORD'].presence %>
   host: <%= ENV['DB_HOST'].presence || ENV['PGHOST'].presence || 'localhost' %>
   port: <%= ENV['DB_PORT'].presence || ENV['PGPORT'].presence || '5432' %>
