@@ -4,11 +4,15 @@
      "Name: #{@client.name}",
      ("Email: #{@client.email}" if @client.email.present?),
      ("Phone: #{@client.phone}" if @client.phone.present?),
-     ("Address: #{@client.address}" if @client.address.present?)
+     ("Address: #{@client.address}" if @client.address.present?),
+     ("Settlement Bank: #{@client.settlement_bank}" if @client.settlement_bank.present?),
+     ("Account Number: #{@client.account_number}" if @client.account_number.present?),
+     ("Paystack Subaccount: #{@client.paystack_subaccount_code}" if @client.paystack_subaccount_code.present?),
+     ("Percentage Charge: #{@client.percentage_charge}%" if @client.percentage_charge.present?)
    ].compact.join("\n") %>
 
 <div class="mx-auto max-w-2xl px-6 py-10">
-  <%= link_to "← Clients", onboarding_client_path,
+  <%= link_to "← Clients", onboarding_clients_path,
         class: "font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#7620B1] hover:underline" %>
 
   <%# ── Stub card ────────────────────────────────────────── %>
@@ -34,12 +38,19 @@
 
     <dl class="divide-y divide-[#150D3A]/8 px-6 py-2">
       <% {
-           "Email"   => @client.email,
-           "Phone"   => @client.phone,
-           "Address" => @client.address
+           "Email"               => @client.email,
+           "Phone"               => @client.phone,
+           "Address"             => @client.address,
+           "City / Country"      => [@client.city, @client.country].compact_blank.join(", ").presence,
+           "Settlement Bank"     => @client.settlement_bank,
+           "Account Number"      => @client.account_number,
+           "Subaccount Code"     => @client.paystack_subaccount_code,
+           "Platform Charge (%)" => @client.percentage_charge.present? ? "#{@client.percentage_charge}%" : nil,
+           "Registration No."    => @client.registration_number,
+           "Tax PIN"             => @client.tax_pin
          }.each do |label, value| %>
         <div class="flex gap-4 py-3.5">
-          <dt class="w-24 shrink-0 pt-0.5 font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/45">
+          <dt class="w-44 shrink-0 pt-0.5 font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/45">
             <%= label %>
           </dt>
           <dd class="min-w-0 flex-1 text-sm text-[#150D3A]">

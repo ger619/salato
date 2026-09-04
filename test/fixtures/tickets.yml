@@ -4,20 +4,20 @@ one:
   event: one
   order: one
   ticket_type: one
-  ticket_number: MyString
+  ticket_number: TIK-001
   attendee_name: MyString
   attendee_email: MyString
-  qr_token: MyString
-  status: MyString
+  qr_token: qr_token_1
+  status: valid
   checked_in_at: 2026-08-19 23:13:47
 
 two:
   event: two
   order: two
   ticket_type: two
-  ticket_number: MyString
+  ticket_number: TIK-002
   attendee_name: MyString
   attendee_email: MyString
-  qr_token: MyString
-  status: MyString
+  qr_token: qr_token_2
+  status: valid
   checked_in_at: 2026-08-19 23:13:47

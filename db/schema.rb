@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_101902) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_080551) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -63,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_101902) do
     t.string "email"
     t.string "name"
     t.string "paystack_subaccount_code"
+    t.decimal "percentage_charge", precision: 5, scale: 2, default: "0.0"
     t.string "phone"
     t.string "registration_number"
     t.string "settlement_bank"

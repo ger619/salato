@@ -35,9 +35,62 @@
     </div>
   </div>
 
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <%= f.label :city, "City", class: label_class %>
+      <%= f.text_field :city, placeholder: "Nairobi", class: "mt-1.5 #{field_class}" %>
+    </div>
+
+    <div>
+      <%= f.label :country, "Country", class: label_class %>
+      <%= f.text_field :country, placeholder: "Kenya", class: "mt-1.5 #{field_class}" %>
+    </div>
+  </div>
+
   <div>
     <%= f.label :address, "Address", class: label_class %>
     <%= f.text_area :address, rows: 3, placeholder: "Street, building, city", class: "mt-1.5 #{field_class}" %>
+  </div>
+
+  <div class="rounded-2xl bg-[#7620B1]/5 p-5 ring-1 ring-[#7620B1]/15 space-y-4">
+    <h3 class="font-[Outfit] text-sm font-semibold text-[#150D3A]">Paystack Subaccount & Settlement</h3>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <%= f.label :settlement_bank, "Settlement Bank (Bank Code)", class: label_class %>
+        <%= f.text_field :settlement_bank, placeholder: "e.g. 044, kcb, etc.", class: "mt-1.5 #{field_class}" %>
+      </div>
+
+      <div>
+        <%= f.label :account_number, "Account Number", class: label_class %>
+        <%= f.text_field :account_number, placeholder: "0123456789", class: "mt-1.5 #{field_class}" %>
+      </div>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <%= f.label :percentage_charge, "Platform Percentage Charge (%)", class: label_class %>
+        <%= f.number_field :percentage_charge, step: "0.01", min: "0", max: "100", placeholder: "5.0", class: "mt-1.5 #{field_class}" %>
+        <span class="mt-1 block text-xs text-[#150D3A]/50">Percentage retained by the platform per transaction</span>
+      </div>
+
+      <div>
+        <%= f.label :paystack_subaccount_code, "Paystack Subaccount Code", class: label_class %>
+        <%= f.text_field :paystack_subaccount_code, placeholder: "ACCT_xxxxxxxx (auto-generated if empty)", class: "mt-1.5 #{field_class}" %>
+      </div>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <%= f.label :registration_number, "Registration Number", class: label_class %>
+        <%= f.text_field :registration_number, placeholder: "CPR/2026/...", class: "mt-1.5 #{field_class}" %>
+      </div>
+
+      <div>
+        <%= f.label :tax_pin, "Tax PIN", class: label_class %>
+        <%= f.text_field :tax_pin, placeholder: "P051234567Z", class: "mt-1.5 #{field_class}" %>
+      </div>
+    </div>
   </div>
 
   <div class="flex items-center gap-3 pt-1">

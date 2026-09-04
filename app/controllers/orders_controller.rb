@@ -130,6 +130,9 @@ class OrdersController < ApplicationController
       return
     end
 
+    client = @event.client
+    subaccount_code = client&.paystack_subaccount_code
+
     response = Paystack::Client.new.initialize_transaction(
       email: @order.customer_email,
       amount: Paystack::Money.to_subunit(@order.total_price),
@@ -137,10 +140,13 @@ class OrdersController < ApplicationController
       callback_url: payment_callback_url(
         reference: @order.reference
       ),
+      subaccount: subaccount_code,
       metadata: {
         order_id: @order.id,
-        event_id: @order.event_id
-      }
+        event_id: @order.event_id,
+        client_id: client&.id,
+        subaccount_code: subaccount_code
+      }.compact
     )
 
     redirect_to response.dig('data', 'authorization_url'), allow_other_host: true

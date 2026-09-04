@@ -1,5 +1,7 @@
 class Event < ApplicationRecord
   belongs_to :user
+  delegate :client, to: :user, allow_nil: true
+  delegate :paystack_subaccount_code, to: :client, prefix: true, allow_nil: true
 
   has_many :ticket_types, dependent: :destroy
   has_many :orders, dependent: :destroy
