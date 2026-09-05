@@ -1,6 +1,9 @@
 class Event < ApplicationRecord
   belongs_to :user
-  delegate :client, to: :user, allow_nil: true
+  # Every event belongs to the client that owns it. Organisers inherit their
+  # own client automatically; admins pick one in the form. Optional so events
+  # created before the column existed still load.
+  belongs_to :client, optional: true
   delegate :paystack_subaccount_code, to: :client, prefix: true, allow_nil: true
 
   has_many :ticket_types, dependent: :destroy
@@ -27,6 +30,7 @@ class Event < ApplicationRecord
   SLUG_FORMAT = /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/
 
   before_validation :assign_slug
+  before_validation :inherit_client_from_creator, on: :create
 
   validates :name, presence: true, length: { maximum: 120 }
   validates :description, length: { maximum: 280 }
@@ -85,6 +89,10 @@ class Event < ApplicationRecord
 
   private
 
+  def inherit_client_from_creator
+    self.client_id ||= user&.client_id
+  end
+
   def assign_slug
     self.slug = (slug.presence || name).to_s.parameterize
     return if slug.blank?
@@ -126,9 +134,6 @@ class Event < ApplicationRecord
     errors.add(:poster, "must be smaller than #{POSTER_MAX_BYTES / 1.megabyte} MB")
   end
 
-  # Work out the intent before saving, act on it after — so a poster is never
-  # deleted for a save that then fails, and a replacement uploaded in the same
-  # submission isn't purged straight after it lands.
   def note_poster_purge
     @purge_poster = ActiveModel::Type::Boolean.new.cast(remove_poster).present? &&
                     poster.attached? &&
