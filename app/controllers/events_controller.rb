@@ -1,7 +1,7 @@
 class EventsController < ApplicationController
-  ADMIN_ROLE = 'admin'
-  ORGANISER_ROLE = 'organiser'
-  SCANNER_ROLE = 'scanner'
+  ADMIN_ROLE = 'admin'.freeze
+  ORGANISER_ROLE = 'organiser'.freeze
+  SCANNER_ROLE = 'scanner'.freeze
 
   TEAM_ACTIONS = %i[organiser_show assign_user unassign_user].freeze
 
