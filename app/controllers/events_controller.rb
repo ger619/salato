@@ -1,8 +1,14 @@
 class EventsController < ApplicationController
-  before_action :authenticate_user!, only: %i[new create edit update organiser organiser_show
-                                              assign_user unassign_user]
-  before_action :set_owned_event, only: %i[edit update organiser_show assign_user unassign_user]
+  ADMIN_ROLE = 'admin'
+  ORGANISER_ROLE = 'organiser'
+  SCANNER_ROLE = 'scanner'
+
+  TEAM_ACTIONS = %i[organiser_show assign_user unassign_user].freeze
+
+  before_action :authenticate_user!, only: %i[new create edit update organiser] + TEAM_ACTIONS
+  before_action :set_owned_event, only: %i[edit update] + TEAM_ACTIONS
   before_action :set_visible_event, only: %i[show]
+  before_action :require_team_manager!, only: %i[assign_user unassign_user]
   load_and_authorize_resource
 
   # Organisers see their own events; everyone else sees what's on sale.
@@ -29,11 +35,10 @@ class EventsController < ApplicationController
   def create
     @event = current_user.events.new(event_params)
     # organisers always get their own client; admins may pick one
-    @event.client_id = current_user.client_id unless current_user.admin?
+    @event.client_id = current_user.client_id unless acting_admin?
 
     if @event.save
-      @event.users << current_user if current_user.has_role?(:organiser) &&
-                                      !current_user.has_role?(:admin)
+      @event.users << current_user if current_user.has_role?(ORGANISER_ROLE) && !acting_admin?
 
       redirect_to organiser_show_event_path(@event), notice: "#{@event.name} is published."
     else
@@ -53,8 +58,9 @@ class EventsController < ApplicationController
   end
 
   # The id is looked up *through* assignable_users, so an organiser who posts
-  # an admin's id gets the same rejection as a tampered id — the role rule is
-  # enforced here, not just hidden in the dropdown.
+  # an id the dropdown never offered — an admin, or someone from another
+  # client — gets the same rejection as a tampered id. The client rule and the
+  # role rule are both enforced here, not just hidden in the dropdown.
   def assign_user
     user = assignable_users.find_by(id: params[:user_id])
 
@@ -66,6 +72,10 @@ class EventsController < ApplicationController
       redirect_to organiser_show_event_path(@event),
                   notice: "#{display_name(user)} can now scan tickets for #{@event.name}."
     end
+  rescue ActiveRecord::RecordNotUnique
+    # Double-submit: they're already on the team, which is the intended end state.
+    redirect_to organiser_show_event_path(@event),
+                notice: "#{display_name(user)} is already on the door team."
   end
 
   def unassign_user
@@ -74,9 +84,6 @@ class EventsController < ApplicationController
     if user.nil?
       redirect_to organiser_show_event_path(@event),
                   alert: "That user isn't on this event."
-    elsif !can_manage_team?
-      redirect_to organiser_show_event_path(@event),
-                  alert: "You can't change the door team for this event."
     else
       @event.users.delete(user)
       redirect_to organiser_show_event_path(@event),
@@ -90,7 +97,7 @@ class EventsController < ApplicationController
       .with_attached_poster
       .order(start_at: :desc)
 
-    @events = @events.joins(:users).where(users: { id: current_user.id }) unless current_user&.has_any_role?(:admin)
+    @events = @events.joins(:users).where(users: { id: current_user.id }) unless acting_admin?
   end
 
   def organiser_show
@@ -101,7 +108,8 @@ class EventsController < ApplicationController
 
   private
 
-  # Editing, updating and deleting are limited to the organiser who owns it.
+  # Ownership itself is enforced by CanCanCan via load_and_authorize_resource,
+  # which authorizes the @event this sets.
   def set_owned_event
     @event = Event.find_by!(slug: event_slug)
   end
@@ -118,35 +126,73 @@ class EventsController < ApplicationController
   end
 
   def visible_ticket_types
-    scope = @event.ticket_types
-    scope = scope.where(active: true)
-    scope.order(:price)
+    @event.ticket_types.where(active: true).order(:price)
   end
 
-  # Who the signed-in user may put on the door.
-  #   admin         — anyone
-  #   organiser     — scanners only
-  #   anyone else   — nobody, so the button never renders
+  # ── Door team ─────────────────────────────────────────────────────────
+  #
+  # Two independent rules, both applied here:
+  #
+  #   1. WHICH CLIENT — a candidate must belong to the same client as the
+  #      event. Admins are the exception: an admin can be added to any
+  #      event regardless of client. This is about the *candidate's* role,
+  #      so it holds whether an admin or an organiser is doing the adding.
+  #
+  #   2. WHICH ROLE — an admin may add anyone the rule above allows; an
+  #      organiser may only add scanners.
+  #
   def assignable_users
     return User.none unless current_user && @event
+    return User.none unless can_manage_team?
 
-    available = User.where.not(id: @event.users.select(:id))
+    candidates = same_client_or_admin(unassigned_users)
 
-    if current_user.has_role?(:admin)
-      available
-    elsif current_user.has_role?(:organiser)
-      available.joins(:roles).where(roles: { name: 'scanner' }).distinct
+    if acting_admin?
+      candidates.distinct
     else
-      User.none
+      candidates.joins(:roles).where(roles: { name: SCANNER_ROLE }).distinct
     end
   end
-
   helper_method :assignable_users
 
+  def unassigned_users
+    User.where.not(id: @event.users.select(:id))
+  end
+
+  # Both sides of the .or derive from the same relation, which is what
+  # ActiveRecord requires for structural compatibility.
+  def same_client_or_admin(scope)
+    # An event with no client can only take admins — otherwise a nil client_id
+    # would silently match every other user whose client_id is also nil.
+    return scope.where(id: admin_user_ids) if @event.client_id.blank?
+
+    scope.where(client_id: @event.client_id).or(scope.where(id: admin_user_ids))
+  end
+
+  # select(:id), not pluck(:id) — keeps this a subquery instead of loading
+  # every admin id into Ruby on each render of the modal.
+  def admin_user_ids
+    User.joins(:roles).where(roles: { name: ADMIN_ROLE }).select(:id)
+  end
+
   def can_manage_team?
-    current_user&.has_role?(:admin) || current_user&.has_role?(:organiser)
+    current_user&.has_role?(ADMIN_ROLE) || current_user&.has_role?(ORGANISER_ROLE)
   end
   helper_method :can_manage_team?
+
+  def require_team_manager!
+    return if can_manage_team?
+
+    redirect_to organiser_show_event_path(@event),
+                alert: "You can't change the door team for this event."
+  end
+
+  # ── Helpers ───────────────────────────────────────────────────────────
+
+  def acting_admin?
+    current_user&.has_role?(ADMIN_ROLE)
+  end
+  helper_method :acting_admin?
 
   def display_name(user)
     user.try(:full_name).presence || user.email
@@ -156,7 +202,8 @@ class EventsController < ApplicationController
 
   def event_params
     permitted = %i[name slug description venue start_at end_at active poster]
-    permitted << :client_id if current_user.admin?
+    permitted << :client_id if acting_admin?
+
     params.require(:event).permit(
       *permitted,
       ticket_types_attributes: %i[id name description price quantity active _destroy]
