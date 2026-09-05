@@ -52,6 +52,29 @@
           <p class="<%= eyebrow %>">Details</p>
 
           <div class="mt-5 space-y-6">
+
+
+            <% if current_user.admin? %>
+              <div>
+                <%= f.label :client_id, "Client", class: label_base %>
+
+                <%= f.collection_select :client_id,
+                                        Client.order(:name),
+                                        :id,
+                                        :name,
+                                        { prompt: "Select a client" },
+                                        {
+                                          required: true,
+                                          class: "#{field_base} font-[Outfit] text-[17px] font-medium"
+                                        } %>
+
+                <p class="<%= hint_base %>">
+                  Select the client organizing this event.
+                </p>
+              </div>
+            <% end %>
+
+
             <div>
               <%= f.label :name, "Event name", class: label_base %>
               <%= f.text_field :name,

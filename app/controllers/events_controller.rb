@@ -28,6 +28,8 @@ class EventsController < ApplicationController
 
   def create
     @event = current_user.events.new(event_params)
+    # organisers always get their own client; admins may pick one
+    @event.client_id = current_user.client_id unless current_user.admin?
 
     if @event.save
       @event.users << current_user if current_user.has_role?(:organiser) &&
@@ -153,8 +155,10 @@ class EventsController < ApplicationController
   helper_method :organiser?
 
   def event_params
+    permitted = %i[name slug description venue start_at end_at active poster]
+    permitted << :client_id if current_user.admin?
     params.require(:event).permit(
-      :name, :slug, :description, :venue, :start_at, :end_at, :active, :poster,
+      *permitted,
       ticket_types_attributes: %i[id name description price quantity active _destroy]
     )
   end
