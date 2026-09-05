@@ -3,27 +3,29 @@
 one:
   event: one
   ticket_type: one
-  references: MyString
+  reference: REF123456
   customer_name: MyString
   customer_email: MyString
   customer_phone: MyString
   quantity: 1
   unit_price: 9.99
   total_price: 9.99
-  currency: MyString
+  currency: KES
+  status: pending
   paid_at: 2026-08-19 23:06:35
-  expire: 2026-08-19 23:06:35
+  expires_at: 2026-08-19 23:06:35
 
 two:
   event: two
   ticket_type: two
-  references: MyString
+  reference: REF654321
   customer_name: MyString
   customer_email: MyString
   customer_phone: MyString
   quantity: 1
   unit_price: 9.99
   total_price: 9.99
-  currency: MyString
+  currency: KES
+  status: pending
   paid_at: 2026-08-19 23:06:35
-  expire: 2026-08-19 23:06:35
+  expires_at: 2026-08-19 23:06:35

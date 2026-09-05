@@ -15,7 +15,7 @@ class RegistrationsController < Devise::RegistrationsController
     params.require(:user).permit(
       :first_name, :last_name, :email, :phone_number, :id_photo,
       :password, :password_confirmation,
-      client_attributes: %i[name phone email website country city description]
+      client_attributes: %i[name phone email website country city description settlement_bank account_number percentage_charge]
     )
   end
 end
