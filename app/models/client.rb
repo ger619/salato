@@ -1,6 +1,6 @@
 class Client < ApplicationRecord
   has_many :users, dependent: :nullify
-  has_many :events, through: :users
+  has_many :events, dependent: :restrict_with_error
   has_many :orders, through: :events
   has_one_attached :logo
   has_rich_text :description
