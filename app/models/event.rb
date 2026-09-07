@@ -49,6 +49,27 @@ class Event < ApplicationRecord
   scope :live, -> { where(active: true) }
   scope :upcoming, -> { where(start_at: Time.current..).order(:start_at) }
 
+  # Mirrors #sales_closed?: an event has ended once end_at (or start_at when
+  # there's no end_at) is in the past.
+  scope :ended, lambda { |at = Time.current|
+    where(arel_table.coalesce(arel_table[:end_at], arel_table[:start_at]).lt(at))
+  }
+  scope :not_ended, lambda { |at = Time.current|
+    where(arel_table.coalesce(arel_table[:end_at], arel_table[:start_at]).gteq(at))
+  }
+
+  # What a given viewer may see on the public listing: everything still to
+  # come, plus past events only for the organiser who created them. Admins
+  # see the lot.
+  def self.listable_for(user, at: Time.current)
+    return all if user&.admin?
+
+    scope = not_ended(at)
+    return scope if user.nil?
+
+    scope.or(ended(at).where(user_id: user.id))
+  end
+
   def to_param
     slug
   end
@@ -85,6 +106,22 @@ class Event < ApplicationRecord
     return false unless check_in_opens_at
 
     at.between?(check_in_opens_at, check_in_closes_at)
+  end
+
+  # Sales stop the moment the event is over. end_at is the cut-off; events
+  # without one fall back to start_at so a past event can never sell tickets.
+  def sales_close_at
+    end_at || start_at
+  end
+
+  def sales_closed?(at = Time.current)
+    return false unless sales_close_at
+
+    at > sales_close_at
+  end
+
+  def selling?(at = Time.current)
+    active? && !sales_closed?(at)
   end
 
   private

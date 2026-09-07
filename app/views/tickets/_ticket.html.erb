@@ -104,10 +104,10 @@
 <% else %>
 
   <%# ══════════════ FULL — single ticket page ══════════════ %>
-  <article class="ticket-card rounded-[22px] bg-white overflow-hidden
+  <article class="ticket-card ticket-card--full rounded-[22px] bg-white overflow-hidden
                   shadow-[0_30px_70px_-25px_rgba(21,13,58,.38)] ring-1 ring-ink/10">
 
-    <div class="grad-bg px-6 py-4 flex items-center justify-between gap-3">
+    <div class="ticket-band grad-bg px-6 py-4 flex items-center justify-between gap-3">
       <span class="mono text-[10px] sm:text-[11px] tracking-[.2em] text-white/95">
         ADMIT ONE<% if total > 1 && position %> &middot; <%= position %> OF <%= total %><% end %>
       </span>
@@ -133,12 +133,12 @@
 
       <dl class="mt-6 grid grid-cols-2 gap-y-4 gap-x-4 text-[14px]">
         <div class="min-w-0">
-          <dt class="text-ink2/70">Holder</dt>
-          <dd class="font-medium mt-0.5 truncate"><%= ticket.attendee_name %></dd>
+          <dt class="eyebrow text-ink2/60">Holder</dt>
+          <dd class="font-semibold mt-1 truncate"><%= ticket.attendee_name %></dd>
         </div>
         <div class="min-w-0">
-          <dt class="text-ink2/70">Paid</dt>
-          <dd class="font-medium mt-0.5">
+          <dt class="eyebrow text-ink2/60">Paid</dt>
+          <dd class="font-semibold mt-1">
             <%= ticket.order.currency %>
             <%= number_with_delimiter(ticket.order.unit_price.to_i) %>
           </dd>
@@ -148,7 +148,7 @@
 
     <div class="relative px-6"><div class="tear tear-mist"></div></div>
 
-    <div class="px-6 pt-7 pb-7 flex items-start gap-5">
+    <div class="ticket-stub px-6 pt-7 pb-3 flex items-start gap-5">
       <div class="shrink-0 p-2.5 rounded-xl ring-1 ring-ink/10 bg-white">
         <%= ticket_qr_svg(ticket, px: 104) %>
       </div>
@@ -174,9 +174,13 @@
       </div>
     </div>
 
-    <div class="px-6 pb-5 pt-1 border-t border-ink/8 flex items-center justify-between gap-4">
+    <p class="px-6 pb-6 text-[12px] text-ink2/70">
+      Scan at the gate. Valid for one entry.
+    </p>
+
+    <div class="ticket-footer px-6 pb-5 pt-1 border-t border-ink/8 flex items-center justify-between gap-4">
       <p class="mono text-[10px] tracking-[.14em] text-ink2/50 pt-4 break-all">
-        REF <%= ticket.order.reference %>
+        SALATO &middot; REF <%= ticket.order.reference %>
       </p>
 
       <%= link_to "PDF",

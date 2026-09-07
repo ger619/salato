@@ -1,6 +1,7 @@
 class OrdersController < ApplicationController
   before_action :set_event, only: %i[new create show download initialize_payment]
   before_action :set_order, only: %i[show download]
+  before_action :ensure_sales_open, only: %i[new create initialize_payment]
 
   def new
     @ticket_type = @event.ticket_types.find(params[:ticket_type_id])
@@ -160,6 +161,14 @@ class OrdersController < ApplicationController
 
   def set_order
     @order = @event.orders.find(params[:id])
+  end
+
+  # No new orders, and no paying for pending ones, once the event is over.
+  def ensure_sales_open
+    return unless @event.sales_closed?
+
+    redirect_to event_path(@event.slug),
+                alert: 'This event has ended. Tickets are no longer on sale.'
   end
 
   # Stable order so "ticket 2 of 3" means the same thing on the web page,

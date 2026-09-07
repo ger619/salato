@@ -1,19 +1,72 @@
 <style>
-    /* The gate is the only thing these pages exist for, so make them print clean. */
+    /* Print mirrors TicketPdf: an A6 mist sheet, one white card per page with a
+       hairline edge, the gradient band and perforation kept. Keep the numbers in
+       step with the constants in app/services/ticket_pdf.rb (INSET 14pt, PAD 20pt). */
     @media print {
+        @page { size: 105mm 148mm; margin: 0 } /* A6 portrait */
+
         header, footer, nav, .no-print { display: none !important }
 
-        body { background: #fff }
+        *, *::before, *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
 
-        .ticket-shell { padding: 0 !important }
+        html, body { background: #F7F4FB !important; overflow: visible !important }
+
+        .ticket-shell {
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: 0 !important;
+            background: #F7F4FB !important;
+        }
+
+        .ticket-shell > div,
+        .ticket-print-page {
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Screen shows a grid; print gives each ticket its own sheet so it can
+           be torn off and handed over. */
+        .ticket-grid {
+            display: block !important;
+            max-width: none !important;
+            margin: 0 !important;
+            gap: 0 !important;
+        }
 
         .ticket-card {
+            box-sizing: border-box;
+            width: calc(105mm - 28pt) !important;
+            min-height: calc(148mm - 28pt) !important;
+            margin: 14pt !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
+            outline: none !important;
+            --tw-ring-shadow: 0 0 #0000 !important;
+            --tw-ring-offset-shadow: 0 0 #0000 !important;
+            border: 0.6pt solid #E6E1EF !important;
+            background: #fff !important;
+            display: flex !important;
+            flex-direction: column !important;
+            transform: none !important;
             break-inside: avoid;
             page-break-inside: avoid;
         }
 
-        /* One ticket per sheet so each can be torn off and handed over. */
-        .ticket-card + .ticket-card { break-before: page; page-break-before: always }
+        .ticket-card + .ticket-card,
+        .ticket-grid > * + * .ticket-card {
+            break-before: page;
+            page-break-before: always;
+        }
+
+        .ticket-card .ticket-band { border-radius: 0 !important }
+
+        /* Footer hugs the bottom edge of the sheet, like the PDF's hairline rule. */
+        .ticket-card .ticket-footer { margin-top: auto !important }
+
+        .tear-mist::before, .tear-mist::after { background: #F7F4FB !important }
     }
 </style>
