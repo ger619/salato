@@ -41,7 +41,11 @@
       <span class="font-mono text-[10px] tracking-[.18em] px-3 py-1.5 rounded-lg grad-bg text-white">
         <%= event_countdown(@event) %>
       </span>
-      <% if @ticket_types.any? && @ticket_types.all? { |t| t.available_quantity.to_i.zero? } %>
+      <% if @event.sales_closed? %>
+        <span class="font-mono text-[10px] tracking-[.18em] px-3 py-1.5 rounded-lg bg-white/15 text-white/85">
+          EVENT ENDED
+        </span>
+      <% elsif @ticket_types.any? && @ticket_types.all? { |t| t.available_quantity.to_i.zero? } %>
         <span class="font-mono text-[10px] tracking-[.18em] px-3 py-1.5 rounded-lg bg-white/15 text-white/85">
           SOLD OUT
         </span>
@@ -141,7 +145,12 @@
         <% end %>
       </div>
 
-      <% if @ticket_types.empty? %>
+      <% if @event.sales_closed? %>
+        <div class="mt-5 rounded-[20px] border-2 border-dashed border-ink/15 bg-mist p-8 text-center">
+          <p class="text-[16px] font-medium">This event has ended</p>
+          <p class="mt-2 text-[15px] text-ink-soft">Ticket sales closed on <%= @event.sales_close_at.strftime("%-d %B %Y") %>.</p>
+        </div>
+      <% elsif @ticket_types.empty? %>
         <div class="mt-5 rounded-[20px] border-2 border-dashed border-ink/15 bg-mist p-8 text-center">
           <p class="text-[16px] font-medium">Tickets aren't on sale yet</p>
           <p class="mt-2 text-[15px] text-ink-soft">Check back — the organiser hasn't opened sales for this one.</p>
@@ -161,7 +170,7 @@
 </div>
 
 <%# ══════════════ MOBILE STICKY BAR ══════════════ %>
-<% cheapest = @ticket_types.select { |t| t.available_quantity.to_i.positive? }.min_by { |t| t.price.to_i } %>
+<% cheapest = @event.sales_closed? ? nil : @ticket_types.select { |t| t.available_quantity.to_i.positive? }.min_by { |t| t.price.to_i } %>
 <% if cheapest %>
   <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-ink/10 px-5 py-3 flex items-center justify-between gap-4">
     <div class="min-w-0">

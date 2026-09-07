@@ -1,6 +1,7 @@
 
 <% available = ticket_type.available_quantity.to_i %>
-<% sold_out  = available.zero? %>
+<% ended     = event.sales_closed? %>
+<% sold_out  = ended || available.zero? %>
 
 <article class="stub rounded-[20px] p-6 transition
                 <%= sold_out ? "bg-mist/60 ring-1 ring-ink/8" : "bg-white ring-1 ring-ink/12 hover:ring-ink/25" %>"
@@ -20,7 +21,7 @@
 
     <% if sold_out %>
       <span class="shrink-0 font-mono text-[10px] tracking-[.16em] px-2.5 py-1.5 rounded-lg bg-ink/8 text-ink-soft/70">
-        SOLD OUT
+        <%= ended ? "SALES CLOSED" : "SOLD OUT" %>
       </span>
     <% elsif (note = ticket_scarcity(available)) %>
       <span class="shrink-0 font-mono text-[10px] tracking-[.16em] px-2.5 py-1.5 rounded-lg bg-flare/10 text-flare">

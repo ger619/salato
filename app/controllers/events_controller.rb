@@ -12,11 +12,13 @@ class EventsController < ApplicationController
   load_and_authorize_resource
 
   # Organisers see their own events; everyone else sees what's on sale.
+  # Once an event has ended it drops off the listing for everyone except
+  # the organiser who created it (and admins).
   def index
     @events = if user_signed_in?
-                Event.all.order(start_at: :desc)
+                Event.listable_for(current_user).order(start_at: :desc)
               else
-                Event.live.upcoming
+                Event.live.not_ended.order(:start_at)
               end
   end
 
