@@ -15,11 +15,18 @@ class EventsController < ApplicationController
   # Once an event has ended it drops off the listing for everyone except
   # the organiser who created it (and admins).
   def index
-    @events = if user_signed_in?
-                Event.listable_for(current_user).order(start_at: :desc)
-              else
-                Event.live.not_ended.order(:start_at)
-              end
+    scope = if user_signed_in?
+              Event.listable_for(current_user).order(start_at: :desc)
+            else
+              Event.live.not_ended.order(:start_at)
+            end
+
+    @query = params[:q].to_s.strip
+    @event_type = params[:event_type].to_s.strip
+    @event_type = '' unless Event::EVENT_TYPES.include?(@event_type)
+    @filtered = @query.present? || @event_type.present?
+
+    @events = scope.search(@query).of_type(@event_type)
 
     @per_page = 12
     @page = [params[:page].to_i, 1].max

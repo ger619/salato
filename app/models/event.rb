@@ -6,17 +6,18 @@ class Event < ApplicationRecord
   belongs_to :client, optional: true
   delegate :paystack_subaccount_code, to: :client, prefix: true, allow_nil: true
 
-  EVENT_TYPES = [
-    'Concerts',
-    'Conferences',
-    'Comedy nights',
-    'Church conventions',
-    'Football fixtures',
-    'Food festivals',
-    'Workshops'
-  ].freeze
+  EVENT_TYPES = ['Concerts', 'Conferences', 'Comedy nights', 'Church conventions', 'Football fixtures', 'Food festivals', 'Workshops'].freeze
 
   validates :event_type, inclusion: { in: EVENT_TYPES }, allow_blank: true
+
+  scope :search, lambda { |term|
+    next all if term.blank?
+
+    pattern = "%#{sanitize_sql_like(term.strip)}%"
+    where('events.name ILIKE :p OR events.venue ILIKE :p OR events.description ILIKE :p', p: pattern)
+  }
+
+  scope :of_type, ->(type) { type.present? ? where(event_type: type) : all }
 
   has_many :ticket_types, dependent: :destroy
   has_many :orders, dependent: :destroy
