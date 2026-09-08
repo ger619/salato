@@ -6,6 +6,18 @@ class Event < ApplicationRecord
   belongs_to :client, optional: true
   delegate :paystack_subaccount_code, to: :client, prefix: true, allow_nil: true
 
+  EVENT_TYPES = [
+    'Concerts',
+    'Conferences',
+    'Comedy nights',
+    'Church conventions',
+    'Football fixtures',
+    'Food festivals',
+    'Workshops'
+  ].freeze
+
+  validates :event_type, inclusion: { in: EVENT_TYPES }, allow_blank: true
+
   has_many :ticket_types, dependent: :destroy
   has_many :orders, dependent: :destroy
   has_many :tickets, dependent: :destroy

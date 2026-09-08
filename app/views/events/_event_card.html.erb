@@ -47,7 +47,7 @@
            stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-flare" aria-hidden="true">
         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/>
       </svg>
-      <span><%= event.venue %></span>
+      <span><%= event.venue %></span> - <span><%= event.event_type %> </span>
     </p>
 
     <% if event.description.present? %>

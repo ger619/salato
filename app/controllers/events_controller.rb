@@ -20,6 +20,17 @@ class EventsController < ApplicationController
               else
                 Event.live.not_ended.order(:start_at)
               end
+
+    @per_page = 12
+    @page = [params[:page].to_i, 1].max
+    offset = (@page - 1) * @per_page
+
+    @total_count = @events.count
+    @total_pages = (@total_count / @per_page.to_f).ceil
+    @start_count = @total_count.zero? ? 0 : offset + 1
+    @end_count = [offset + @per_page, @total_count].min
+    @events = @events.limit(@per_page).offset(offset)
+    @total = @total_count
   end
 
   def show
@@ -203,7 +214,7 @@ class EventsController < ApplicationController
   helper_method :organiser?
 
   def event_params
-    permitted = %i[name slug description venue start_at end_at active poster]
+    permitted = %i[name slug description venue start_at end_at active poster event_type]
     permitted << :client_id if acting_admin?
 
     params.require(:event).permit(

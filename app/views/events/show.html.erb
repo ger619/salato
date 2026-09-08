@@ -55,6 +55,7 @@
     <h1 class="mt-5 text-[38px] sm:text-[48px] lg:text-[60px] leading-[1.03] font-semibold max-w-4xl">
       <%= @event.name %>
     </h1>
+    <p class="capitalize mt-3"><%= @event.event_type %></p>
 
     <div class="mt-7 flex flex-wrap gap-x-8 gap-y-4 text-[15px]">
       <div class="flex items-start gap-2.5">
@@ -79,6 +80,7 @@
           <p class="mt-1 text-white/90"><%= @event.venue %></p>
         </div>
       </div>
+
     </div>
   </div>
 </header>
