@@ -49,7 +49,6 @@
       </svg>
       <span><%= event.venue %></span> - <span><%= event.event_type %> </span>
     </p>
-
     <% if event.description.present? %>
       <p class="mt-4 text-[15px] leading-relaxed text-ink-soft/90">
         <%= truncate(strip_tags(event.description), length: 120, separator: " ") %>
