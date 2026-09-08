@@ -15,11 +15,35 @@ class EventsController < ApplicationController
   # Once an event has ended it drops off the listing for everyone except
   # the organiser who created it (and admins).
   def index
-    @events = if user_signed_in?
-                Event.listable_for(current_user).order(start_at: :desc)
-              else
-                Event.live.not_ended.order(:start_at)
-              end
+    scope = if user_signed_in?
+              Event.listable_for(current_user).order(start_at: :desc)
+            else
+              Event.live.not_ended.order(:start_at)
+            end
+
+    @query = params[:q].to_s.strip
+    @event_type = params[:event_type].to_s.strip
+    @event_type = '' unless Event::EVENT_TYPES.include?(@event_type)
+    @filtered = @query.present? || @event_type.present?
+
+    # Counts respond to the search box but not to the type pill,
+    # so every pill keeps showing what it would find.
+    searched = scope.search(@query)
+    @type_counts = searched.reorder(nil).group(:event_type).count
+    @all_count = searched.count
+
+    @events = searched.of_type(@event_type)
+
+    @per_page = 12
+    @page = [params[:page].to_i, 1].max
+    offset = (@page - 1) * @per_page
+
+    @total_count = @events.count
+    @total_pages = (@total_count / @per_page.to_f).ceil
+    @start_count = @total_count.zero? ? 0 : offset + 1
+    @end_count = [offset + @per_page, @total_count].min
+    @events = @events.limit(@per_page).offset(offset)
+    @total = @total_count
   end
 
   def show
@@ -203,7 +227,7 @@ class EventsController < ApplicationController
   helper_method :organiser?
 
   def event_params
-    permitted = %i[name slug description venue start_at end_at active poster]
+    permitted = %i[name slug description venue start_at end_at active poster event_type]
     permitted << :client_id if acting_admin?
 
     params.require(:event).permit(

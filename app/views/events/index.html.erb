@@ -3,27 +3,11 @@
 <%= render 'shared/header' %>
 
 
-<section class="pt-32 lg:pt-40 pb-24 lg:pb-32">
+<section class="pt-24 lg:pt-24 pb-24 lg:pb-32">
   <div class="max-w-shell mx-auto px-5 lg:px-8">
 
     <%# ── Header ─────────────────────────────────────────────── %>
-    <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="max-w-2xl">
-        <p class="eyebrow text-magenta">What's on</p>
-        <h1 class="mt-4 text-[36px] lg:text-[52px] leading-[1.06] font-semibold">
-          Upcoming <span class="grad-text">events</span>
-        </h1>
-        <p class="mt-4 text-[17px] leading-relaxed text-ink-soft">
-          Pick an event, pay with M-Pesa or card, and your ticket lands in your inbox straight away.
-        </p>
-      </div>
-
-      <% if @events.any? %>
-        <p class="font-mono text-[13px] text-ink-soft/70 pb-2">
-          <%= pluralize(@events.size, "event") %> on sale
-        </p>
-      <% end %>
-    </div>
+    <%= render 'events/header_with_search' %>
 
     <%# ── Empty state ────────────────────────────────────────── %>
     <% if @events.empty? %>
@@ -48,6 +32,8 @@
         <%= render partial: "events/event_card", collection: @events, as: :event %>
       </div>
     <% end %>
+
+    <%= render partial: "events/pagination" %>
 
   </div>
 </section>

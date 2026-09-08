@@ -74,6 +74,18 @@
               </div>
             <% end %>
 
+            <div>
+              <%= f.label :event_type, "Event Type", class: label_base %>
+              <%= f.select :event_type,
+                           Event::EVENT_TYPES,
+                           { prompt: "Select an event type" },
+                           {
+                             required: true,
+                             autofocus: true,
+                             class: "#{field_base} font-[Outfit] text-[17px] font-medium"
+                           } %>
+              <p class="<%= hint_base %>">Used to group your event on the discovery and search pages.</p>
+            </div>
 
             <div>
               <%= f.label :name, "Event name", class: label_base %>

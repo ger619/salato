@@ -1,0 +1,88 @@
+<% if @total_pages.to_i > 1 %>
+  <%
+    # Carries q / event_type through, so paging never drops the filters.
+    page_url = ->(n) { url_for(request.query_parameters.merge(page: n)) }
+    window   = 1
+    pages    = (1..@total_pages).select { |p| p == 1 || p == @total_pages || (p - @page).abs <= window }
+  %>
+
+  <nav aria-label="Pagination" class="mt-14">
+    <%# The tear-off edge, echoing the ticket. %>
+    <div class="h-px w-full" aria-hidden="true"
+         style="background-image: repeating-linear-gradient(to right, rgba(21,13,58,.20) 0 5px, transparent 5px 13px);"></div>
+
+    <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-5">
+
+      <p class="order-2 sm:order-1 font-mono text-[13px] text-ink-soft/70 tabular-nums">
+        <%= @start_count %>–<%= @end_count %> of <%= @total_count %>
+      </p>
+
+      <div class="order-1 sm:order-2 flex items-center gap-2 w-full sm:w-auto">
+
+        <%# Previous %>
+        <% if @page > 1 %>
+          <%= link_to page_url.call(@page - 1), rel: "prev",
+                      class: "inline-flex items-center gap-1.5 shrink-0 rounded-xl px-3.5 py-2.5 text-[14px] font-medium text-ink-soft bg-white ring-1 ring-ink/10 hover:ring-ink/25 hover:text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/25 transition" do %>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            <span class="hidden sm:inline">Previous</span>
+            <span class="sr-only sm:hidden">Previous page</span>
+          <% end %>
+        <% else %>
+          <span aria-hidden="true"
+                class="inline-flex items-center gap-1.5 shrink-0 rounded-xl px-3.5 py-2.5 text-[14px] font-medium text-ink/25 ring-1 ring-ink/8 cursor-default">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <span class="hidden sm:inline">Previous</span>
+          </span>
+        <% end %>
+
+        <%# Numbers — desktop %>
+        <div class="hidden sm:flex items-center gap-1.5">
+          <% last = 0 %>
+          <% pages.each do |p| %>
+            <% if last.positive? && p > last + 1 %>
+              <span class="px-1 font-mono text-[13px] text-ink/30" aria-hidden="true">…</span>
+            <% end %>
+
+            <% if p == @page %>
+              <span aria-current="page"
+                    class="inline-grid place-items-center min-w-[42px] h-[42px] px-3 rounded-xl grad-bg text-white font-mono text-[14px] font-semibold tabular-nums shadow-[0_6px_14px_-6px_rgba(118,32,177,.7)]">
+                <%= p %>
+              </span>
+            <% else %>
+              <%= link_to p, page_url.call(p),
+                          aria: { label: "Page #{p}" },
+                          class: "inline-grid place-items-center min-w-[42px] h-[42px] px-3 rounded-xl bg-white ring-1 ring-ink/10 text-ink-soft font-mono text-[14px] tabular-nums hover:ring-ink/25 hover:text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/25 transition" %>
+            <% end %>
+            <% last = p %>
+          <% end %>
+        </div>
+
+        <%# Numbers — mobile keeps one honest line instead %>
+        <p class="sm:hidden flex-1 text-center font-mono text-[13px] text-ink-soft/70 tabular-nums">
+          Page <%= @page %> of <%= @total_pages %>
+        </p>
+
+        <%# Next %>
+        <% if @page < @total_pages %>
+          <%= link_to page_url.call(@page + 1), rel: "next",
+                      class: "inline-flex items-center gap-1.5 shrink-0 rounded-xl px-3.5 py-2.5 text-[14px] font-medium text-ink-soft bg-white ring-1 ring-ink/10 hover:ring-ink/25 hover:text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/25 transition" do %>
+            <span class="hidden sm:inline">Next</span>
+            <span class="sr-only sm:hidden">Next page</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          <% end %>
+        <% else %>
+          <span aria-hidden="true"
+                class="inline-flex items-center gap-1.5 shrink-0 rounded-xl px-3.5 py-2.5 text-[14px] font-medium text-ink/25 ring-1 ring-ink/8 cursor-default">
+            <span class="hidden sm:inline">Next</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </span>
+        <% end %>
+
+      </div>
+    </div>
+  </nav>
+<% end %>
