@@ -3,7 +3,7 @@
 <%= render 'shared/header' %>
 
 
-<section class="pt-32 lg:pt-40 pb-24 lg:pb-32">
+<section class="pt-24 lg:pt-24 pb-24 lg:pb-32">
   <div class="max-w-shell mx-auto px-5 lg:px-8">
 
     <%# ── Header ─────────────────────────────────────────────── %>
@@ -32,6 +32,8 @@
         <%= render partial: "events/event_card", collection: @events, as: :event %>
       </div>
     <% end %>
+
+    <%= render partial: "events/pagination" %>
 
   </div>
 </section>

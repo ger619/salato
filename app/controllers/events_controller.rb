@@ -26,7 +26,13 @@ class EventsController < ApplicationController
     @event_type = '' unless Event::EVENT_TYPES.include?(@event_type)
     @filtered = @query.present? || @event_type.present?
 
-    @events = scope.search(@query).of_type(@event_type)
+    # Counts respond to the search box but not to the type pill,
+    # so every pill keeps showing what it would find.
+    searched = scope.search(@query)
+    @type_counts = searched.reorder(nil).group(:event_type).count
+    @all_count = searched.count
+
+    @events = searched.of_type(@event_type)
 
     @per_page = 12
     @page = [params[:page].to_i, 1].max
