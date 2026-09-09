@@ -67,6 +67,13 @@
     visible: !scanner_only && !organiser_only,
     active: controller_name == "clients" },
 
+  { label: "Sidekiq", icon: :jobs,
+    path: sidekiq_web_path,
+    visible: !scanner_only && !organiser_only,
+    active: false,
+    external: true },
+
+
   { label: "Settings", icon: :settings,
     visible: !scanner_only,
     path: "#", active: controller_name == "settings" }
