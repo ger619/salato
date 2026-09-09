@@ -1,6 +1,6 @@
 # config/deploy.yml
 # Salato Events
-# Rails 8 + PostgreSQL 16 + Kamal 2
+# Rails 8 + PostgreSQL 16 + Redis 7 + Sidekiq + Kamal 2
 # Production server: Contabo VPS
 
 service: salato-events
@@ -8,12 +8,20 @@ service: salato-events
 image: ger619/salato-events
 
 # --------------------------------------------------
-# Production server
+# Production servers
+#
+# web    -> Puma, behind the Kamal proxy
+# worker -> Sidekiq, same image, different command
 # --------------------------------------------------
 
 servers:
   web:
     - 207.180.216.54
+
+  worker:
+    hosts:
+      - 207.180.216.54
+    cmd: bundle exec sidekiq -C config/sidekiq.yml
 
 # Give Rails/Kamal enough time for the first boot,
 # PostgreSQL startup and database preparation.
@@ -79,15 +87,21 @@ env:
     PGUSER: salato
 
     PG_DATABASE: salato_events_production
-    PG_QUEUE_DATABASE: salato_events_production_queue
     PG_CACHE_DATABASE: salato_events_production_cache
     PG_CABLE_DATABASE: salato_events_production_cable
 
     # ------------------------------------------------
-    # Rails / Solid
+    # Redis / Sidekiq
+    #
+    # The Redis Kamal accessory is named "redis",
+    # so the service on the Kamal network is:
+    #
+    # salato-events-redis
     # ------------------------------------------------
 
-    SOLID_QUEUE_IN_PUMA: "true"
+    REDIS_URL: redis://salato-events-redis:6379/0
+
+    SIDEKIQ_CONCURRENCY: "5"
 
     RAILS_LOG_TO_STDOUT: "true"
 
@@ -113,10 +127,14 @@ volumes:
 asset_path: /rails/public/assets
 
 # --------------------------------------------------
-# PostgreSQL Accessory
+# Accessories
 # --------------------------------------------------
 
 accessories:
+
+  # ------------------------------------------------
+  # PostgreSQL
+  # ------------------------------------------------
 
   db:
 
@@ -148,3 +166,35 @@ accessories:
 
     directories:
       - data:/var/lib/postgresql/data
+
+  # ------------------------------------------------
+  # Redis (Sidekiq queue backend)
+  # ------------------------------------------------
+
+  redis:
+
+    image: redis:7-alpine
+
+    # Redis runs on the same Contabo server.
+    host: 207.180.216.54
+
+    # Bind Redis only to localhost on the VPS.
+    #
+    # IMPORTANT:
+    # Do NOT expose Redis publicly — it has no auth here
+    # and relies on being unreachable from outside.
+    #
+    # Rails and Sidekiq connect through the Kamal Docker
+    # network using:
+    #
+    # salato-events-redis:6379
+    #
+    port: "127.0.0.1:6379:6379"
+
+    # noeviction is required for Sidekiq: the default policy
+    # would silently discard queued jobs under memory pressure.
+    # appendonly keeps the queue across restarts.
+    cmd: "redis-server --appendonly yes --maxmemory-policy noeviction"
+
+    directories:
+      - data:/data
