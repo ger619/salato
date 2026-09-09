@@ -18,6 +18,11 @@ module Salato
     config.active_storage.variant_processor = :vips
     config.time_zone = "Nairobi"
 
+    config.active_job.queue_adapter = :sidekiq
+    config.action_mailer.deliver_later_queue_name = "mailers"
+    config.active_storage.queues.analysis = "active_storage_analysis"
+    config.active_storage.queues.purge   = "active_storage_purge"
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

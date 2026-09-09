@@ -5,6 +5,12 @@ Rails.application.routes.draw do
       registrations: 'registrations'
     }
 
+  require 'sidekiq/web'
+  authenticate :user, ->(user) { user.has_role?(:admin) } do
+    mount Sidekiq::Web => '/sidekiq'
+  end
+
+
   get "up" => "rails/health#show", as: :rails_health_check
 
 
