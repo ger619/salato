@@ -2,6 +2,7 @@ class OrdersController < ApplicationController
   before_action :set_event, only: %i[new create show download initialize_payment]
   before_action :set_order, only: %i[show download]
   before_action :ensure_sales_open, only: %i[new create initialize_payment]
+  before_action :ensure_payouts_configured, only: %i[new create initialize_payment]
 
   def new
     @ticket_type = @event.ticket_types.find(params[:ticket_type_id])
@@ -151,6 +152,13 @@ class OrdersController < ApplicationController
     )
 
     redirect_to response.dig('data', 'authorization_url'), allow_other_host: true
+  end
+
+  def ensure_payouts_configured
+    return if @event.payouts_ready?
+
+    redirect_to event_path(@event.slug),
+                alert: 'Tickets for this event are not on sale yet. The organiser still needs to finish their payout setup.'
   end
 
   private

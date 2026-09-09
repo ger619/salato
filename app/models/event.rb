@@ -134,7 +134,11 @@ class Event < ApplicationRecord
   end
 
   def selling?(at = Time.current)
-    active? && !sales_closed?(at)
+    active? && !sales_closed?(at) && payouts_ready?
+  end
+
+  def payouts_ready?
+    client_paystack_subaccount_code.present?
   end
 
   private
