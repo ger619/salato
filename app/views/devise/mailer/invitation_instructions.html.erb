@@ -1,11 +1,124 @@
-<p><%= t("devise.mailer.invitation_instructions.hello", email: @resource.email) %></p>
+<div style="margin:0;padding:24px 12px;background-color:#F7F4FB;font-family:'Trebuchet MS',Helvetica,Arial,sans-serif;color:#150D3A;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background-color:#ffffff;border-radius:12px;overflow:hidden;">
+    <tr>
+      <td style="background:#150D3A;padding:26px 24px;text-align:center;">
+        <div style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">Salato</div>
+        <div style="font-size:12px;color:#C9BEE4;margin-top:4px;">Events. Tickets. Experiences.</div>
+      </td>
+    </tr>
 
-<p><%= t("devise.mailer.invitation_instructions.someone_invited_you", url: root_url) %></p>
+    <tr>
+      <td style="padding:30px 26px 8px 26px;">
+        <p style="margin:0 0 18px 0;font-size:19px;font-weight:bold;">
+          Welcome<%= ", #{@resource.first_name}" if @resource.first_name.present? %>.
+        </p>
 
-<p><%= link_to t("devise.mailer.invitation_instructions.accept"), accept_invitation_url(@resource, invitation_token: @token) %></p>
+        <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;">
+          <% if @resource.client.present? %>
+            <strong><%= @resource.client.name %></strong> has invited you to join them on Salato,
+            where Kenyan organisers sell tickets, take M-Pesa and card payments, and check people
+            in at the door with a phone.
+          <% else %>
+            You&rsquo;ve been invited to join Salato, where Kenyan organisers sell tickets, take
+            M-Pesa and card payments, and check people in at the door with a phone.
+          <% end %>
+        </p>
 
-<% if @resource.invitation_due_at %>
-  <p><%= t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format')) %></p>
-<% end %>
+        <p style="margin:0;font-size:15px;line-height:1.65;">
+          Set your password below and the account is yours.
+        </p>
+      </td>
+    </tr>
 
-<p><%= t("devise.mailer.invitation_instructions.ignore") %></p>
+    <tr>
+      <td style="padding:18px 26px 0 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F7F4FB;border-radius:8px;">
+          <tr>
+            <td style="padding:18px 20px;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#7620B1;margin-bottom:12px;">
+                Your account
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;">
+                <strong style="color:#5A5175;">Name:</strong>
+                <%= [@resource.first_name, @resource.last_name].compact_blank.join(' ') %>
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;">
+                <strong style="color:#5A5175;">Email:</strong> <%= @resource.email %>
+              </div>
+
+              <% if @resource.client.present? %>
+                <div style="font-size:14px;margin-bottom:7px;">
+                  <strong style="color:#5A5175;">Organisation:</strong> <%= @resource.client.name %>
+                </div>
+              <% end %>
+
+              <% if @resource.role.present? %>
+                <div style="font-size:14px;">
+                  <strong style="color:#5A5175;">Role:</strong>
+                  <span style="display:inline-block;background-color:#7620B1;color:#ffffff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:10px;">
+                    <%= @resource.role.titleize %>
+                  </span>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:26px 26px 6px 26px;text-align:center;">
+        <a href="<%= accept_invitation_url(@resource, invitation_token: @token) %>"
+           style="display:inline-block;background-color:#FC8027;color:#ffffff;font-size:16px;font-weight:bold;text-decoration:none;padding:14px 34px;border-radius:8px;">
+          Accept your invitation
+        </a>
+      </td>
+    </tr>
+
+    <% if @resource.invitation_due_at %>
+      <tr>
+        <td style="padding:0 26px 6px 26px;text-align:center;">
+          <p style="margin:0;font-size:13px;color:#8A82A3;">
+            This invitation expires on
+            <%= l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format') %>.
+          </p>
+        </td>
+      </tr>
+    <% end %>
+
+    <tr>
+      <td style="padding:18px 26px 26px 26px;">
+        <p style="margin:0 0 10px 0;font-size:13px;line-height:1.6;color:#5A5175;">
+          If the button doesn&rsquo;t work, paste this into your browser:
+        </p>
+
+        <p style="margin:0;font-size:12px;line-height:1.5;word-break:break-all;">
+          <a href="<%= accept_invitation_url(@resource, invitation_token: @token) %>" style="color:#7620B1;">
+            <%= accept_invitation_url(@resource, invitation_token: @token) %>
+          </a>
+        </p>
+
+        <p style="margin:16px 0 0 0;font-size:13px;line-height:1.6;color:#8A82A3;">
+          Weren&rsquo;t expecting this? Ignore this email and nothing will happen.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background-color:#F7F4FB;padding:24px;text-align:center;">
+        <%= image_tag "salato_logo/salato-cutout-check.png", alt: "Salato", width: 72, style: "display:block;margin:0 auto 12px auto;border:0;outline:none;text-decoration:none;" %>
+        <% if @logo_url.present? %>
+          <img src="<%= @logo_url %>" alt="Salato" width="72" style="display:block;margin:0 auto 12px auto;border:0;outline:none;text-decoration:none;">
+        <% end %>
+
+        <div style="font-size:12px;color:#8A82A3;line-height:1.7;">
+          <a href="<%= root_url %>" style="color:#7620B1;text-decoration:none;font-weight:bold;">salato.app</a><br>
+          Events. Tickets. Experiences.<br>
+          Nairobi, Kenya
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>

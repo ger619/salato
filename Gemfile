@@ -54,6 +54,8 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem 'rubocop-rails-omakase', require: false
+
+  gem 'dotenv-rails'
 end
 
 group :development do
@@ -71,6 +73,7 @@ gem 'cancancan'
 gem 'chunky_png'
 gem 'devise', '~> 5.0'
 gem 'devise_invitable'
+gem 'dotenv'
 gem 'lexxy'
 gem 'prawn'
 gem 'rolify'

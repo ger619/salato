@@ -105,6 +105,17 @@ env:
 
     RAILS_LOG_TO_STDOUT: "true"
 
+    # ------------------------------------------------
+    # Email
+    #
+    # Mail is sent through Resend over SMTP. The domain
+    # salato.app is verified in Resend, so the From
+    # address must stay on that domain or Resend will
+    # reject the message.
+    # ------------------------------------------------
+
+    MAIL_FROM: "Salato <hello@salato.app>"
+
   secret:
     - RAILS_MASTER_KEY
     - PGPASSWORD
@@ -112,6 +123,10 @@ env:
     - PAYSTACK_SECRET_KEY
     - PAYSTACK_PUBLIC_KEY
     - PAYSTACK_CURRENCY
+
+    # Resend API key — used as the SMTP password in
+    # config/environments/production.rb.
+    - RESEND_API_KEY
 
 # --------------------------------------------------
 # Persistent Rails Storage
