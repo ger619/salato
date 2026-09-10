@@ -119,6 +119,9 @@ GEM
       actionmailer (>= 5.0)
       devise (>= 4.6)
     dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+      railties (>= 6.1)
     drb (2.2.3)
     ed25519 (1.4.0)
     erb (6.0.7)
@@ -457,6 +460,8 @@ DEPENDENCIES
   debug
   devise (~> 5.0)
   devise_invitable
+  dotenv
+  dotenv-rails
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

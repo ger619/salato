@@ -32,8 +32,41 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  # Surface delivery problems locally too — silent failures in development are
+  # why a broken mailer reaches production unnoticed.
+  config.action_mailer.raise_delivery_errors = true
+
+  # Without an explicit delivery_method Rails defaults to SMTP on localhost:25,
+  # which does not exist on a dev machine, so every mail vanished.
+  if ENV["RESEND_API_KEY"].present?
+    # Real send through Resend. Use a verified address for `to:` while testing.
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address:              "smtp.resend.com",
+      port:                 465,
+      domain:               "salato.app",
+      user_name:            "resend",
+      password:             ENV.fetch("RESEND_API_KEY"),
+      authentication:       :plain,
+      tls:                  true,
+      enable_starttls_auto: false,
+      open_timeout:         10,
+      read_timeout:         10
+    }
+  else
+    # No key locally: write .eml files to tmp/mails so they can be opened.
+    # Warn loudly — a silent fallback here is exactly how a broken mailer goes
+    # unnoticed until a real buyer pays.
+    config.action_mailer.delivery_method = :file
+    config.action_mailer.file_settings = { location: Rails.root.join("tmp/mails") }
+
+    config.after_initialize do
+      Rails.logger.warn(
+        "[mail] RESEND_API_KEY is not set. Mail is being written to tmp/mails " \
+          "instead of sent. Add it to .env to send for real."
+      )
+    end
+  end
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false

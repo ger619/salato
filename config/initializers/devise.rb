@@ -24,13 +24,20 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
+  # Sender for invitation and password-reset mail. Must stay on the
+  # salato.app domain that is verified in Resend.
+  config.mailer_sender = ENV.fetch('MAIL_FROM', 'Salato <hello@salato.app>')
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
 
   # Configure the parent class responsible to send e-mails.
-  # config.parent_mailer = 'ActionMailer::Base'
+  #
+  # Devise::Mailer inherits from ActionMailer::Base by default, which means
+  # invitation and password-reset mail would NOT pick up ApplicationMailer's
+  # default From address or the mailer layout. Pointing it at ApplicationMailer
+  # keeps every email the app sends on one sender and one layout.
+  config.parent_mailer = 'ApplicationMailer'
 
   # ==> ORM configuration
   # Load and configure the ORM. Supports :active_record (default) and

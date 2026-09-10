@@ -52,21 +52,43 @@ Rails.application.configure do
   # Replace the default in-process and non-durable queuing backend for Active Job.
 
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # --------------------------------------------------
+  # Action Mailer — Resend (smtp.resend.com)
+  #
+  # Without this block Rails falls back to its default of SMTP on
+  # localhost:25. There is no mail server inside the app container, so
+  # every delivery raised Errno::ECONNREFUSED in Sidekiq and no mail ever
+  # reached Resend. This is what was breaking production email.
+  # --------------------------------------------------
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "salato.app" }
+  config.action_mailer.perform_deliveries = true
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Surface delivery failures. Mail goes out through Sidekiq, so an
+  # exception here is retried and shows up in the worker log and Sentry
+  # instead of disappearing.
+  config.action_mailer.raise_delivery_errors = true
+
+  # Host used by links generated in mailer templates (invitations,
+  # password resets, ticket links). Must be https in production.
+  config.action_mailer.default_url_options = { host: "salato.app", protocol: "https" }
+  config.action_mailer.asset_host = "https://salato.app"
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: "smtp.resend.com",
+    port:    587,
+
+    # Resend's SMTP username is the literal string "resend" for every
+    # account — NOT the sending address. The API key is the password.
+    user_name: "resend",
+    password:  ENV["RESEND_API_KEY"].presence ||
+               Rails.application.credentials.dig(:resend, :api_key),
+
+    authentication:       :plain,
+    enable_starttls_auto: true,
+    open_timeout:         10,
+    read_timeout:         10
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

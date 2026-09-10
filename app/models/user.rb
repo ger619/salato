@@ -63,6 +63,21 @@ class User < ApplicationRecord
 
   private
 
+  # Devise sends its mail inline (deliver_now) by default. That means an
+  # invitation is delivered inside the web request: a slow or failing SMTP
+  # call blocks the response, and because raise_delivery_errors is on in
+  # production a transient Resend error would 500 the invite AND leave an
+  # invited user row behind with no email ever sent.
+  #
+  # Push it onto the "mailers" Sidekiq queue instead, so delivery is retried
+  # on failure and the request returns immediately. Safe for :invitable —
+  # devise_invitable saves the record before calling deliver_invitation, so
+  # the row is committed by the time the job picks it up, and the raw
+  # invitation token travels with the job arguments.
+  def send_devise_notification(notification, *)
+    devise_mailer.send(notification, self, *).deliver_later
+  end
+
   def assign_default_role
     return if invited_by_id.present? # invited users get their role from the inviter
 
