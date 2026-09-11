@@ -1,6 +1,6 @@
 # config/deploy.yml
 # Salato Events
-# Rails 8 + PostgreSQL 16 + Redis 7 + Sidekiq + Kamal 2
+# Rails 8 + PostgreSQL 16 + Redis 7 + Sidekiq + OpenWA + Kamal 2
 # Production server: Contabo VPS
 
 service: salato-events
@@ -116,6 +116,37 @@ env:
 
     MAIL_FROM: "Salato <hello@salato.app>"
 
+    # ------------------------------------------------
+    # WhatsApp ticket delivery
+    #
+    # WhatsappTicketDeliveryJob posts the ticket PDF to
+    # the OpenWA gateway once Paystack confirms payment.
+    #
+    # The OpenWA Kamal accessory is named "openwa", so
+    # the service on the Kamal network is:
+    #
+    # salato-events-openwa
+    #
+    # Rails uses that internal name, NOT wa.salato.app:
+    # the PDF upload stays inside the Docker network and
+    # never crosses the public proxy.
+    #
+    # The dashboard is published at https://wa.salato.app
+    # for QR pairing and session health — see accessories.
+    # ------------------------------------------------
+
+    OPENWA_BASE_URL: http://salato-events-openwa:2785
+
+    # The UUID returned by POST /api/sessions during first
+    # setup — NOT the session name. Passing the name gets
+    # a 400 "session is not active".
+    #
+    # The gateway has to be booted and a session created
+    # before this value exists, so adding WhatsApp is a
+    # two-step deploy: boot the accessory, create and link
+    # the session, fill this in, deploy again.
+    OPENWA_SESSION_ID: ""
+
   secret:
     - RAILS_MASTER_KEY
     - PGPASSWORD
@@ -127,6 +158,11 @@ env:
     # Resend API key — used as the SMTP password in
     # config/environments/production.rb.
     - RESEND_API_KEY
+
+    # OpenWA key, sent by Rails as the X-API-Key header.
+    # .kamal/secrets exports one value under two names so
+    # Rails and the gateway can never drift apart.
+    - OPENWA_API_KEY
 
 # --------------------------------------------------
 # Persistent Rails Storage
@@ -213,3 +249,83 @@ accessories:
 
     directories:
       - data:/data
+
+  # ------------------------------------------------
+  # OpenWA (WhatsApp gateway)
+  #
+  # Self-hosted WhatsApp HTTP API. Delivers ticket PDFs
+  # to order.customer_phone once payment clears.
+  #
+  # Unlike db and redis this one IS published, because
+  # linking a WhatsApp number means scanning a QR code in
+  # a browser, and a session that drops has to be re-paired
+  # the same way. Reaching that only through an SSH tunnel
+  # is how a dead session goes unnoticed for a day.
+  #
+  # What protects it:
+  #
+  #   - TLS on wa.salato.app, issued by kamal-proxy
+  #   - every API route requires the X-API-Key header
+  #   - Swagger stays off
+  #
+  # Before go-live, mint a session-scoped operator key in
+  # the dashboard for Rails and keep the admin key for
+  # yourself. OpenWA also supports CIDR IP whitelisting per
+  # key — worth adding once the VPS is the only thing that
+  # ever calls the API.
+  # ------------------------------------------------
+
+  openwa:
+
+    image: rmyndharis/openwa:latest
+
+    # Runs on the same Contabo server.
+    host: 207.180.216.54
+
+    # Published through kamal-proxy on its own subdomain.
+    #
+    # DNS: add an A record for wa -> 207.180.216.54 at
+    # Cloudflare and leave it DNS-only (grey cloud) until
+    # the Let's Encrypt certificate is issued, or the
+    # HTTP-01 challenge is answered by Cloudflare instead
+    # of kamal-proxy and issuance never completes.
+    proxy:
+      ssl: true
+      host: wa.salato.app
+
+      # kamal-proxy talks to containers on port 80 by
+      # default. OpenWA serves the API and the bundled
+      # dashboard together on 2785.
+      app_port: 2785
+
+      # Public, unauthenticated liveness endpoint.
+      healthcheck:
+        path: /api/health
+        interval: 5
+        timeout: 10
+
+    env:
+
+      clear:
+        # whatsapp-web.js drives a headless Chromium, which
+        # costs several hundred MB of RAM on a box already
+        # running Postgres, Redis, Puma and Sidekiq. If the
+        # VPS starts swapping, switch this to "baileys":
+        # browserless WebSocket engine, same REST API.
+        ENGINE_TYPE: whatsapp-web.js
+
+        # Interactive API docs stay off in production. The
+        # published image already defaults to off; this is
+        # explicit so nobody turns it on by accident.
+        ENABLE_SWAGGER: "false"
+
+      secret:
+        # Seeds the gateway's admin key instead of letting
+        # it generate a random one into /app/data/.api-key.
+        - API_MASTER_KEY
+
+    # SQLite database, linked-session credentials, media and
+    # the API key all live here. Lose this volume and the
+    # number has to be re-paired from the QR code.
+    directories:
+      - data:/app/data

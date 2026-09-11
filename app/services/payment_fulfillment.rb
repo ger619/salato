@@ -11,11 +11,26 @@ class PaymentFulfillment
     @transaction = transaction
   end
 
+  # Paystack hits us twice for the same payment — the browser callback and the
+  # webhook — so fulfilment is locked and idempotent. Notifications are fired
+  # AFTER the transaction commits: a Sidekiq worker on another process can
+  # start the job the instant it is enqueued, and inside the transaction it
+  # would find an order still marked pending with no tickets on it.
   def call
+    order, fulfilled = fulfil!
+
+    notify!(order) if fulfilled
+
+    order
+  end
+
+  private
+
+  def fulfil!
     ActiveRecord::Base.transaction do
       order = Order.lock.find(@order.id)
 
-      return order if order.paid?
+      return [order, false] if order.paid?
 
       validate_payment_amount!(order)
 
@@ -40,11 +55,15 @@ class PaymentFulfillment
 
       create_tickets!(order)
 
-      order
+      [order, true]
     end
   end
 
-  private
+  def notify!(order)
+    SalatoMailer.ticket_confirmation(order).deliver_later
+
+    WhatsappTicketDeliveryJob.perform_later(order.id)
+  end
 
   def validate_payment_amount!(order)
     expected = Paystack::Money.to_subunit(
@@ -75,6 +94,5 @@ class PaymentFulfillment
         status: 'valid'
       )
     end
-    SalatoMailer.ticket_confirmation(order).deliver_later
   end
 end
