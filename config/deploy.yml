@@ -1,7 +1,7 @@
 # config/deploy.yml
 # Salato Events
 # Rails 8 + PostgreSQL 16 + Redis 7 + Sidekiq + OpenWA + Kamal 2
-# Production server: Contabo VPS
+# Production server: Contabo VPS (207.180.216.54)
 
 service: salato-events
 
@@ -10,7 +10,7 @@ image: ger619/salato-events
 # --------------------------------------------------
 # Production servers
 #
-# web    -> Puma, behind the Kamal proxy
+# web    -> Puma, behind kamal-proxy
 # worker -> Sidekiq, same image, different command
 # --------------------------------------------------
 
@@ -22,6 +22,9 @@ servers:
     hosts:
       - 207.180.216.54
     cmd: bundle exec sidekiq -C config/sidekiq.yml
+    # Sidekiq serves no HTTP, so it must not be registered
+    # with kamal-proxy or healthchecked as a web app.
+    proxy: false
 
 # Give Rails/Kamal enough time for the first boot,
 # PostgreSQL startup and database preparation.
@@ -33,9 +36,7 @@ deploy_timeout: 120
 
 proxy:
   ssl: true
-
-  host:
-    salato.app
+  host: salato.app
 
   healthcheck:
     path: /up
@@ -48,9 +49,7 @@ proxy:
 
 registry:
   server: ghcr.io
-
   username: ger619
-
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -73,12 +72,10 @@ env:
     # ------------------------------------------------
     # PostgreSQL connection
     #
-    # database.yml reads PGHOST/PGPORT/PGUSER/PGPASSWORD.
+    # The PostgreSQL Kamal accessory is named "db", so
+    # Kamal creates the container as:
     #
-    # The PostgreSQL Kamal accessory is named "db".
-    # Kamal therefore creates the service as:
-    #
-    # salato-events-db
+    #   salato-events-db
     # ------------------------------------------------
 
     PGHOST: salato-events-db
@@ -93,10 +90,10 @@ env:
     # ------------------------------------------------
     # Redis / Sidekiq
     #
-    # The Redis Kamal accessory is named "redis",
-    # so the service on the Kamal network is:
+    # The Redis Kamal accessory is named "redis", so the
+    # container on the Kamal network is:
     #
-    # salato-events-redis
+    #   salato-events-redis
     # ------------------------------------------------
 
     REDIS_URL: redis://salato-events-redis:6379/0
@@ -108,10 +105,10 @@ env:
     # ------------------------------------------------
     # Email
     #
-    # Mail is sent through Resend over SMTP. The domain
+    # Mail goes through Resend over SMTP. The domain
     # salato.app is verified in Resend, so the From
-    # address must stay on that domain or Resend will
-    # reject the message.
+    # address must stay on that domain or Resend rejects
+    # the message.
     # ------------------------------------------------
 
     MAIL_FROM: "Salato <hello@salato.app>"
@@ -122,29 +119,29 @@ env:
     # WhatsappTicketDeliveryJob posts the ticket PDF to
     # the OpenWA gateway once Paystack confirms payment.
     #
-    # The OpenWA Kamal accessory is named "openwa", so
-    # the service on the Kamal network is:
+    # The OpenWA accessory is named "openwa", so the
+    # container on the Kamal network is:
     #
-    # salato-events-openwa
+    #   salato-events-openwa
     #
-    # Rails uses that internal name, NOT wa.salato.app:
-    # the PDF upload stays inside the Docker network and
-    # never crosses the public proxy.
+    # Rails talks to that internal name on port 2785. The
+    # PDF upload never leaves the Docker network and never
+    # crosses the public proxy.
     #
-    # The dashboard is published at https://wa.salato.app
-    # for QR pairing and session health — see accessories.
+    # wa.salato.app is for humans only — QR pairing and
+    # session health. Do NOT point Rails at it.
     # ------------------------------------------------
 
-    OPENWA_BASE_URL: http://salato.app:2785
+    OPENWA_BASE_URL: http://salato-events-openwa:2785
 
     # The UUID returned by POST /api/sessions during first
     # setup — NOT the session name. Passing the name gets
     # a 400 "session is not active".
     #
-    # The gateway has to be booted and a session created
-    # before this value exists, so adding WhatsApp is a
-    # two-step deploy: boot the accessory, create and link
-    # the session, fill this in, deploy again.
+    # The gateway must be booted and a session linked
+    # before this value exists, so WhatsApp is a two-step
+    # rollout: boot the accessory, create and scan the
+    # session, paste the UUID here, then deploy again.
     OPENWA_SESSION_ID: ""
 
   secret:
@@ -160,8 +157,8 @@ env:
     - RESEND_API_KEY
 
     # OpenWA key, sent by Rails as the X-API-Key header.
-    # .kamal/secrets exports one value under two names so
-    # Rails and the gateway can never drift apart.
+    # .kamal/secrets derives this and API_MASTER_KEY from
+    # a single .env value so the two can never drift.
     - OPENWA_API_KEY
 
 # --------------------------------------------------
@@ -178,6 +175,23 @@ volumes:
 asset_path: /rails/public/assets
 
 # --------------------------------------------------
+# Handy shortcuts
+#
+#   kamal console
+#   kamal shell
+#   kamal logs
+#   kamal dbc
+#   kamal sidekiq
+# --------------------------------------------------
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole"
+  sidekiq: app logs -r worker -f
+
+# --------------------------------------------------
 # Accessories
 # --------------------------------------------------
 
@@ -191,19 +205,13 @@ accessories:
 
     image: postgres:16
 
-    # PostgreSQL runs on the same Contabo server.
     host: 207.180.216.54
 
-    # Bind PostgreSQL only to localhost on the VPS.
+    # Bound to localhost on the VPS only.
     #
-    # IMPORTANT:
-    # Do NOT expose PostgreSQL publicly.
-    #
-    # Rails connects to the PostgreSQL container through
-    # the Kamal Docker network using:
-    #
-    # salato-events-db:5432
-    #
+    # IMPORTANT: do NOT expose PostgreSQL publicly.
+    # Rails reaches it over the Kamal Docker network at
+    # salato-events-db:5432.
     port: "127.0.0.1:5432:5432"
 
     env:
@@ -226,25 +234,18 @@ accessories:
 
     image: redis:7-alpine
 
-    # Redis runs on the same Contabo server.
     host: 207.180.216.54
 
-    # Bind Redis only to localhost on the VPS.
+    # Bound to localhost on the VPS only.
     #
-    # IMPORTANT:
-    # Do NOT expose Redis publicly — it has no auth here
-    # and relies on being unreachable from outside.
-    #
-    # Rails and Sidekiq connect through the Kamal Docker
-    # network using:
-    #
-    # salato-events-redis:6379
-    #
+    # IMPORTANT: do NOT expose Redis publicly — it has no
+    # auth here and relies on being unreachable.
+    # Rails and Sidekiq reach it at salato-events-redis:6379.
     port: "127.0.0.1:6379:6379"
 
     # noeviction is required for Sidekiq: the default policy
-    # would silently discard queued jobs under memory pressure.
-    # appendonly keeps the queue across restarts.
+    # would silently discard queued jobs under memory
+    # pressure. appendonly keeps the queue across restarts.
     cmd: "redis-server --appendonly yes --maxmemory-policy noeviction"
 
     directories:
@@ -253,14 +254,14 @@ accessories:
   # ------------------------------------------------
   # OpenWA (WhatsApp gateway)
   #
-  # Self-hosted WhatsApp HTTP API. Delivers ticket PDFs
-  # to order.customer_phone once payment clears.
+  # Self-hosted WhatsApp HTTP API. Delivers ticket PDFs to
+  # order.customer_phone once payment clears.
   #
   # Unlike db and redis this one IS published, because
-  # linking a WhatsApp number means scanning a QR code in
-  # a browser, and a session that drops has to be re-paired
-  # the same way. Reaching that only through an SSH tunnel
-  # is how a dead session goes unnoticed for a day.
+  # linking a number means scanning a QR code in a browser,
+  # and a dropped session has to be re-paired the same way.
+  # Reaching that only through an SSH tunnel is how a dead
+  # session goes unnoticed for a day.
   #
   # What protects it:
   #
@@ -271,24 +272,22 @@ accessories:
   # Before go-live, mint a session-scoped operator key in
   # the dashboard for Rails and keep the admin key for
   # yourself. OpenWA also supports CIDR IP whitelisting per
-  # key — worth adding once the VPS is the only thing that
-  # ever calls the API.
+  # key — worth adding once the VPS is the only caller.
   # ------------------------------------------------
 
   openwa:
 
     image: rmyndharis/openwa:latest
 
-    # Runs on the same Contabo server.
     host: 207.180.216.54
 
     # Published through kamal-proxy on its own subdomain.
     #
     # DNS: add an A record for wa -> 207.180.216.54 at
     # Cloudflare and leave it DNS-only (grey cloud) until
-    # the Let's Encrypt certificate is issued, or the
-    # HTTP-01 challenge is answered by Cloudflare instead
-    # of kamal-proxy and issuance never completes.
+    # the Let's Encrypt certificate is issued. Otherwise
+    # Cloudflare answers the HTTP-01 challenge instead of
+    # kamal-proxy and issuance never completes.
     proxy:
       ssl: true
       host: wa.salato.app
@@ -310,13 +309,13 @@ accessories:
         # whatsapp-web.js drives a headless Chromium, which
         # costs several hundred MB of RAM on a box already
         # running Postgres, Redis, Puma and Sidekiq. If the
-        # VPS starts swapping, switch this to "baileys":
+        # VPS starts swapping, switch to "baileys":
         # browserless WebSocket engine, same REST API.
         ENGINE_TYPE: whatsapp-web.js
 
         # Interactive API docs stay off in production. The
         # published image already defaults to off; this is
-        # explicit so nobody turns it on by accident.
+        # explicit so nobody flips it on by accident.
         ENABLE_SWAGGER: "false"
 
       secret:
@@ -326,6 +325,6 @@ accessories:
 
     # SQLite database, linked-session credentials, media and
     # the API key all live here. Lose this volume and the
-    # number has to be re-paired from the QR code.
+    # number must be re-paired from the QR code.
     directories:
       - data:/app/data
