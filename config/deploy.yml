@@ -142,7 +142,7 @@ env:
     # before this value exists, so WhatsApp is a two-step
     # rollout: boot the accessory, create and scan the
     # session, paste the UUID here, then deploy again.
-    OPENWA_SESSION_ID: ""
+    OPENWA_SESSION_ID: "7c809ee6-e04b-4d20-8b9f-5a2f987bd7d1"
 
   secret:
     - RAILS_MASTER_KEY
