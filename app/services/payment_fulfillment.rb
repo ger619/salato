@@ -75,5 +75,6 @@ class PaymentFulfillment
         status: 'valid'
       )
     end
+    SalatoMailer.ticket_confirmation(order).deliver_later
   end
 end
