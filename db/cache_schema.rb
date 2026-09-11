@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_08_170425) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_161915) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -113,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_170425) do
     t.decimal "total_price", precision: 12, scale: 2, null: false
     t.decimal "unit_price", precision: 12, scale: 2, null: false
     t.datetime "updated_at", null: false
+    t.datetime "whatsapp_sent_at"
     t.index ["event_id"], name: "index_orders_on_event_id"
     t.index ["reference"], name: "index_orders_on_reference", unique: true
     t.index ["status"], name: "index_orders_on_status"
