@@ -135,7 +135,7 @@ env:
     # for QR pairing and session health — see accessories.
     # ------------------------------------------------
 
-    OPENWA_BASE_URL: http://salato-events-openwa:2785
+    OPENWA_BASE_URL: http://salato.app:2785
 
     # The UUID returned by POST /api/sessions during first
     # setup — NOT the session name. Passing the name gets
