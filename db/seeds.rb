@@ -69,7 +69,8 @@ admin = seed_user(
   first_name: "Salato",
   last_name: "Admin",
   role: :admin,
-  phone_number: "+254 700 000 001"
+  phone_number: "+254 700 000 001",
+  status: true
 )
 
 seed_user(
@@ -78,7 +79,8 @@ seed_user(
   last_name: "Ger",
   role: :organiser,
   client: client,
-  phone_number: "+254 700 000 002"
+  phone_number: "+254 700 000 002",
+  status: false
 )
 
 seed_user(
@@ -87,53 +89,6 @@ seed_user(
   last_name: "Wanjiru",
   role: :scanner,
   client: client,
-  phone_number: "+254 700 000 003"
+  phone_number: "+254 700 000 003",
+  status: false
 )
-
-# ── Event ───────────────────────────────────────────────────────────────────
-# Owned by the admin, since that's the account the seed has always used.
-
-event = Event.find_or_initialize_by(slug: "tech-summit-2026")
-event.assign_attributes(
-  user: admin,
-  name: "Kenya Technology Summit 2026",
-  description: "A technology and innovation event.",
-  venue: "Nairobi",
-  start_at: Time.zone.parse("2026-10-15 09:00"),
-  end_at: Time.zone.parse("2026-10-15 18:00")
-)
-event.active = false if event.new_record? # published at the end, once ticket types exist
-event.save!
-
-puts "Event: #{event.name} (#{event.slug})"
-
-# ── Ticket types ────────────────────────────────────────────────────────────
-
-[
-  { name: "Early Bird", description: "Early bird admission.", price: 1_000, quantity: 100 },
-  { name: "Regular",    description: "Regular admission.",    price: 1_500, quantity: 500 },
-  { name: "VIP",        description: "VIP admission.",        price: 5_000, quantity: 50 }
-].each do |attributes|
-  ticket = event.ticket_types.find_or_initialize_by(name: attributes[:name])
-
-  ticket.description = attributes[:description]
-  ticket.price       = attributes[:price]
-  ticket.quantity    = attributes[:quantity]
-  ticket.active      = true
-
-  if ticket.new_record?
-    ticket.reserved_quantity = 0
-    ticket.sold_quantity     = 0
-  end
-
-  ticket.save!
-end
-
-puts "Ticket types: #{event.ticket_types.order(:price).pluck(:name).join(', ')}"
-
-# ── Publish ─────────────────────────────────────────────────────────────────
-
-event.update!(active: true) unless event.active?
-
-puts "Published: #{event.name}"
-puts "\nSign in with password: #{SEED_PASSWORD}"
