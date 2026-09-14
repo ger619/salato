@@ -15,6 +15,12 @@ Rails.application.routes.draw do
 
 
   root "home#index"
+
+  get "acceptable_use", to: "home#acceptable_use"
+  get 'refund', to: 'home#refund'
+  get 'delivery', to: 'home#delivery'
+  get 'terms', to: 'home#terms'
+
   # config/routes.rb
   resources :users, only: %w[new create edit update show] do
     member do

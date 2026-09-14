@@ -189,59 +189,7 @@
 </main>
 
 <%# ══════════════ FOOTER ══════════════ %>
-<footer class="bg-ink text-white pt-16 pb-10">
-  <div class="max-w-shell mx-auto px-[var(--shell-x)]">
-    <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
-      <div class="sm:col-span-2 md:col-span-1">
-        <%= image_tag "salato_logo/salato-logo-horizontal-on-dark.png", alt: "Salato", class: "h-8 lg:h-9 w-auto" %>
-        <p class="mt-5 text-[15px] text-white/65 max-w-xs leading-relaxed">Ticketing built in Nairobi for the way events actually run here.</p>
-      </div>
-
-      <div>
-        <p class="eyebrow text-white/40">Product</p>
-        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
-          <li><%= link_to "How it works", nav_anchor_path("how"), class: "hover:text-orange transition" %></li>
-          <li><%= link_to "Pricing", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
-          <li><%= link_to "Gate scanner", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
-          <li><%= link_to "Refunds", nav_anchor_path("pricing"), class: "hover:text-orange transition" %></li>
-        </ul>
-      </div>
-
-      <div>
-        <p class="eyebrow text-white/40">Company</p>
-        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
-          <li><%= link_to "About us", nav_anchor_path("about"), class: "hover:text-orange transition" %></li>
-          <li><%= link_to "Contact", nav_anchor_path("contact"), class: "hover:text-orange transition" %></li>
-          <li><a href="#" class="hover:text-orange transition">Terms</a></li>
-          <li><a href="#" class="hover:text-orange transition">Privacy</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <p class="eyebrow text-white/40">Organisers</p>
-        <ul class="mt-4 space-y-2.5 text-[15px] text-white/75">
-          <% if defined?(user_signed_in?) && user_signed_in? %>
-            <li><%= link_to "Dashboard", (defined?(dashboard_path) ? dashboard_path : root_path), class: "hover:text-orange transition" %></li>
-            <li><%= button_to "Sign out", destroy_user_session_path, method: :delete,
-                              form: { data: { turbo: false } }, class: "hover:text-orange transition" %></li>
-          <% else %>
-            <li><button type="button" data-open-auth="signin" class="hover:text-orange transition">Sign in</button></li>
-            <li><button type="button" data-open-auth="signup" class="hover:text-orange transition">Create account</button></li>
-          <% end %>
-          <li><%= link_to "Talk to sales", nav_anchor_path("contact"), class: "hover:text-orange transition" %></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="mt-14 relative"><div class="tear tear-ink"></div></div>
-
-    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left text-[14px] text-white/50">
-      <p>&copy; <%= Date.current.year %> Salato. Nairobi, Kenya.</p>
-      <p class="mono text-[12px]">Events. Tickets. Experiences.</p>
-    </div>
-  </div>
-</footer>
-
+<%= render partial: 'shared/footer' %>
 <%# ══════════════ SIGN IN / SIGN UP (Devise) ══════════════ %>
 <%= render 'shared/auth_modal' %>
 
