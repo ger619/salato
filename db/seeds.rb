@@ -30,20 +30,33 @@ puts "Client: #{client.name}"
 
 # ── Users ───────────────────────────────────────────────────────────────────
 
-def seed_user(email:, first_name:, last_name:, role:, client: nil, phone_number: nil)
+def seed_user(email:, first_name:, last_name:, role:, client: nil, phone_number: nil, status: nil)
   user = User.find_or_initialize_by(email: email)
 
   if user.new_record?
     user.password = SEED_PASSWORD
     user.password_confirmation = SEED_PASSWORD
-    user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
   end
 
   # Assigned on every run so re-seeding backfills columns added later.
   user.first_name   = first_name
   user.last_name    = last_name
   user.phone_number = phone_number if user.respond_to?(:phone_number=)
+  user.status       = status       if !status.nil? && user.respond_to?(:status=)
   user.client       = client
+
+  # ── Devise confirmable ──
+  # skip_confirmation! sets confirmed_at and stops Devise sending the
+  # confirmation email. Run it for NEW users and for EXISTING users that were
+  # seeded earlier but never confirmed, so every seeded account can log in.
+  if user.respond_to?(:confirmed?) && !user.confirmed?
+    user.skip_confirmation!
+    user.confirmation_token = nil if user.respond_to?(:confirmation_token=)
+  end
+
+  # Don't send a "confirm your new email" mail if the address was changed.
+  user.skip_reconfirmation! if user.respond_to?(:skip_reconfirmation!)
+
   user.save!
 
   # The after_create callback grants :organiser to every new user. Make the
@@ -56,7 +69,8 @@ def seed_user(email:, first_name:, last_name:, role:, client: nil, phone_number:
   end
   user.roles.reload
 
-  puts "  #{role.to_s.ljust(9)} #{user.email.ljust(24)} " \
+  confirmed = user.respond_to?(:confirmed?) ? (user.confirmed? ? "confirmed" : "UNCONFIRMED") : ""
+  puts "  #{role.to_s.ljust(9)} #{user.email.ljust(24)} #{confirmed.ljust(11)} " \
          "#{user.full_name}#{" — #{client.name}" if client}"
 
   user
@@ -92,3 +106,5 @@ seed_user(
   phone_number: "+254 700 000 003",
   status: false
 )
+
+puts "Password for new seeded users: #{SEED_PASSWORD}"
