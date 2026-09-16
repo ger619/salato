@@ -14,7 +14,7 @@ class SalatoDeviseMailer < Devise::Mailer
 
   protected
 
-  def devise_mail(record, action, opts = {}, &block)
+  def devise_mail(record, action, opts = {}, &)
     attach_logo
     super
   end
