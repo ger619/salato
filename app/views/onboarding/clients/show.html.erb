@@ -1,19 +1,57 @@
 <%= render 'shared/sidebar' %>
 
-<% details = [
-     "Name: #{@client.name}",
-     ("Email: #{@client.email}" if @client.email.present?),
-     ("Phone: #{@client.phone}" if @client.phone.present?),
-     ("Address: #{@client.address}" if @client.address.present?),
-     ("Settlement Bank: #{@client.settlement_bank}" if @client.settlement_bank.present?),
-     ("Account Number: #{@client.account_number}" if @client.account_number.present?),
-     ("Paystack Subaccount: #{@client.paystack_subaccount_code}" if @client.paystack_subaccount_code.present?),
-     ("Percentage Charge: #{@client.percentage_charge}%" if @client.percentage_charge.present?)
-   ].compact.join("\n") %>
+<%
+  # ── readable labels for the stored slugs ──
+  payout_labels   = { "bank" => "Bank", "mobile_money" => "Mobile money" }
+  bank_labels     = { "kcb" => "KCB", "co-operative-bank" => "Co-operative Bank",
+                      "equity-bank" => "Equity Bank", "absa-bank" => "Absa Bank",
+                      "standard-chartered" => "Standard Chartered", "cfc-stanbic" => "CFC Stanbic" }
+  provider_labels = { "mpesa" => "M-Pesa", "mpesa-paybill" => "M-Pesa Paybill",
+                      "mpesa-till" => "M-Pesa Till", "airtel-money" => "Airtel Money",
+                      "telkom-kenya" => "Telkom Kenya" }
+
+  method       = @client.payout_method.to_s
+  mobile_money = method == "mobile_money"
+  bank_payout  = method == "bank"
+
+  # Works whether description is a plain text column or has_rich_text.
+  description_text =
+    if @client.description.respond_to?(:to_plain_text)
+      @client.description.to_plain_text.presence
+    else
+      @client.description.presence
+    end
+
+  # One row per permitted param (name is in the header).
+  rows = {}
+  rows["Email"]          = @client.email
+  rows["Phone"]          = @client.phone
+  rows["Address"]        = @client.address
+  rows["City"]           = @client.city
+  rows["Country"]        = @client.country
+  rows["Description"]    = description_text
+  rows["Payout Type"]    = payout_labels.fetch(method, method.presence)
+
+  # Bank row unless they chose mobile money; provider row unless they chose bank.
+  # (If payout type is blank, both show so nothing saved is hidden.)
+  rows["Bank"]           = bank_labels.fetch(@client.bank.to_s, @client.bank.presence) unless mobile_money
+  rows["Mobile Money Provider"] =
+    provider_labels.fetch(@client.mobile_money_provider.to_s, @client.mobile_money_provider.presence) unless bank_payout
+
+  rows[mobile_money ? "Phone / Till / Paybill No." : "Account Number"] = @client.account_number
+  rows["Bank"]     = @client.bank
+  rows["Subaccount Code"]     = @client.paystack_subaccount_code
+  rows["Platform Charge (%)"] = @client.percentage_charge.nil? ? nil : "#{@client.percentage_charge}%"
+  rows["Registration No."]    = @client.registration_number
+
+  # Plain-text version for "Email details" / "Copy details" — only filled rows.
+  details = (["Name: #{@client.name}"] +
+    rows.filter_map { |label, value| "#{label}: #{value}" if value.present? }).join("\n")
+%>
 
 <div class="mx-auto max-w-2xl px-6 py-10">
   <%= link_to "← Clients", onboarding_clients_path,
-        class: "font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#7620B1] hover:underline" %>
+              class: "font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#7620B1] hover:underline" %>
 
   <%# ── Stub card ────────────────────────────────────────── %>
   <div class="mt-4 overflow-hidden rounded-2xl bg-white ring-1 ring-[#150D3A]/10">
@@ -26,6 +64,9 @@
         <h1 class="truncate font-[Outfit] text-xl font-semibold text-white"><%= @client.name %></h1>
         <p class="font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-white/70">
           Client since <%= @client.created_at.strftime("%b %Y") %>
+          <% if @client.payout_method.present? %>
+            · Paid via <%= payout_labels.fetch(@client.payout_method, @client.payout_method) %>
+          <% end %>
         </p>
       </div>
     </div>
@@ -37,33 +78,22 @@
     </div>
 
     <dl class="divide-y divide-[#150D3A]/8 px-6 py-2">
-      <% {
-           "Email"               => @client.email,
-           "Phone"               => @client.phone,
-           "Address"             => @client.address,
-           "City / Country"      => [@client.city, @client.country].compact_blank.join(", ").presence,
-           "Settlement Bank"     => @client.settlement_bank,
-           "Account Number"      => @client.account_number,
-           "Subaccount Code"     => @client.paystack_subaccount_code,
-           "Platform Charge (%)" => @client.percentage_charge.present? ? "#{@client.percentage_charge}%" : nil,
-           "Registration No."    => @client.registration_number,
-           "Tax PIN"             => @client.tax_pin
-         }.each do |label, value| %>
-        <div class="flex gap-4 py-3.5">
-          <dt class="w-44 shrink-0 pt-0.5 font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/45">
+      <% rows.each do |label, value| %>
+        <div class="flex flex-col gap-1 py-3.5 sm:flex-row sm:gap-4">
+          <dt class="shrink-0 pt-0.5 font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/45 sm:w-44">
             <%= label %>
           </dt>
-          <dd class="min-w-0 flex-1 text-sm text-[#150D3A]">
-            <% if value.present? %>
-              <% if label == "Email" %>
-                <%= mail_to value, value, class: "text-[#7620B1] hover:underline" %>
-              <% elsif label == "Phone" %>
-                <%= link_to value, "tel:#{value.gsub(/\s+/, '')}", class: "text-[#7620B1] hover:underline" %>
-              <% else %>
-                <span class="whitespace-pre-line"><%= value %></span>
-              <% end %>
-            <% else %>
+          <dd class="min-w-0 flex-1 break-words text-sm text-[#150D3A]">
+            <% if value.blank? %>
               <span class="text-[#150D3A]/35">Not set</span>
+            <% elsif label == "Email" %>
+              <%= mail_to value, value, class: "text-[#7620B1] hover:underline" %>
+            <% elsif label == "Phone" %>
+              <%= link_to value, "tel:#{value.gsub(/\s+/, '')}", class: "text-[#7620B1] hover:underline" %>
+            <% elsif label == "Description" && @client.description.respond_to?(:to_plain_text) %>
+              <div class="prose prose-sm max-w-none text-[#150D3A]"><%= @client.description %></div>
+            <% else %>
+              <span class="whitespace-pre-line"><%= value %></span>
             <% end %>
           </dd>
         </div>
@@ -74,8 +104,8 @@
   <%# ── Share ───────────────────────────────────────────── %>
   <div class="mt-5 flex flex-wrap items-center gap-3">
     <%= link_to "Email details",
-          "mailto:?subject=#{u("Client details — #{@client.name}")}&body=#{u(details)}",
-          class: "rounded-full bg-[#150D3A] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+                "mailto:?subject=#{u("Client details — #{@client.name}")}&body=#{u(details)}",
+                class: "rounded-full bg-[#150D3A] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
 
     <button type="button"
             id="copy-client-details"
@@ -85,16 +115,16 @@
     </button>
 
     <%= link_to "Edit", edit_onboarding_client_path(@client),
-          class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5" %>
+                class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5" %>
   </div>
 </div>
 
 <script>
-  document.getElementById("copy-client-details")?.addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
-    await navigator.clipboard.writeText(btn.dataset.details);
-    const original = btn.textContent;
-    btn.textContent = "Copied";
-    setTimeout(() => { btn.textContent = original; }, 1600);
-  });
+    document.getElementById("copy-client-details")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        await navigator.clipboard.writeText(btn.dataset.details);
+        const original = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(() => { btn.textContent = original; }, 1600);
+    });
 </script>

@@ -14,7 +14,7 @@ class Client < ApplicationRecord
   before_save :sync_paystack_subaccount, if: :should_sync_paystack_subaccount?
 
   def subaccount_ready?
-    settlement_bank.present? && account_number.present?
+    bank.present? && account_number.present?
   end
 
   def sync_paystack_subaccount!
@@ -26,7 +26,7 @@ class Client < ApplicationRecord
     if paystack_subaccount_code.blank?
       response = paystack.create_subaccount(
         business_name: name,
-        settlement_bank: settlement_bank,
+        bank: bank,
         account_number: account_number,
         percentage_charge: percentage_charge,
         description: plain_desc,
@@ -38,7 +38,7 @@ class Client < ApplicationRecord
       paystack.update_subaccount(
         subaccount_code: paystack_subaccount_code,
         business_name: name,
-        settlement_bank: settlement_bank,
+        bank: bank,
         account_number: account_number,
         percentage_charge: percentage_charge,
         description: plain_desc,
@@ -64,7 +64,7 @@ class Client < ApplicationRecord
     return false unless subaccount_ready?
 
     paystack_subaccount_code.blank? ||
-      will_save_change_to_settlement_bank? ||
+      will_save_change_to_bank? ||
       will_save_change_to_account_number? ||
       will_save_change_to_name? ||
       will_save_change_to_percentage_charge? ||
