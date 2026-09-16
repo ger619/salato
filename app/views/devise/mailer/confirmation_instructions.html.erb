@@ -1,5 +1,130 @@
-<p>Welcome <%= @email %>!</p>
+<div style="margin:0;padding:24px 12px;background-color:#F7F4FB;font-family:'Trebuchet MS',Helvetica,Arial,sans-serif;color:#150D3A;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background-color:#ffffff;border-radius:12px;overflow:hidden;">
+    <tr>
+      <td style="background-color:#ffffff;padding:26px 24px 20px 24px;text-align:center;">
+        <% if @logo_url.present? %>
+          <img src="<%= @logo_url %>" alt="Salato — Events. Tickets. Experiences." width="210"
+               style="display:block;margin:0 auto;width:210px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
+        <% else %>
+          <div style="font-size:24px;font-weight:bold;color:#150D3A;letter-spacing:0.5px;">Salato</div>
+          <div style="font-size:12px;color:#7620B1;margin-top:4px;">Events. Tickets. Experiences.</div>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <td style="height:4px;line-height:4px;font-size:0;background-color:#AB2692;background-image:linear-gradient(90deg,#7620B1,#AB2692,#FC8027);">&nbsp;</td>
+    </tr>
 
-<p>You can confirm your account email through the link below:</p>
+    <tr>
+      <td style="padding:30px 26px 8px 26px;">
+        <p style="margin:0 0 18px 0;font-size:19px;font-weight:bold;">
+          Welcome to Salato<%= ", #{@resource.first_name}" if @resource.try(:first_name).present? %>.
+        </p>
 
-<p><%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token) %></p>
+        <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;">
+          <% if @resource.try(:unconfirmed_email?) %>
+            You asked to change the email on your Salato account to <strong><%= @resource.unconfirmed_email %></strong>.
+            Confirm it below and we&rsquo;ll use this address from now on.
+          <% else %>
+            Your Salato account is almost ready. Salato is where Kenyan organisers sell tickets,
+            take M-Pesa and card payments, and check people in at the door with a phone.
+          <% end %>
+        </p>
+        <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;">
+          Confirm your email address so we know it&rsquo;s really you. It takes one click.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:10px 26px 0 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F7F4FB;border-radius:8px;">
+          <tr>
+            <td style="padding:18px 20px;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#7620B1;margin-bottom:12px;">
+                Your account
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong style="color:#5A5175;">Email:</strong> <%= @email.presence || @resource.email %>
+              </div>
+              <% if @resource.try(:client).present? %>
+                <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                  <strong style="color:#5A5175;">Organisation:</strong> <%= @resource.client.name %>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:10px 26px 0 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F7F4FB;border-radius:8px;">
+          <tr>
+            <td style="padding:18px 20px;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#7620B1;margin-bottom:12px;">
+                What happens next
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong>1.</strong> Click <strong>Confirm my email</strong> below.
+              </div>
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong>2.</strong> Sign in with the email and password you chose.
+              </div>
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong>3.</strong> Finish your organisation details, then create your first event.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:26px 26px 6px 26px;text-align:center;">
+        <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>"
+           style="display:inline-block;background-color:#FC8027;color:#ffffff;font-size:16px;font-weight:bold;text-decoration:none;padding:14px 34px;border-radius:8px;">
+          Confirm my email
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 26px 6px 26px;text-align:center;">
+        <p style="margin:0;font-size:13px;color:#8A82A3;">
+          <% if Devise.confirm_within %>This link expires in <%= Devise.confirm_within.inspect %>.<% end %>
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:18px 26px 26px 26px;">
+        <p style="margin:0 0 10px 0;font-size:13px;line-height:1.6;color:#5A5175;">
+          If the button doesn&rsquo;t work, paste this into your browser:
+        </p>
+
+        <p style="margin:0;font-size:12px;line-height:1.5;word-break:break-all;">
+          <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" style="color:#7620B1;">
+            <%= confirmation_url(@resource, confirmation_token: @token) %>
+          </a>
+        </p>
+
+        <p style="margin:16px 0 0 0;font-size:13px;line-height:1.6;color:#8A82A3;">
+          Didn&rsquo;t sign up for Salato? Ignore this email and no account will be activated.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background-color:#F7F4FB;padding:24px;text-align:center;">
+        <div style="font-size:12px;color:#8A82A3;line-height:1.7;">
+          <a href="<%= root_url %>" style="color:#7620B1;text-decoration:none;font-weight:bold;">salato.app</a><br>
+          Events. Tickets. Experiences.<br>
+          Nairobi, Kenya
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
