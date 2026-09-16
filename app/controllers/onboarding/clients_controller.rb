@@ -53,11 +53,10 @@ module Onboarding
     end
 
     def client_params
-      params.require(:client).permit(
-        :name, :email, :phone, :address, :city, :country, :description,
-        :paystack_subaccount_code, :registration_number, :settlement_bank,
-        :account_number, :percentage_charge, :tax_pin, :website, :logo
-      )
+      params.require(:client).permit(:name, :email, :phone, :city, :country, :address,
+                                     :description, :payout_method, :bank, :mobile_money_provider, :account_number,
+                                     :settlement_bank, :paystack_subaccount_code, :percentage_charge,
+                                     :registration_number)
     end
   end
 end

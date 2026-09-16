@@ -44,6 +44,72 @@
         </div>
       </div>
     </div>
+    <div data-controller="payout-details"
+         class="rounded-2xl bg-[#7620B1]/5 p-5 ring-1 ring-[#7620B1]/15 space-y-4">
+      <h3 class="font-[Outfit] text-sm font-semibold text-[#150D3A]">Account Details</h3>
+      <%# ── 1. payout type (starts blank) ── %>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <%= cf.label :payout_method, "Payout type", class: lbl %>
+          <%= cf.select :payout_method,
+                        [["Bank", "bank"], ["Mobile money", "mobile_money"]],
+                        { include_blank: "Choose payout type" },
+                        { required: true, class: field,
+                          data: { payout_details_target: "method", action: "change->payout-details#toggle" } } %>
+        </div>
+      </div>
+
+      <%#
+        2a. Bank chosen → bank + account number.
+        Keep the target wrappers class-less: a display class like `grid`
+        on them would override the `hidden` attribute.
+      %>
+      <div data-payout-details-target="bank" hidden>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <%= cf.label :bank, "Bank", class: lbl %>
+            <%= cf.select :bank,
+                          [["KCB", "kcb"], ["Co-operative Bank", "co-operative-bank"],
+                           ["Equity Bank", "equity-bank"], ["Absa Bank", "absa-bank"],
+                           ["Standard Chartered", "standard-chartered"],
+                           ["CFC Stanbic", "cfc-stanbic"]],
+                          { include_blank: "Choose bank" },
+                          { required: true, class: field } %>
+          </div>
+          <div>
+            <%= cf.label :account_number, "Account number", class: lbl %>
+            <%= cf.text_field :account_number, required: true, inputmode: "numeric",
+                              placeholder: "0123456789", class: field %>
+          </div>
+        </div>
+      </div>
+
+      <%#
+        2b. Mobile money chosen → provider + number.
+        Saves to the same account_number column; the hidden bank one is
+        disabled by the controller, so only the visible field is submitted.
+      %>
+      <div data-payout-details-target="mobileMoney" hidden>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <%= cf.label :mobile_money_provider, "Mobile money provider", class: lbl %>
+            <%= cf.select :mobile_money_provider,
+                          [["M-Pesa", "mpesa"], ["M-Pesa Paybill", "mpesa-paybill"],
+                           ["M-Pesa Till", "mpesa-till"], ["Airtel Money", "airtel-money"],
+                           ["Telkom Kenya", "telkom-kenya"]],
+                          { include_blank: "Choose provider" },
+                          { required: true, class: field } %>
+          </div>
+          <div>
+            <%= cf.label :account_number, "Phone / Till / Paybill number", for: "mobile_money_number", class: lbl %>
+            <%= cf.text_field :account_number, id: "mobile_money_number", required: true,
+                              inputmode: "numeric", placeholder: "0712 345 678", class: field %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
 
     <%#
       ── what you do ──

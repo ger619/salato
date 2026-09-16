@@ -18,9 +18,10 @@
   <% field_class = "w-full rounded-xl border-0 bg-white px-4 py-2.5 text-sm text-[#150D3A] ring-1 ring-[#150D3A]/10 placeholder:text-[#150D3A]/35 focus:outline-none focus:ring-2 focus:ring-[#7620B1]" %>
   <% label_class = "block font-[JetBrains_Mono] text-[11px] uppercase tracking-[0.14em] text-[#150D3A]/55" %>
 
+  <%# ── organisation ── %>
   <div>
     <%= f.label :name, "Name", class: label_class %>
-    <%= f.text_field :name, placeholder: "Nairobi Live Ltd", class: "mt-1.5 #{field_class}" %>
+    <%= f.text_field :name, required: true, placeholder: "Nairobi Live Ltd", class: "mt-1.5 #{field_class}" %>
   </div>
 
   <div class="grid gap-5 sm:grid-cols-2">
@@ -43,27 +44,111 @@
 
     <div>
       <%= f.label :country, "Country", class: label_class %>
-      <%= f.text_field :country, placeholder: "Kenya", class: "mt-1.5 #{field_class}" %>
+      <%= f.text_field :country, value: client.country.presence || "Kenya",
+                       placeholder: "Kenya", class: "mt-1.5 #{field_class}" %>
     </div>
   </div>
+
 
   <div>
     <%= f.label :address, "Address", class: label_class %>
     <%= f.text_area :address, rows: 3, placeholder: "Street, building, city", class: "mt-1.5 #{field_class}" %>
   </div>
 
-  <div class="rounded-2xl bg-[#7620B1]/5 p-5 ring-1 ring-[#7620B1]/15 space-y-4">
-    <h3 class="font-[Outfit] text-sm font-semibold text-[#150D3A]">Paystack Subaccount & Settlement</h3>
+  <div>
+    <%= f.label :description, "Description", class: label_class %>
+    <%# has_rich_text :description → value lives in ActionText, so show it as plain text %>
+    <%= f.text_area :description, rows: 4, placeholder: "What kind of events do you run?",
+                    value: (client.description.respond_to?(:to_plain_text) ? client.description.to_plain_text : client.description),
+                    class: "mt-1.5 #{field_class}" %>
+  </div>
+
+  <%# ── payout & paystack ── %>
+  <%
+    # Decide visibility on the server too, so saved details show on Edit
+    # (and after a validation error) even before the JS controller runs.
+    show_bank   = client.payout_method == "bank"
+    show_mobile = client.payout_method == "mobile_money"
+  %>
+  <div data-controller="payout-details"
+       class="rounded-2xl bg-[#7620B1]/5 p-5 ring-1 ring-[#7620B1]/15 space-y-4">
+    <h3 class="font-[Outfit] text-sm font-semibold text-[#150D3A]">Account Details</h3>
+
+    <%# 1. payout type — starts blank %>
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <%= f.label :payout_method, "Payout Type", class: label_class %>
+        <%= f.select :payout_method,
+                     [["Bank", "bank"], ["Mobile money", "mobile_money"]],
+                     { include_blank: "Choose payout type" },
+                     { required: true, class: "mt-1.5 #{field_class}",
+                       data: { payout_details_target: "method", action: "change->payout-details#toggle" } } %>
+      </div>
+    </div>
+
+    <%#
+      2a. Bank → bank + account number.
+      Target wrappers stay class-less so the `hidden` attribute works.
+    %>
+    <div data-payout-details-target="bank" <%= "hidden" unless show_bank %>>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :bank, "Bank", class: label_class %>
+          <%= f.select :bank,
+                       [["KCB", "kcb"], ["Co-operative Bank", "co-operative-bank"],
+                        ["Equity Bank", "equity-bank"], ["Absa Bank", "absa-bank"],
+                        ["Standard Chartered", "standard-chartered"],
+                        ["CFC Stanbic", "cfc-stanbic"]],
+                       { include_blank: "Choose bank" },
+                       { required: true, disabled: !show_bank, class: "mt-1.5 #{field_class}" } %>
+        </div>
+
+        <div>
+          <%= f.label :account_number, "Account Number", class: label_class %>
+          <%= f.text_field :account_number, required: true, disabled: !show_bank, inputmode: "numeric",
+                           placeholder: "0123456789", class: "mt-1.5 #{field_class}" %>
+        </div>
+      </div>
+    </div>
+
+    <%#
+      2b. Mobile money → provider + number.
+      Same account_number column; the hidden bank input is disabled by the
+      controller, so only the visible one is submitted.
+    %>
+    <div data-payout-details-target="mobileMoney" <%= "hidden" unless show_mobile %>>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :mobile_money_provider, "Mobile Money Provider", class: label_class %>
+          <%= f.select :mobile_money_provider,
+                       [["M-Pesa", "mpesa"], ["M-Pesa Paybill", "mpesa-paybill"],
+                        ["M-Pesa Till", "mpesa-till"], ["Airtel Money", "airtel-money"],
+                        ["Telkom Kenya", "telkom-kenya"]],
+                       { include_blank: "Choose provider" },
+                       { required: true, disabled: !show_mobile, class: "mt-1.5 #{field_class}" } %>
+        </div>
+
+        <div>
+          <%= f.label :account_number, "Phone / Till / Paybill Number",
+                      for: "mobile_money_number", class: label_class %>
+          <%= f.text_field :account_number, id: "mobile_money_number", required: true, disabled: !show_mobile,
+                           inputmode: "numeric", placeholder: "0712 345 678",
+                           class: "mt-1.5 #{field_class}" %>
+        </div>
+      </div>
+    </div>
 
     <div class="grid gap-5 sm:grid-cols-2">
       <div>
-        <%= f.label :settlement_bank, "Settlement Bank (Bank Code)", class: label_class %>
-        <%= f.text_field :settlement_bank, placeholder: "e.g. 044, kcb, etc.", class: "mt-1.5 #{field_class}" %>
+        <%= f.label :settlement_bank, "Paystack Settlement Code", class: label_class %>
+        <%= f.text_field :settlement_bank, placeholder: "e.g. 044, MPESA", class: "mt-1.5 #{field_class}" %>
+        <span class="mt-1 block text-xs text-[#150D3A]/50">Paystack's bank or telco code for the account above</span>
       </div>
 
       <div>
-        <%= f.label :account_number, "Account Number", class: label_class %>
-        <%= f.text_field :account_number, placeholder: "0123456789", class: "mt-1.5 #{field_class}" %>
+        <%= f.label :paystack_subaccount_code, "Paystack Subaccount Code", class: label_class %>
+        <%= f.text_field :paystack_subaccount_code, placeholder: "ACCT_xxxxxxxx (auto-generated if empty)",
+                         class: "mt-1.5 #{field_class}" %>
       </div>
     </div>
 
@@ -73,11 +158,6 @@
         <%= f.number_field :percentage_charge, step: "0.01", min: "0", max: "100", placeholder: "5.0", class: "mt-1.5 #{field_class}" %>
         <span class="mt-1 block text-xs text-[#150D3A]/50">Percentage retained by the platform per transaction</span>
       </div>
-
-      <div>
-        <%= f.label :paystack_subaccount_code, "Paystack Subaccount Code", class: label_class %>
-        <%= f.text_field :paystack_subaccount_code, placeholder: "ACCT_xxxxxxxx (auto-generated if empty)", class: "mt-1.5 #{field_class}", required: true %>
-      </div>
     </div>
 
     <div class="grid gap-5 sm:grid-cols-2">
@@ -86,19 +166,14 @@
         <%= f.text_field :registration_number, placeholder: "CPR/2026/...", class: "mt-1.5 #{field_class}" %>
       </div>
 
-      <div>
-        <%= f.label :tax_pin, "Tax PIN", class: label_class %>
-        <%= f.text_field :tax_pin, placeholder: "P051234567Z", class: "mt-1.5 #{field_class}" %>
-      </div>
     </div>
   </div>
 
   <div class="flex items-center gap-3 pt-1">
     <%= f.submit submit_label,
-          class: "cursor-pointer rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-[#7620B1] border border-[#7620B1] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
+                 class: "cursor-pointer rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-5 py-2.5 text-sm font-semibold text-[#7620B1] border border-[#7620B1] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1] focus-visible:ring-offset-2" %>
 
-    <%= link_to "Cancel", client.persisted? ? onboarding_clients_path(client) : onboarding_clients_path,
-          class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5 border border-[#7620B1]/25"
-    %>
+    <%= link_to "Cancel", client.persisted? ? onboarding_client_path(client) : onboarding_clients_path,
+                class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#150D3A]/60 transition hover:bg-[#150D3A]/5 border border-[#7620B1]/25" %>
   </div>
 <% end %>

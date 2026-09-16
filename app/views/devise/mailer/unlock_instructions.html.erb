@@ -1,7 +1,140 @@
-<p>Hello <%= @resource.email %>!</p>
+<div style="margin:0;padding:24px 12px;background-color:#F7F4FB;font-family:'Trebuchet MS',Helvetica,Arial,sans-serif;color:#150D3A;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background-color:#ffffff;border-radius:12px;overflow:hidden;">
+    <tr>
+      <td style="background-color:#ffffff;padding:26px 24px 20px 24px;text-align:center;">
+        <% if @logo_url.present? %>
+          <img src="<%= @logo_url %>" alt="Salato — Events. Tickets. Experiences." width="210"
+               style="display:block;margin:0 auto;width:210px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
+        <% else %>
+          <div style="font-size:24px;font-weight:bold;color:#150D3A;letter-spacing:0.5px;">Salato</div>
+          <div style="font-size:12px;color:#7620B1;margin-top:4px;">Events. Tickets. Experiences.</div>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <td style="height:4px;line-height:4px;font-size:0;background-color:#AB2692;background-image:linear-gradient(90deg,#7620B1,#AB2692,#FC8027);">&nbsp;</td>
+    </tr>
 
-<p>Your account has been locked due to an excessive number of unsuccessful sign in attempts.</p>
+    <tr>
+      <td style="padding:30px 26px 8px 26px;">
+        <p style="margin:0 0 18px 0;font-size:19px;font-weight:bold;">
+          Your account has been locked<%= ", #{@resource.first_name}" if @resource.try(:first_name).present? %>.
+        </p>
 
-<p>Click the link below to unlock your account:</p>
+        <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;">
+          We locked your Salato account after <% if @resource.respond_to?(:failed_attempts) && @resource.failed_attempts.to_i > 0 %><strong><%= @resource.failed_attempts %></strong><% else %>too many<% end %> unsuccessful sign-in attempts. This protects your events, ticket sales and payouts from someone guessing your password.
+        </p>
+        <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;">
+          Nothing in your account has changed. Unlock it below to sign in again.
+        </p>
+      </td>
+    </tr>
 
-<p><%= link_to 'Unlock my account', unlock_url(@resource, unlock_token: @token) %></p>
+    <tr>
+      <td style="padding:10px 26px 0 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F7F4FB;border-radius:8px;">
+          <tr>
+            <td style="padding:18px 20px;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#7620B1;margin-bottom:12px;">
+                Account
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong style="color:#5A5175;">Email:</strong> <%= @resource.email %>
+              </div>
+              <% if @resource.try(:locked_at).present? %>
+                <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                  <strong style="color:#5A5175;">Locked:</strong> <%= l(@resource.locked_at.in_time_zone("Africa/Nairobi"), format: :long) %> (EAT)
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:10px 26px 0 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F7F4FB;border-radius:8px;">
+          <tr>
+            <td style="padding:18px 20px;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#7620B1;margin-bottom:12px;">
+                How to get back in
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong>1.</strong> Click <strong>Unlock my account</strong> below.
+              </div>
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong>2.</strong> Sign in with your email and password.
+              </div>
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                <strong>3.</strong> Forgot your password? Use <strong>Forgot password</strong> on the sign-in page after unlocking.
+              </div>
+              <% if [:time, :both].include?(Devise.unlock_strategy) %>
+                <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                  Or wait: your account unlocks on its own after <%= Devise.unlock_in.inspect %>.
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:10px 26px 0 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFF3EA;border-radius:8px;">
+          <tr>
+            <td style="padding:18px 20px;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#C2570F;margin-bottom:12px;">
+                Wasn&rsquo;t you?
+              </div>
+
+              <div style="font-size:14px;margin-bottom:7px;line-height:1.55;">
+                Someone may be trying to get into your account. After unlocking, <strong>reset your password straight away</strong> and don&rsquo;t reuse it anywhere else.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:26px 26px 6px 26px;text-align:center;">
+        <a href="<%= unlock_url(@resource, unlock_token: @token) %>"
+           style="display:inline-block;background-color:#FC8027;color:#ffffff;font-size:16px;font-weight:bold;text-decoration:none;padding:14px 34px;border-radius:8px;">
+          Unlock my account
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:18px 26px 26px 26px;">
+        <p style="margin:0 0 10px 0;font-size:13px;line-height:1.6;color:#5A5175;">
+          If the button doesn&rsquo;t work, paste this into your browser:
+        </p>
+
+        <p style="margin:0;font-size:12px;line-height:1.5;word-break:break-all;">
+          <a href="<%= unlock_url(@resource, unlock_token: @token) %>" style="color:#7620B1;">
+            <%= unlock_url(@resource, unlock_token: @token) %>
+          </a>
+        </p>
+
+        <p style="margin:16px 0 0 0;font-size:13px;line-height:1.6;color:#8A82A3;">
+          Need help? Reply to this email and our team will get back to you.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background-color:#F7F4FB;padding:24px;text-align:center;">
+        <div style="font-size:12px;color:#8A82A3;line-height:1.7;">
+          <a href="<%= root_url %>" style="color:#7620B1;text-decoration:none;font-weight:bold;">salato.app</a><br>
+          Events. Tickets. Experiences.<br>
+          Nairobi, Kenya
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
