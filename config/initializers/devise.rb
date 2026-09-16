@@ -37,7 +37,8 @@ Devise.setup do |config|
   # invitation and password-reset mail would NOT pick up ApplicationMailer's
   # default From address or the mailer layout. Pointing it at ApplicationMailer
   # keeps every email the app sends on one sender and one layout.
-  config.parent_mailer = 'ApplicationMailer'
+  #config.parent_mailer = 'ApplicationMailer'
+  config.mailer = 'SalatoDeviseMailer'
 
   # ==> ORM configuration
   # Load and configure the ORM. Supports :active_record (default) and
