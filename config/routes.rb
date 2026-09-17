@@ -45,8 +45,12 @@ Rails.application.routes.draw do
     end
     resources :orders, only: [:new, :create, :show] do
       member do
-        get :initialize_payment
-        get :download
+        get  :pay
+        get  :initialize_payment
+        get  :download
+        post :start_card
+        post :charge_mobile
+        get  :payment_status
       end
     end
   end

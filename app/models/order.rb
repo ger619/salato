@@ -13,6 +13,16 @@ class Order < ApplicationRecord
   validates :quantity, presence: true, numericality: { greater_than: 0 }
   validates :status, presence: true, inclusion: { in: STATUSES }
 
+  PAYSTACK_ATTEMPT_SUFFIX = /-(?:CARD|MM[0-9A-F]{8})\z/
+
+  # Payment attempts use "<order reference>-CARD" or "<order reference>-MMXXXXXXXX".
+  # Plain order references still work, so older transactions resolve too.
+  def self.for_paystack_reference(reference)
+    return nil if reference.blank?
+
+    find_by(reference: reference.to_s.sub(PAYSTACK_ATTEMPT_SUFFIX, ''))
+  end
+
   def paid?
     status == 'paid'
   end
