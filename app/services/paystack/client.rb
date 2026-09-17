@@ -3,7 +3,34 @@ require 'json'
 require 'uri'
 
 module Paystack
-  class Error < StandardError; end
+  # Carries the whole response so callers (and the log) can see WHY a call
+  # failed. Paystack puts the real reason in data.message, not in the
+  # top-level message, which is usually just "Charge attempted".
+  class Error < StandardError
+    attr_reader :http_status, :body
+
+    def initialize(message, http_status: nil, body: nil)
+      super(message)
+      @http_status = http_status
+      @body = body.is_a?(Hash) ? body : {}
+    end
+
+    def data
+      body['data'].is_a?(Hash) ? body['data'] : {}
+    end
+
+    # The most specific reason Paystack gave us.
+    def reason
+      data['message'].presence ||
+        data['gateway_response'].presence ||
+        body['message'].presence ||
+        message
+    end
+
+    def to_log
+      "#{message} (HTTP #{http_status}) #{body.to_json}"
+    end
+  end
 
   class Client
     BASE_URL = 'https://api.paystack.co'.freeze
@@ -17,6 +44,8 @@ module Paystack
     # ── Transactions ─────────────────────────────────────────────
 
     # channels: limits what Paystack's checkout offers, e.g. %w[card].
+    # Pass nil to let Paystack offer every channel enabled on the account —
+    # safer than forcing a channel that may not be active.
     def initialize_transaction(
       email:,
       amount:,
@@ -39,7 +68,7 @@ module Paystack
       payload[:subaccount] = subaccount if subaccount.present?
       payload[:transaction_charge] = transaction_charge if transaction_charge.present?
       payload[:bearer] = bearer if bearer.present?
-      payload[:channels] = channels if channels.present?
+      payload[:channels] = Array(channels) if channels.present?
 
       post('/transaction/initialize', payload)
     end
@@ -53,6 +82,16 @@ module Paystack
     # Sends a mobile money prompt straight to the customer's phone.
     # provider: 'mpesa' (M-Pesa) or 'atl' (Airtel Money).
     # phone: international format, e.g. '+254712345678'.
+    #
+    # Returns the parsed body in every case where Paystack gave us a usable
+    # data object — including a failed charge, where the body looks like:
+    #
+    #   { "status": false, "message": "Charge attempted",
+    #     "data": { "status": "failed", "message": "Insufficient funds" } }
+    #
+    # The caller branches on data["status"]: "success", "failed",
+    # "pay_offline", "send_otp", "pending". Only a genuinely broken call
+    # (auth, validation, no active channel, Paystack 5xx) raises.
     def charge_mobile_money(
       email:,
       amount:,
@@ -72,7 +111,12 @@ module Paystack
       }
       payload[:subaccount] = subaccount if subaccount.present?
 
-      post('/charge', payload)
+      post('/charge', payload, tolerate_charge_failure: true)
+    end
+
+    # Paystack recommends re-checking a charge that came back pending.
+    def check_pending_charge(reference)
+      get("/charge/#{URI.encode_www_form_component(reference)}")
     end
 
     # ── Subaccounts ──────────────────────────────────────────────
@@ -154,8 +198,9 @@ module Paystack
       ENV.fetch('PAYSTACK_CURRENCY', 'KES')
     end
 
-    def post(path, payload)
-      send_request(Net::HTTP::Post, path, payload)
+    def post(path, payload, tolerate_charge_failure: false)
+      send_request(Net::HTTP::Post, path, payload,
+                   tolerate_charge_failure: tolerate_charge_failure)
     end
 
     def put(path, payload)
@@ -166,7 +211,7 @@ module Paystack
       send_request(Net::HTTP::Get, path)
     end
 
-    def send_request(request_class, path, payload = nil)
+    def send_request(request_class, path, payload = nil, tolerate_charge_failure: false)
       uri = URI("#{BASE_URL}#{path}")
 
       request = request_class.new(uri)
@@ -184,19 +229,49 @@ module Paystack
         http.request(request)
       end
 
-      parse_response(response)
+      parse_response(response, path, tolerate_charge_failure: tolerate_charge_failure)
     rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED => e
-      raise Paystack::Error, "Paystack unreachable: #{e.class}"
+      raise Paystack::Error.new("Paystack unreachable: #{e.class}")
     end
 
-    def parse_response(response)
+    def parse_response(response, path, tolerate_charge_failure: false)
       body = JSON.parse(response.body)
 
-      raise Paystack::Error, "Paystack error: #{body['message'] || response.code}" unless response.is_a?(Net::HTTPSuccess) && body['status']
+      unless body.is_a?(Hash)
+        raise Paystack::Error.new(
+          "Paystack returned an unexpected payload (HTTP #{response.code})",
+          http_status: response.code.to_i
+        )
+      end
 
-      body
+      # The normal happy path.
+      return body if response.is_a?(Net::HTTPSuccess) && body['status']
+
+      data = body['data']
+
+      # A charge that was attempted and resolved (usually to "failed"). The
+      # outer status is false but data carries the real outcome, so hand it
+      # back and let the caller decide what to tell the buyer.
+      if tolerate_charge_failure && data.is_a?(Hash) && data['status'].present?
+        Rails.logger.warn(
+          "Paystack #{path} returned #{data['status']}: #{body.to_json}"
+        )
+        return body
+      end
+
+      detail = data.is_a?(Hash) ? (data['message'].presence || data['gateway_response'].presence) : nil
+      summary = [body['message'].presence, detail].compact.join(' — ')
+
+      raise Paystack::Error.new(
+        summary.presence || "Paystack error (HTTP #{response.code})",
+        http_status: response.code.to_i,
+        body: body
+      )
     rescue JSON::ParserError
-      raise Paystack::Error, "Paystack returned an invalid response (HTTP #{response.code})"
+      raise Paystack::Error.new(
+        "Paystack returned an invalid response (HTTP #{response.code})",
+        http_status: response.code.to_i
+      )
     end
   end
 end

@@ -5,6 +5,9 @@ class OrdersController < ApplicationController
   # What the buyer picks → Paystack's provider code.
   MOBILE_PROVIDERS = { 'mpesa' => 'mpesa', 'airtel' => 'atl' }.freeze
 
+  # Paystack statuses that mean "the buyer still has something to do".
+  AWAITING_BUYER = %w[pay_offline send_otp send_pin pending ongoing processing queued].freeze
+
   before_action :set_event, only: %i[new create] + ORDER_ACTIONS
   before_action :set_order, only: ORDER_ACTIONS
   before_action :ensure_sales_open, only: %i[new create] + PAYABLE_ACTIONS
@@ -123,6 +126,9 @@ class OrdersController < ApplicationController
       access_code: access_code,
       callback_url: payment_callback_url(reference: card_reference)
     }
+  rescue Paystack::Error => e
+    log_payment_error(e)
+    render json: { error: card_error_message(e) }, status: :bad_gateway
   rescue StandardError => e
     log_payment_error(e)
     render json: { error: "We couldn't open card payment. Please try again." },
@@ -163,17 +169,24 @@ class OrdersController < ApplicationController
     when 'success'
       PaymentFulfillment.call(order: @order, transaction: data)
       render json: paid_json
-    when 'failed'
-      render json: { error: data['gateway_response'].presence || 'The payment was declined.' },
-             status: :unprocessable_entity
-    else
-      name = params[:provider] == 'airtel' ? 'Airtel Money' : 'M-Pesa'
+    when *AWAITING_BUYER
       render json: {
         status: 'pending',
-        message: data['display_text'].presence ||
-                 "We've sent a #{name} prompt to #{phone}. Enter your PIN to pay."
+        message: data['display_text'].presence || default_prompt_message(phone)
       }
+    else
+      # "failed", "reversed", "abandoned", or anything new Paystack adds.
+      # Paystack puts the reason in data.message for a failed charge.
+      Rails.logger.warn(
+        "M-Pesa charge #{reference} came back #{data['status'].inspect}: #{data.to_json}"
+      )
+
+      render json: { error: charge_failure_message(data) },
+             status: :unprocessable_entity
     end
+  rescue Paystack::Error => e
+    log_payment_error(e)
+    render json: { error: mobile_error_message(e) }, status: :bad_gateway
   rescue StandardError => e
     log_payment_error(e)
     render json: { error: "We couldn't send the payment prompt. Check the number and try again." },
@@ -201,7 +214,7 @@ class OrdersController < ApplicationController
       when 'failed', 'reversed'
         return render(json: {
                         status: 'failed',
-                        error: data['gateway_response'].presence || 'The payment did not go through.'
+                        error: charge_failure_message(data)
                       })
       end
     end
@@ -279,6 +292,18 @@ class OrdersController < ApplicationController
     "#{@order.reference}-CARD"
   end
 
+  # Which channels the card transaction may use. Forcing %w[card] fails with
+  # "No active channel to process transaction" whenever card isn't enabled on
+  # the live Paystack account. Set PAYSTACK_CARD_CHANNELS to a comma-separated
+  # list to change it, or to "any" to let Paystack offer whatever is enabled.
+  def card_channels
+    configured = ENV.fetch('PAYSTACK_CARD_CHANNELS', 'card')
+
+    return nil if configured.blank? || configured.casecmp('any').zero?
+
+    configured.split(',').map(&:strip).reject(&:blank?)
+  end
+
   # Started once and kept on the order; the row lock stops a double click
   # from initialising twice.
   def ensure_card_transaction!
@@ -290,11 +315,16 @@ class OrdersController < ApplicationController
           reference: card_reference,
           callback_url: payment_callback_url(reference: card_reference),
           subaccount: @event.client&.paystack_subaccount_code,
-          channels: %w[card],
+          channels: card_channels,
           metadata: payment_metadata
         )
 
-        @order.update!(paystack_access_code: response.dig('data', 'access_code'))
+        # Keep the reference too, so payment_status can verify a card attempt
+        # instead of re-checking a stale mobile money reference.
+        @order.update!(
+          paystack_access_code: response.dig('data', 'access_code'),
+          paystack_reference: card_reference
+        )
       end
     end
 
@@ -316,9 +346,42 @@ class OrdersController < ApplicationController
     { status: 'paid', redirect_url: event_order_path(@event, @order) }
   end
 
+  def default_prompt_message(phone)
+    name = params[:provider] == 'airtel' ? 'Airtel Money' : 'M-Pesa'
+
+    "We've sent a #{name} prompt to #{phone}. Enter your PIN to pay."
+  end
+
+  # Paystack's own wording is usually clearer than anything generic
+  # ("Insufficient funds", "Request cancelled by user").
+  def charge_failure_message(data)
+    data['message'].presence ||
+      data['gateway_response'].presence ||
+      'The payment was declined. Please try again.'
+  end
+
+  def mobile_error_message(error)
+    if error.reason.to_s.match?(/no active channel/i)
+      'Mobile money is not switched on for this event yet. Please try card, or contact the organiser.'
+    else
+      "We couldn't send the payment prompt: #{error.reason}"
+    end
+  end
+
+  def card_error_message(error)
+    if error.reason.to_s.match?(/no active channel/i)
+      'Card payment is not available for this event yet. Please pay with M-Pesa or Airtel Money.'
+    else
+      "We couldn't open card payment: #{error.reason}"
+    end
+  end
+
+  # Logs the full Paystack body, which is where the real reason lives.
   def log_payment_error(error)
+    detail = error.is_a?(Paystack::Error) ? error.to_log : error.message
+
     Rails.logger.error(
-      "Paystack payment error for order #{@order&.reference}: #{error.class}: #{error.message}"
+      "Paystack payment error for order #{@order&.reference}: #{error.class}: #{detail}"
     )
   end
 
