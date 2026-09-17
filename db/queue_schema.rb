@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_091123) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_150323) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -106,6 +106,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_091123) do
     t.uuid "event_id", null: false
     t.datetime "expires_at"
     t.datetime "paid_at"
+    t.string "paystack_access_code"
+    t.string "paystack_reference"
     t.integer "quantity", null: false
     t.string "reference", null: false
     t.string "status", default: "pending", null: false
@@ -115,6 +117,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_091123) do
     t.datetime "updated_at", null: false
     t.datetime "whatsapp_sent_at"
     t.index ["event_id"], name: "index_orders_on_event_id"
+    t.index ["paystack_reference"], name: "index_orders_on_paystack_reference"
     t.index ["reference"], name: "index_orders_on_reference", unique: true
     t.index ["status"], name: "index_orders_on_status"
     t.index ["ticket_type_id"], name: "index_orders_on_ticket_type_id"

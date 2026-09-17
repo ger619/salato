@@ -1,0 +1,134 @@
+<% content_for :main_class, "block" %>
+<% content_for :title, "Pay — #{@event.name}" %>
+<% amount_label = "KES #{number_with_delimiter(@order.total_price.to_i)}" %>
+
+<script src="https://js.paystack.co/v2/inline.js" defer></script>
+
+<%= render 'shared/header' %>
+
+<section class="pt-32 lg:pt-40 pb-24 lg:pb-32">
+  <div class="max-w-shell mx-auto px-5 lg:px-8"
+       data-controller="salato-checkout"
+       data-salato-checkout-charge-url-value="<%= charge_mobile_event_order_path(@event, @order) %>"
+       data-salato-checkout-card-url-value="<%= start_card_event_order_path(@event, @order) %>"
+       data-salato-checkout-status-url-value="<%= payment_status_event_order_path(@event, @order) %>"
+       data-salato-checkout-amount-value="<%= amount_label %>">
+
+    <%# ── Progress ─────────────────────────────────────── %>
+    <div class="flex items-center gap-3 text-[13px] font-medium">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-mist text-ink-soft ring-1 ring-ink/8">
+        <span class="font-mono text-[11px]">1</span> Your details
+      </span>
+      <span class="h-px w-6 bg-ink/15" aria-hidden="true"></span>
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg grad-bg text-white">
+        <span class="font-mono text-[11px]">2</span> Payment
+      </span>
+      <span class="h-px w-6 bg-ink/15" aria-hidden="true"></span>
+      <span class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-mist text-ink-soft ring-1 ring-ink/8">
+        <span class="font-mono text-[11px]">3</span> Ticket emailed
+      </span>
+    </div>
+
+    <h1 class="mt-6 text-[34px] lg:text-[44px] leading-[1.06] font-semibold">
+      How would you like to <span class="grad-text">pay</span>?
+    </h1>
+
+    <div class="mt-12 grid lg:grid-cols-[1fr_.8fr] gap-8 lg:gap-12 items-start">
+
+      <%# ══════════ PAYMENT ══════════ %>
+      <div class="order-2 lg:order-1">
+        <div data-salato-checkout-target="form">
+          <fieldset class="rounded-[20px] bg-white ring-1 ring-ink/12 p-6 lg:p-7">
+            <legend class="sr-only">Payment method</legend>
+            <p class="text-[14px] font-medium mb-3">Pay with</p>
+
+            <div class="grid sm:grid-cols-3 gap-3">
+              <% [
+                   ["mpesa",  "M-Pesa",       "Prompt to your Safaricom line"],
+                   ["airtel", "Airtel Money", "Prompt to your Airtel line"],
+                   ["card",   "Card",         "Visa or Mastercard"]
+                 ].each_with_index do |(value, label, hint), index| %>
+                <label class="block cursor-pointer rounded-xl ring-1 ring-ink/12 p-4 transition hover:bg-mist
+                              has-[:checked]:ring-2 has-[:checked]:ring-flare has-[:checked]:bg-mist
+                              has-[:disabled]:cursor-wait">
+                  <input type="radio" name="payment_method" value="<%= value %>" class="sr-only"
+                         <%= "checked" if index.zero? %>
+                         data-salato-checkout-target="method"
+                         data-action="change->salato-checkout#select">
+                  <span class="block text-[15px] font-semibold"><%= label %></span>
+                  <span class="block mt-1 text-[12px] text-ink-soft/75"><%= hint %></span>
+                </label>
+              <% end %>
+            </div>
+
+            <div class="mt-5" data-salato-checkout-target="phoneField">
+              <label for="payment_phone" class="block text-[14px] font-medium mb-2">Phone number to charge</label>
+              <input id="payment_phone" type="tel" inputmode="tel" autocomplete="tel"
+                     value="<%= @order.customer_phone %>"
+                     data-salato-checkout-target="phone"
+                     class="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-ink/12 focus:ring-2 focus:ring-flare outline-none transition font-mono">
+              <p class="mt-1.5 text-[13px] text-ink-soft/75">
+                The payment prompt goes to this number. Change it if someone else is paying.
+              </p>
+            </div>
+          </fieldset>
+
+          <p hidden role="alert" data-salato-checkout-target="error"
+             class="mt-4 rounded-xl bg-flare/8 ring-1 ring-flare/30 px-4 py-3 text-[14px] text-flare"></p>
+
+          <button type="button"
+                  data-action="salato-checkout#pay"
+                  data-salato-checkout-target="payButton"
+                  class="mt-6 w-full py-4 rounded-xl font-medium text-[16px] text-white grad-bg hover:brightness-110 transition cursor-pointer
+                         disabled:opacity-60 disabled:cursor-wait shadow-[0_12px_32px_-12px_rgba(225,55,101,.9)]">
+            <span data-salato-checkout-target="payLabel">Pay <%= amount_label %></span>
+          </button>
+
+          <p class="mt-4 text-[13px] text-ink-soft/75 text-center">
+            Tickets are reserved for you until <%= @order.expires_at.strftime("%-l:%M %p") %>.
+          </p>
+        </div>
+
+        <%# ── Waiting for phone approval ── %>
+        <div hidden data-salato-checkout-target="waiting"
+             class="rounded-[20px] bg-white ring-1 ring-ink/12 p-8 lg:p-10 text-center" aria-live="polite">
+          <div class="mx-auto w-14 h-14 rounded-full grad-bg grid place-items-center animate-pulse" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
+          </div>
+          <h2 class="mt-5 text-[24px] font-semibold">Check your phone</h2>
+          <p class="mt-2 text-[15px] text-ink-soft" data-salato-checkout-target="waitingText"></p>
+          <p class="mt-4 text-[13px] text-ink-soft/75">This page moves on by itself once the payment goes through.</p>
+          <button type="button" data-action="salato-checkout#retry"
+                  class="mt-6 text-[14px] font-medium underline underline-offset-4 text-ink-soft hover:text-ink">
+            Didn't get the prompt? Try again
+          </button>
+        </div>
+      </div>
+
+      <%# ══════════ ORDER SUMMARY ══════════ %>
+      <aside class="order-1 lg:order-2 lg:sticky lg:top-28">
+        <div class="stub rounded-[20px] bg-white ring-1 ring-ink/12 p-6 lg:p-7">
+          <p class="eyebrow text-magenta">Your order</p>
+          <h2 class="mt-3 text-[20px] leading-tight font-semibold"><%= @event.name %></h2>
+          <p class="mt-2 text-[14px] text-ink-soft"><%= @event.venue %></p>
+          <p class="font-mono text-[13px] text-ink-soft/75 mt-1">
+            <%= @event.start_at.strftime("%a %-d %b · %-l:%M %p") %>
+          </p>
+
+          <div class="mt-5 pt-5 border-t border-ink/10 flex items-baseline justify-between gap-4">
+            <p class="text-[15px] font-medium truncate"><%= @order.ticket_type.name %></p>
+            <p class="font-mono text-[15px] shrink-0">&times;&nbsp;<%= @order.quantity %></p>
+          </div>
+          <p class="font-mono text-[12px] text-ink-soft/60 mt-2">Ref <%= @order.reference %></p>
+
+          <div class="my-6 relative"><div class="tear"></div></div>
+
+          <p class="eyebrow text-ink-soft/55">Total</p>
+          <p class="mt-1.5 font-display text-[30px] font-semibold leading-none grad-text"><%= amount_label %></p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
