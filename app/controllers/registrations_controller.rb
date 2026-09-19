@@ -15,7 +15,7 @@ class RegistrationsController < Devise::RegistrationsController
     params.require(:user).permit(
       :first_name, :last_name, :email, :phone_number, :id_photo,
       :password, :password_confirmation,
-      client_attributes: %i[name phone email country city description payout_method bank account_number mobile_money_provider]
+      client_attributes: %i[name phone email country city description payout_method logo bank account_number mobile_money_provider]
     )
   end
 end

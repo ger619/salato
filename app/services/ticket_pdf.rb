@@ -33,6 +33,12 @@ class TicketPdf
   PAD = 20 # card's own horizontal padding
   BAND_H = 42 # gradient header
   STUB_H = 180 # everything below the perforation
+  LOGO_BOX = 34 # square the organiser's logo is fitted into, top right
+  LOGO_GUTTER = 12 # space kept clear between that square and the text
+
+  # Prawn embeds PNG and JPEG only. Anything else is converted by a variant.
+  PRAWN_IMAGE_TYPES = %w[image/png image/jpeg].freeze
+  FALLBACK_LOGO = 'app/assets/images/salato_logo/salato-icon-512.png'.freeze
 
   # ── public API — everything here must stay above `private` ──────────────
 
@@ -48,20 +54,56 @@ class TicketPdf
     raise ArgumentError, 'TicketPdf needs at least one ticket' if list.empty?
 
     document = Prawn::Document.new(page_size: 'A6', margin: 0)
+    logos = {} # client id => bytes, so each logo is fetched once per file
 
     list.each_with_index do |ticket, index|
       document.start_new_page if index.positive?
 
-      new(ticket, position: index + 1, total: list.size).draw_on(document)
+      client = ticket.event&.client
+      logos[client&.id] = logo_bytes_for(client) unless logos.key?(client&.id)
+
+      new(ticket, position: index + 1, total: list.size, logo: logos[client&.id])
+        .draw_on(document)
     end
 
     document.render
   end
 
-  def initialize(ticket, position: 1, total: 1)
+  # The organiser's own logo when they have uploaded one, the Salato icon
+  # otherwise. Prawn embeds each distinct image once no matter how many
+  # pages draw it, so a 50-ticket order still carries one copy.
+  def self.logo_bytes_for(client)
+    client_logo_bytes(client) || fallback_logo_bytes
+  end
+
+  # Never raises: a missing file or a broken attachment must not take down
+  # the ticket download. It just falls back to the Salato mark.
+  def self.client_logo_bytes(client)
+    logo = client&.logo
+
+    return nil unless logo&.attached? && logo.blob&.persisted?
+    return logo.blob.download if PRAWN_IMAGE_TYPES.include?(logo.blob.content_type)
+    return nil unless logo.variable?
+
+    logo.variant(format: :png, resize_to_limit: [512, 512]).processed.blob.download
+  rescue StandardError => e
+    Rails.logger.warn("[TicketPdf] client ##{client&.id} logo unusable: #{e.class}: #{e.message}")
+    nil
+  end
+
+  def self.fallback_logo_bytes
+    @fallback_logo_bytes ||= Rails.root.join(FALLBACK_LOGO).binread
+  rescue StandardError => e
+    Rails.logger.warn("[TicketPdf] fallback logo missing: #{e.class}: #{e.message}")
+    nil
+  end
+
+  def initialize(ticket, position: 1, total: 1, logo: nil)
     @ticket = ticket
     @position = position
     @total = total
+    # Resolved here too so TicketPdf.new(ticket) still works on its own.
+    @logo = logo || self.class.logo_bytes_for(ticket.event&.client)
   end
 
   # Called by generate_batch on a fresh instance, so it MUST be public.
@@ -83,7 +125,7 @@ class TicketPdf
 
   private
 
-  attr_reader :pdf, :ticket, :display_font, :body_font, :mono_font
+  attr_reader :pdf, :ticket, :logo, :display_font, :body_font, :mono_font
 
   # ── the only way text gets drawn ────────────────────────────────────────
 
@@ -168,9 +210,15 @@ class TicketPdf
   def draw_event_block
     y = @band_bottom - 22
 
+    # The logo sits top right, below the gradient band. The date and the
+    # event name give up that width so nothing is drawn underneath it.
+    head_w = logo ? @inner_w - LOGO_BOX - LOGO_GUTTER : @inner_w
+
+    draw_logo(@inner_x + @inner_w - LOGO_BOX, y + 5)
+
     text event.start_at.strftime('%A %-d %B').upcase,
          color: MAGENTA, font: mono_font,
-         at: [@inner_x, y], width: @inner_w, height: 11,
+         at: [@inner_x, y], width: head_w, height: 11,
          size: 7.5, character_spacing: 1.5, single_line: true
 
     y -= 15.5
@@ -179,7 +227,7 @@ class TicketPdf
     # fit rather than clipping.
     text event.name.to_s,
          color: INK, font: display_font,
-         at: [@inner_x, y], width: @inner_w, height: 50,
+         at: [@inner_x, y], width: head_w, height: 50,
          size: 21, style: :bold, leading: 1,
          overflow: :shrink_to_fit
 
@@ -194,6 +242,16 @@ class TicketPdf
 
     field 'HOLDER', ticket.attendee_name.to_s, @inner_x, y, (@inner_w / 2) - 8
     field 'PAID', paid_amount, @inner_x + (@inner_w / 2), y, @inner_w / 2
+  end
+
+  # `fit` keeps the aspect ratio and never lets the image spill past the
+  # square, so a wide wordmark and a square icon both land cleanly.
+  def draw_logo(x, y)
+    return if logo.blank?
+
+    pdf.image StringIO.new(logo), at: [x, y], fit: [LOGO_BOX, LOGO_BOX]
+  rescue StandardError => e
+    Rails.logger.warn("[TicketPdf] logo skipped on ticket ##{ticket.id}: #{e.class}: #{e.message}")
   end
 
   def field(label, value, x, y, width)

@@ -23,6 +23,19 @@ module TicketsHelper
     ).html_safe
   end
 
+  # The organiser's own logo, or the Salato mark when they haven't uploaded
+  # one. Returns a plain <img> that fills whatever box the caller sizes, so
+  # the same call works on the compact card and the full ticket.
+  def ticket_logo_tag(ticket)
+    client = ticket.event&.client
+    logo = client&.logo_variant(resize_to_limit: [256, 256])
+
+    image_tag(logo || 'salato_logo/salato-icon-512.png',
+              alt: logo ? "#{client.name} logo" : 'Salato',
+              loading: 'lazy',
+              class: 'h-full w-full object-contain')
+  end
+
   # Palette-consistent styling for each ticket state.
   def ticket_status_pill(ticket)
     case ticket.status

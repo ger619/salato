@@ -13,6 +13,21 @@ class Client < ApplicationRecord
   before_validation :set_default_percentage_charge
   before_save :sync_paystack_subaccount, if: :should_sync_paystack_subaccount?
 
+  # True only when the logo can actually be turned into a URL. On a form
+  # that failed validation the attachment exists in memory but its blob has
+  # no id yet, and url_for would raise.
+  def logo_previewable?
+    logo.attached? && logo.blob&.persisted?
+  end
+
+  # Falls back to the original when image_processing can't handle the
+  # format, so a missing variant processor never takes down the page.
+  def logo_variant(**)
+    return nil unless logo_previewable?
+
+    logo.variable? ? logo.variant(**) : logo
+  end
+
   def subaccount_ready?
     bank.present? && account_number.present?
   end

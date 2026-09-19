@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(:first_name, :last_name, :email, :phone_number,
                :password, :password_confirmation,
-               client_attributes: %i[name phone email country city description address bank mobile_money_provider account_number registration_number payout_method])
+               client_attributes: %i[name phone email country city description address bank mobile_money_provider account_number registration_number payout_method logo])
     end
 
     devise_parameter_sanitizer.permit(:account_update) do |u|

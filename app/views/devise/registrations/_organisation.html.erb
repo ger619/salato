@@ -12,7 +12,118 @@
   <%= f.fields_for :client do |cf| %>
 
     <%# ── who you are ── %>
-    <div class="space-y-3 rounded-2xl bg-white p-4 ring-1 ring-[#150D3A]/8 sm:p-5">
+    <div class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-[#150D3A]/8 sm:p-5">
+      <%#
+        ── logo ──
+        Reuses the poster-upload controller from the event form: same drag,
+        drop, preview and client-side size check, just sized for a mark
+        rather than a 40vh banner.
+      %>
+      <div data-controller="poster-upload"
+           data-poster-upload-max-size-value="2097152"
+           data-poster-upload-accept-value="image/png,image/jpeg,image/webp">
+
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+          <%= cf.label :logo, "Logo", class: lbl %>
+          <span class="font-['JetBrains_Mono'] text-[10px] uppercase tracking-[0.14em] text-[#150D3A]/40">
+            PNG · JPG · WebP — up to 2 MB
+          </span>
+        </div>
+
+        <p class="mt-1 font-['Inter_Tight'] text-xs text-[#150D3A]/50">
+          Printed on every ticket you sell. A square mark works best.
+        </p>
+
+        <%# The real input stays hidden; the zone below drives it. %>
+        <%= cf.file_field :logo,
+                          accept: "image/png,image/jpeg,image/webp",
+                          class: "sr-only",
+                          data: { poster_upload_target: "input",
+                                  action: "change->poster-upload#fileChosen" } %>
+
+        <%# ── empty state ── %>
+        <div data-poster-upload-target="zone"
+             data-action="click->poster-upload#browse
+                          dragenter->poster-upload#dragEnter
+                          dragover->poster-upload#dragEnter
+                          dragleave->poster-upload#dragLeave
+                          drop->poster-upload#drop
+                          keydown.enter->poster-upload#browse
+                          keydown.space->poster-upload#browse"
+             role="button"
+             tabindex="0"
+             aria-label="Add your logo"
+             class="group mt-2.5 flex w-full cursor-pointer items-center gap-4 rounded-2xl
+                    border-2 border-dashed border-[#150D3A]/15 bg-[#F7F4FB] px-4 py-4
+                    text-left transition duration-200
+                    hover:border-[#7620B1]/45 hover:bg-[#7620B1]/[0.04]
+                    focus:outline-none focus-visible:border-[#7620B1]
+                    focus-visible:ring-4 focus-visible:ring-[#7620B1]/25
+                    data-[dragging]:border-[#7620B1] data-[dragging]:bg-[#7620B1]/[0.07]">
+
+          <span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl
+                       bg-gradient-to-br from-[#7620B1] to-[#FC8027] text-white
+                       shadow-[0_12px_28px_-14px_rgba(118,32,177,0.95)]
+                       transition duration-200 group-hover:-translate-y-0.5
+                       motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 16V4M7 9l5-5 5 5" />
+              <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+            </svg>
+          </span>
+
+          <span class="min-w-0">
+            <span class="block font-[Outfit] text-[15px] font-medium text-[#150D3A]">
+              Drop your logo here, or
+              <span class="text-[#7620B1] underline decoration-[#7620B1]/30 underline-offset-4">browse</span>
+            </span>
+            <span class="mt-1 block font-['Inter_Tight'] text-[13px] leading-5 text-[#150D3A]/45">
+              Transparent PNG looks cleanest on the ticket stub.
+            </span>
+          </span>
+        </div>
+
+        <%# ── chosen state ── %>
+        <div data-poster-upload-target="preview"
+             class="mt-2.5 hidden items-center gap-4 rounded-2xl bg-white p-3 ring-1 ring-[#150D3A]/10">
+
+          <span class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl
+                       bg-[#F7F4FB] p-2 ring-1 ring-[#150D3A]/8">
+            <%= image_tag "", alt: "",
+                          class: "h-full w-full object-contain",
+                          data: { poster_upload_target: "image",
+                                  action: "load->poster-upload#imageLoaded" } %>
+          </span>
+
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-['Inter_Tight'] text-sm font-medium text-[#150D3A]"
+               data-poster-upload-target="filename"></p>
+            <p class="mt-0.5 font-['JetBrains_Mono'] text-[11px] text-[#150D3A]/45">
+              <span data-poster-upload-target="filesize"></span><span data-poster-upload-target="dimensions"></span>
+            </p>
+          </div>
+
+          <div class="flex shrink-0 items-center gap-1">
+            <button type="button" data-action="poster-upload#browse"
+                    class="rounded-lg px-2.5 py-1.5 font-['Inter_Tight'] text-xs font-semibold
+                           text-[#7620B1] transition hover:bg-[#7620B1]/8
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1]">
+              Replace
+            </button>
+            <button type="button" data-action="poster-upload#remove"
+                    class="rounded-lg px-2.5 py-1.5 font-['Inter_Tight'] text-xs font-medium
+                           text-[#150D3A]/50 transition hover:bg-[#150D3A]/5 hover:text-[#150D3A]
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-[#150D3A]/30">
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <p data-poster-upload-target="error"
+           class="mt-2 hidden font-['Inter_Tight'] text-xs text-[#FC8027]"></p>
+      </div>
+
       <div>
         <%= cf.label :name, "Organisation name", class: lbl %>
         <%= cf.text_field :name, required: true,
