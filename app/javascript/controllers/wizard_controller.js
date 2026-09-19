@@ -59,14 +59,49 @@ export default class extends Controller {
     this.previewTargets.forEach((el) => {
       const ids = (el.dataset.previewSource || '').split(' ').filter(Boolean);
       const value = ids
-        .map((id) => (document.getElementById(id)?.value || '').trim())
+        .map((id) => this.readField(document.getElementById(id), el.dataset.previewFormat))
         .filter(Boolean)
-        .join(' ');
+        .join(el.dataset.previewJoin || ' ');
 
       el.textContent = value || 'Not provided';
       el.classList.toggle('text-[#150D3A]/35', !value);
       el.classList.toggle('italic', !value);
     });
+  }
+
+  // A summary should show what the person picked, not what the form posts:
+  // the option's label rather than its slug, the file's name rather than
+  // C:\fakepath\..., and rich text as text rather than as markup.
+  // Disabled fields are the ones payout-details hid, so they are skipped.
+  readField(field, format) {
+    if (!field || field.disabled) return '';
+
+    if (format === 'rich') return this.richTextToPlain(field.value);
+
+    if (field.tagName === 'SELECT') {
+      return field.value ? (field.selectedOptions[0]?.textContent || '').trim() : '';
+    }
+
+    if (field.type === 'file') {
+      return field.files && field.files[0] ? field.files[0].name : '';
+    }
+
+    return (field.value || '').trim();
+  }
+
+  // Lexxy posts HTML. DOMParser reads it without running scripts or
+  // fetching anything, so the text comes out safe to drop into textContent.
+  // eslint-disable-next-line
+  richTextToPlain(html) {
+    if (!html) return '';
+
+    const { body } = new DOMParser().parseFromString(html, 'text/html');
+
+    body.querySelectorAll('li').forEach((li) => li.prepend('• '));
+    body.querySelectorAll('p, div, li, br, h1, h2, h3, h4, blockquote')
+      .forEach((node) => node.after('\n'));
+
+    return body.textContent.replace(/\n{3,}/g, '\n\n').trim();
   }
 
   // ── rendering ───────────────────────────────────────────────

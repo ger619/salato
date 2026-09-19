@@ -97,6 +97,28 @@
         <%= render "organisation", f: f, lbl: lbl, field: field, cta: cta, ghost: ghost %>
 
         <%# ═══════════ STEP 3 — REVIEW ═══════════ %>
+        <%
+          # One summary row. `sources` is the id (or space-separated ids) of
+          # the field it mirrors; the wizard controller fills it in.
+          review_row = lambda do |label, sources, span: false, format: nil, extra: nil|
+            tag.div(class: span ? "sm:col-span-2" : nil) do
+              tag.dt(label, class: review_lbl) +
+                tag.dd("", class: "#{review_val} #{extra}",
+                       data: { wizard_target: "preview",
+                               preview_source: sources,
+                               preview_format: format }.compact)
+            end
+          end
+
+          card_head = lambda do |title, step|
+            tag.div(class: "flex items-center justify-between gap-3") do
+              tag.h2(title, class: "font-[Outfit] text-base font-bold text-[#150D3A]") +
+                tag.button("Edit", type: "button", class: edit_btn,
+                           data: { action: "wizard#edit", wizard_step_param: step })
+            end
+          end
+        %>
+
         <div data-wizard-target="step" class="hidden space-y-5">
           <div>
             <h1 class="font-[Outfit] text-2xl font-bold tracking-tight text-[#150D3A] sm:text-3xl">
@@ -107,86 +129,85 @@
             </p>
           </div>
 
-          <%# ---- account summary ---- %>
+          <%# ---- account ---- %>
           <div class="overflow-hidden rounded-2xl bg-[#F7F4FB] ring-1 ring-[#150D3A]/8">
             <div class="h-1 w-full <%= grad %>"></div>
             <div class="p-5">
-              <div class="flex items-center justify-between gap-3">
-                <h2 class="font-[Outfit] text-base font-bold text-[#150D3A]">Account</h2>
-                <button type="button" data-action="wizard#edit" data-wizard-step-param="0"
-                        class="<%= edit_btn %>">Edit</button>
-              </div>
+              <%= card_head.("Account", 0) %>
 
-              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                <%= review_row.("Name", "user_first_name user_last_name") %>
+                <%= review_row.("Email", "user_email", extra: "break-all") %>
+                <%= review_row.("Phone", "user_phone_number") %>
+                <%= review_row.("ID / passport number", "user_id_number") %>
+                <%= review_row.("ID document", "user_id_photo", extra: "break-all font-normal") %>
+
                 <div>
-                  <p class="<%= review_lbl %>">Name</p>
-                  <p class="<%= review_val %>" data-wizard-target="preview"
-                     data-preview-source="user_first_name user_last_name"></p>
-                </div>
-                <div>
-                  <p class="<%= review_lbl %>">Email</p>
-                  <p class="<%= review_val %> break-all" data-wizard-target="preview"
-                     data-preview-source="user_email"></p>
-                </div>
-                <div>
-                  <p class="<%= review_lbl %>">Phone</p>
-                  <p class="<%= review_val %>" data-wizard-target="preview"
-                     data-preview-source="user_phone_number"></p>
-                </div>
-                <div>
-                  <p class="<%= review_lbl %>">Password</p>
-                  <p class="mt-1 font-['Inter_Tight'] text-[15px] font-semibold tracking-[0.2em] text-[#150D3A]/45">
+                  <dt class="<%= review_lbl %>">Password</dt>
+                  <dd class="mt-1 font-['Inter_Tight'] text-[15px] font-semibold tracking-[0.2em] text-[#150D3A]/45">
                     ••••••••
-                  </p>
+                  </dd>
                 </div>
-              </div>
+              </dl>
             </div>
           </div>
 
-          <%# ---- organisation summary ---- %>
+          <%# ---- organisation ---- %>
           <div class="overflow-hidden rounded-2xl bg-[#F7F4FB] ring-1 ring-[#150D3A]/8">
             <div class="h-1 w-full <%= grad %>"></div>
             <div class="p-5">
-              <div class="flex items-center justify-between gap-3">
-                <h2 class="font-[Outfit] text-base font-bold text-[#150D3A]">Organisation</h2>
-                <button type="button" data-action="wizard#edit" data-wizard-step-param="1"
-                        class="<%= edit_btn %>">Edit</button>
-              </div>
+              <%= card_head.("Organisation", 1) %>
 
-              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                <%= review_row.("Organisation name", "user_client_attributes_name",
+                  span: true, extra: "text-[17px]") %>
+                <%= review_row.("Logo", "user_client_attributes_logo", extra: "break-all font-normal") %>
+                <%= review_row.("Business phone", "user_client_attributes_phone") %>
+                <%= review_row.("Billing email", "user_client_attributes_email", extra: "break-all") %>
+                <%= review_row.("City", "user_client_attributes_city") %>
+                <%= review_row.("Country", "user_client_attributes_country") %>
+
+                <%# The description is rich text, so it gets its own panel
+                    rather than a one-line value. %>
                 <div class="sm:col-span-2">
-                  <p class="<%= review_lbl %>">Organisation name</p>
-                  <p class="<%= review_val %> text-[17px]" data-wizard-target="preview"
-                     data-preview-source="user_client_attributes_name"></p>
+                  <dt class="<%= review_lbl %>">About your events</dt>
+                  <dd class="mt-1.5 max-h-56 overflow-y-auto whitespace-pre-line rounded-xl
+                             bg-white p-3.5 font-['Inter_Tight'] text-[14px] leading-relaxed
+                             text-[#150D3A] ring-1 ring-[#150D3A]/8"
+                      data-wizard-target="preview"
+                      data-preview-source="user_client_attributes_description"
+                      data-preview-format="rich"></dd>
                 </div>
-                <div>
-                  <p class="<%= review_lbl %>">Business phone</p>
-                  <p class="<%= review_val %>" data-wizard-target="preview"
-                     data-preview-source="user_client_attributes_phone"></p>
-                </div>
-                <div>
-                  <p class="<%= review_lbl %>">Billing email</p>
-                  <p class="<%= review_val %> break-all" data-wizard-target="preview"
-                     data-preview-source="user_client_attributes_email"></p>
-                </div>
-                <div>
-                  <p class="<%= review_lbl %>">City</p>
-                  <p class="<%= review_val %>" data-wizard-target="preview"
-                     data-preview-source="user_client_attributes_city"></p>
-                </div>
-                <div>
-                  <p class="<%= review_lbl %>">Country</p>
-                  <p class="<%= review_val %>" data-wizard-target="preview"
-                     data-preview-source="user_client_attributes_country"></p>
-                </div>
-                <div class="sm:col-span-2">
-                  <p class="<%= review_lbl %>">Description</p>
-                  <p class="<%= review_val %> whitespace-pre-line font-normal lexxy-content"
-                     data-wizard-target="preview"
-                     data-preview-source="user_client_attributes_description"
-                     data-preview-plain="true"></p>
-                </div>
-              </div>
+              </dl>
+            </div>
+          </div>
+
+          <%# ---- payout ---- %>
+          <div class="overflow-hidden rounded-2xl bg-[#F7F4FB] ring-1 ring-[#150D3A]/8">
+            <div class="h-1 w-full <%= grad %>"></div>
+            <div class="p-5">
+              <%= card_head.("Payout", 1) %>
+
+              <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                <%= review_row.("Payout type", "user_client_attributes_payout_method") %>
+
+                <%# Only the visible payout branch is enabled, so only that
+                    one reports a value. %>
+                <%= review_row.("Bank / provider",
+                  "user_client_attributes_bank user_client_attributes_mobile_money_provider") %>
+                <%= review_row.("Account number",
+                  "user_client_attributes_account_number mobile_money_number",
+                  span: true, extra: "font-['JetBrains_Mono'] tracking-tight") %>
+              </dl>
+
+              <p class="mt-4 flex items-start gap-2 font-['Inter_Tight'] text-xs text-[#150D3A]/50">
+                <svg class="mt-px h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>
+                </svg>
+                Ticket money lands here after each event, less the Salato commission.
+              </p>
             </div>
           </div>
 
@@ -197,6 +218,7 @@
             <%= f.submit "Register", class: "w-2/3 cursor-pointer #{cta}" %>
           </div>
         </div>
+
       <% end %>
     </div>
 
