@@ -1,16 +1,60 @@
-<h2>Resend unlock instructions</h2>
+<div class="min-h-screen flex items-center justify-center bg-[#F7F4FB] px-4 py-12">
+  <div class="w-full max-w-md">
 
-<%= form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+    <div class="flex justify-center mb-8">
+      <%= link_to root_path do %>
+        <%= image_tag "salato_logo/salato-icon-512.png", alt: "Salato", class: "h-14 w-14" %>
+      <% end %>
+    </div>
 
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
+    <div class="relative bg-white rounded-2xl shadow-xl shadow-[#150D3A]/10 overflow-hidden">
+
+      <div class="h-1.5 bg-gradient-to-r from-[#7620B1] to-[#FC8027]"></div>
+
+      <div class="px-6 py-8 sm:px-10">
+        <h1 class="font-['Outfit'] text-2xl font-semibold text-[#150D3A]">
+          Account locked
+        </h1>
+        <p class="mt-2 text-sm leading-relaxed text-[#150D3A]/60">
+          Too many failed sign-in attempts. Enter your email and we'll send a link to unlock it.
+        </p>
+
+        <div class="mt-6">
+          <%= render "devise/shared/error_messages", resource: resource %>
+        </div>
+
+        <%= form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post, class: "mt-6 space-y-5" }) do |f| %>
+          <div>
+            <%= f.label :email, "Email address", class: "block text-sm font-medium text-[#150D3A] mb-1.5" %>
+            <%= f.email_field :email,
+                              autofocus: true,
+                              autocomplete: "email",
+                              placeholder: "you@example.com",
+                              class: "block w-full rounded-xl border border-[#150D3A]/15 bg-[#F7F4FB]/50 px-4 py-3 text-[#150D3A] placeholder-[#150D3A]/35 transition focus:border-[#7620B1] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7620B1]/25" %>
+          </div>
+
+
+          <%= f.submit "Send unlock link",
+                       class: "w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#7620B1] border border-[#7620B1] to-[#FC8027] px-4 py-3 font-['Outfit'] font-semibold text-[#762081] shadow-lg shadow-[#7620B1]/25 transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[#7620B1]/40 focus:ring-offset-2" %>
+
+
+        <% end %>
+      </div>
+
+      <div class="relative">
+        <div class="absolute -left-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-[#F7F4FB]"></div>
+        <div class="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-[#F7F4FB]"></div>
+        <div class="border-t border-dashed border-[#150D3A]/20"></div>
+      </div>
+
+      <div class="px-6 py-5 sm:px-10 text-center text-sm">
+        <%= render "devise/shared/links" %>
+      </div>
+
+    </div>
+
+    <p class="mt-6 text-center text-xs text-[#150D3A]/40">
+      Events. Tickets. Experiences.
+    </p>
   </div>
-
-  <div class="actions">
-    <%= f.submit "Resend unlock instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>

@@ -231,7 +231,7 @@ module Paystack
 
       parse_response(response, path, tolerate_charge_failure: tolerate_charge_failure)
     rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED => e
-      raise Paystack::Error.new("Paystack unreachable: #{e.class}")
+      raise Paystack::Error, "Paystack unreachable: #{e.class}"
     end
 
     def parse_response(response, path, tolerate_charge_failure: false)
