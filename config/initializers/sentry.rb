@@ -4,10 +4,10 @@ Sentry.init do |config|
 
   # Add data like request headers and IP for users,
   # see https://docs.sentry.io/platforms/ruby/data-management/data-collected/ for more info
-  config.send_default_pii = true
+  config.send_default_pii = false
 
   # Enable sending logs to Sentry
-  config.enable_logs = true
+  # config.enable_logs = true
   # Patch Ruby logger to forward logs
   config.enabled_patches = [:logger]
 
