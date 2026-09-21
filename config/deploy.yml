@@ -1,4 +1,5 @@
 # config/deploy.yml
+#
 # Salato Events
 # Rails 8 + PostgreSQL 16 + Redis 7 + Sidekiq + OpenWA + Kamal 2
 # Production server: Contabo VPS (207.180.216.54)
@@ -10,8 +11,8 @@ image: ger619/salato-events
 # --------------------------------------------------
 # Production servers
 #
-# web    -> Puma, behind kamal-proxy
-# worker -> Sidekiq, same image, different command
+#   web    -> Puma, behind kamal-proxy
+#   worker -> Sidekiq, same image, different command
 # --------------------------------------------------
 
 servers:
@@ -65,24 +66,19 @@ builder:
 # --------------------------------------------------
 
 env:
-
   clear:
     RAILS_ENV: production
+    RAILS_LOG_TO_STDOUT: "true"
 
     # ------------------------------------------------
-    # PostgreSQL connection
+    # PostgreSQL
     #
-    # The PostgreSQL Kamal accessory is named "db", so
-    # Kamal creates the container as:
-    #
-    #   salato-events-db
+    # The accessory is named "db", so on the Kamal
+    # network the container is: salato-events-db
     # ------------------------------------------------
-
     PGHOST: salato-events-db
     PGPORT: "5432"
-
     PGUSER: salato
-
     PG_DATABASE: salato_events_production
     PG_CACHE_DATABASE: salato_events_production_cache
     PG_CABLE_DATABASE: salato_events_production_cable
@@ -90,58 +86,42 @@ env:
     # ------------------------------------------------
     # Redis / Sidekiq
     #
-    # The Redis Kamal accessory is named "redis", so the
-    # container on the Kamal network is:
-    #
-    #   salato-events-redis
+    # The accessory is named "redis", so on the Kamal
+    # network the container is: salato-events-redis
     # ------------------------------------------------
-
     REDIS_URL: redis://salato-events-redis:6379/0
-
     SIDEKIQ_CONCURRENCY: "5"
 
-    RAILS_LOG_TO_STDOUT: "true"
-
     # ------------------------------------------------
-    # Email
+    # Email (Resend over SMTP)
     #
-    # Mail goes through Resend over SMTP. The domain
     # salato.app is verified in Resend, so the From
-    # address must stay on that domain or Resend rejects
-    # the message.
+    # address must stay on that domain or Resend
+    # rejects the message.
     # ------------------------------------------------
-
     MAIL_FROM: "Salato <hello@salato.app>"
 
     # ------------------------------------------------
     # WhatsApp ticket delivery
     #
-    # WhatsappTicketDeliveryJob posts the ticket PDF to
-    # the OpenWA gateway once Paystack confirms payment.
+    # WhatsappTicketDeliveryJob sends the ticket PDF
+    # (the same file the email attaches) to the buyer
+    # through the OpenWA accessory once the order is
+    # paid.
     #
-    # The OpenWA accessory is named "openwa", so the
-    # container on the Kamal network is:
+    # Rails talks to OpenWA on the internal Docker
+    # network (salato-events-openwa:2785), so the PDF
+    # never crosses the public proxy.
     #
-    #   salato-events-openwa
-    #
-    # Rails talks to that internal name on port 2785. The
-    # PDF upload never leaves the Docker network and never
-    # crosses the public proxy.
-    #
-    # wa.salato.app is for humans only — QR pairing and
+    # wa.salato.app is for humans only: QR pairing and
     # session health. Do NOT point Rails at it.
     # ------------------------------------------------
-
     OPENWA_BASE_URL: http://salato-events-openwa:2785
 
-    # The UUID returned by POST /api/sessions during first
-    # setup — NOT the session name. Passing the name gets
-    # a 400 "session is not active".
-    #
-    # The gateway must be booted and a session linked
-    # before this value exists, so WhatsApp is a two-step
-    # rollout: boot the accessory, create and scan the
-    # session, paste the UUID here, then deploy again.
+    # The session UUID from the OpenWA dashboard, NOT
+    # the session name. The name gets a 400 "session is
+    # not active". If the phone is ever re-paired as a
+    # NEW session, paste its UUID here and redeploy.
     OPENWA_SESSION_ID: "7c809ee6-e04b-4d20-8b9f-5a2f987bd7d1"
 
   secret:
@@ -152,13 +132,13 @@ env:
     - PAYSTACK_PUBLIC_KEY
     - PAYSTACK_CURRENCY
 
-    # Resend API key — used as the SMTP password in
+    # Resend API key, used as the SMTP password in
     # config/environments/production.rb.
     - RESEND_API_KEY
 
     # OpenWA key, sent by Rails as the X-API-Key header.
     # .kamal/secrets derives this and API_MASTER_KEY from
-    # a single .env value so the two can never drift.
+    # one .env value so the two can never drift.
     - OPENWA_API_KEY
 
 # --------------------------------------------------
@@ -177,11 +157,11 @@ asset_path: /rails/public/assets
 # --------------------------------------------------
 # Handy shortcuts
 #
-#   kamal console
-#   kamal shell
-#   kamal logs
-#   kamal dbc
-#   kamal sidekiq
+#   kamal console   Rails console
+#   kamal shell     bash in the app container
+#   kamal logs      follow web logs
+#   kamal dbc       database console
+#   kamal sidekiq   follow Sidekiq (worker) logs
 # --------------------------------------------------
 
 aliases:
@@ -199,27 +179,20 @@ accessories:
 
   # ------------------------------------------------
   # PostgreSQL
+  #
+  # Bound to localhost on the VPS only. Do NOT expose
+  # it publicly: Rails reaches it over the Kamal
+  # network at salato-events-db:5432.
   # ------------------------------------------------
-
   db:
-
     image: postgres:16
-
     host: 207.180.216.54
-
-    # Bound to localhost on the VPS only.
-    #
-    # IMPORTANT: do NOT expose PostgreSQL publicly.
-    # Rails reaches it over the Kamal Docker network at
-    # salato-events-db:5432.
     port: "127.0.0.1:5432:5432"
 
     env:
-
       clear:
         POSTGRES_USER: salato
         POSTGRES_DB: salato_events_production
-
       secret:
         - POSTGRES_PASSWORD
 
@@ -228,24 +201,21 @@ accessories:
 
   # ------------------------------------------------
   # Redis (Sidekiq queue backend)
+  #
+  # Bound to localhost on the VPS only. Do NOT expose
+  # it publicly: it has no auth and relies on being
+  # unreachable. Rails and Sidekiq reach it at
+  # salato-events-redis:6379.
+  #
+  # noeviction is required for Sidekiq: the default
+  # policy would silently drop queued jobs under
+  # memory pressure. appendonly keeps the queue across
+  # restarts.
   # ------------------------------------------------
-
   redis:
-
     image: redis:7-alpine
-
     host: 207.180.216.54
-
-    # Bound to localhost on the VPS only.
-    #
-    # IMPORTANT: do NOT expose Redis publicly — it has no
-    # auth here and relies on being unreachable.
-    # Rails and Sidekiq reach it at salato-events-redis:6379.
     port: "127.0.0.1:6379:6379"
-
-    # noeviction is required for Sidekiq: the default policy
-    # would silently discard queued jobs under memory
-    # pressure. appendonly keeps the queue across restarts.
     cmd: "redis-server --appendonly yes --maxmemory-policy noeviction"
 
     directories:
@@ -254,49 +224,43 @@ accessories:
   # ------------------------------------------------
   # OpenWA (WhatsApp gateway)
   #
-  # Self-hosted WhatsApp HTTP API. Delivers ticket PDFs to
-  # order.customer_phone once payment clears.
+  # Sends ticket PDFs to order.customer_phone once
+  # payment clears.
   #
-  # Unlike db and redis this one IS published, because
-  # linking a number means scanning a QR code in a browser,
-  # and a dropped session has to be re-paired the same way.
-  # Reaching that only through an SSH tunnel is how a dead
-  # session goes unnoticed for a day.
+  # IMAGE — why :main and not :latest
+  #   :latest is release v0.23.5, where every PDF/image
+  #   send fails with a 500 since WhatsApp Web's
+  #   17 Sep 2026 update ("Data passed to getter must
+  #   include an id property"). The fix is on OpenWA's
+  #   main branch (PR #1670) but not in a release yet.
+  #   Once a release newer than 0.23.5 is out, pin it
+  #   here (e.g. ghcr.io/rmyndharis/openwa:0.23.6).
   #
-  # What protects it:
+  #   :main is not re-pulled automatically. To update:
+  #     ssh root@207.180.216.54 docker pull ghcr.io/rmyndharis/openwa:main
+  #     kamal accessory reboot openwa
   #
-  #   - TLS on wa.salato.app, issued by kamal-proxy
-  #   - every API route requires the X-API-Key header
-  #   - Swagger stays off
+  # PUBLISHED on wa.salato.app because pairing a number
+  # means scanning a QR code in a browser. Protected by:
+  #   - TLS, issued by kamal-proxy
+  #   - the X-API-Key header on every API route
+  #   - Swagger switched off
   #
-  # Before go-live, mint a session-scoped operator key in
-  # the dashboard for Rails and keep the admin key for
-  # yourself. OpenWA also supports CIDR IP whitelisting per
-  # key — worth adding once the VPS is the only caller.
+  # DNS: an A record for wa -> 207.180.216.54 at
+  # Cloudflare, DNS-only (grey cloud), or Cloudflare
+  # answers the Let's Encrypt challenge instead of
+  # kamal-proxy and the certificate never issues.
   # ------------------------------------------------
-
   openwa:
-
-    image: rmyndharis/openwa:latest
-
+    image: ghcr.io/rmyndharis/openwa:main
     host: 207.180.216.54
 
-    # Published through kamal-proxy on its own subdomain.
-    #
-    # DNS: add an A record for wa -> 207.180.216.54 at
-    # Cloudflare and leave it DNS-only (grey cloud) until
-    # the Let's Encrypt certificate is issued. Otherwise
-    # Cloudflare answers the HTTP-01 challenge instead of
-    # kamal-proxy and issuance never completes.
     proxy:
       ssl: true
       host: wa.salato.app
-
-      # kamal-proxy talks to containers on port 80 by
-      # default. OpenWA serves the API and the bundled
-      # dashboard together on 2785.
+      # OpenWA serves the API and dashboard on 2785;
+      # kamal-proxy would otherwise expect port 80.
       app_port: 2785
-
       # Public, unauthenticated liveness endpoint.
       healthcheck:
         path: /api/health
@@ -304,18 +268,15 @@ accessories:
         timeout: 10
 
     env:
-
       clear:
-        # whatsapp-web.js drives a headless Chromium, which
-        # costs several hundred MB of RAM on a box already
-        # running Postgres, Redis, Puma and Sidekiq. If the
-        # VPS starts swapping, switch to "baileys":
-        # browserless WebSocket engine, same REST API.
+        # whatsapp-web.js keeps the phone already paired
+        # on this session. It runs a headless Chromium
+        # (several hundred MB of RAM). If the VPS starts
+        # swapping, switch to "baileys" (no browser, same
+        # API) — but that means re-pairing from the QR.
         ENGINE_TYPE: whatsapp-web.js
 
-        # Interactive API docs stay off in production. The
-        # published image already defaults to off; this is
-        # explicit so nobody flips it on by accident.
+        # API docs stay off in production.
         ENABLE_SWAGGER: "false"
 
       secret:
@@ -323,8 +284,10 @@ accessories:
         # it generate a random one into /app/data/.api-key.
         - API_MASTER_KEY
 
-    # SQLite database, linked-session credentials, media and
-    # the API key all live here. Lose this volume and the
-    # number must be re-paired from the QR code.
+    # SQLite database, paired-session login, media and
+    # the API key all live here. Lose it and the number
+    # must be re-paired from the QR code. Back it up
+    # before every OpenWA upgrade:
+    #   ssh root@207.180.216.54 "tar czf /root/openwa-backup.tgz -C /root salato-events-openwa"
     directories:
       - data:/app/data
