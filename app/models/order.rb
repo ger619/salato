@@ -31,12 +31,17 @@ class Order < ApplicationRecord
     status == 'pending'
   end
 
+  # A free order never goes to Paystack.
+  def free?
+    total_price.to_d.zero?
+  end
+
   validate :event_payouts_ready, on: :create
 
   private
 
   def event_payouts_ready
-    return if event.blank? || event.payouts_ready?
+    return if event.blank? || free? || event.payouts_ready?
 
     errors.add(:base, 'This event is not set up to receive payments yet.')
   end

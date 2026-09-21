@@ -78,7 +78,13 @@ class OrdersController < ApplicationController
       )
     end
 
-    if @order&.persisted?
+    if @order&.persisted? && @order.free?
+      # Free ticket: skip Paystack and issue the tickets right now.
+      PaymentFulfillment.call(order: @order)
+
+      redirect_to event_order_path(@event, @order),
+                  notice: 'You are in! Your free tickets have been emailed to you.'
+    elsif @order&.persisted?
       redirect_to pay_event_order_path(@event, @order)
     else
       render :new, status: :unprocessable_entity
@@ -253,8 +259,12 @@ class OrdersController < ApplicationController
     bounce event_path(@event.slug), 'This event has ended. Tickets are no longer on sale.'
   end
 
+  # Paid tickets need the organiser's Paystack subaccount. Free tickets don't,
+  # so an organiser can host a free event without finishing payout setup.
   def ensure_payouts_configured
     return if @event.payouts_ready?
+    return if requested_ticket_type&.free?
+    return if @order&.free?
 
     bounce event_path(@event.slug),
            'Tickets for this event are not on sale yet. The organiser still needs to finish their payout setup.'
@@ -262,6 +272,13 @@ class OrdersController < ApplicationController
 
   # Only pending, unexpired orders can be paid.
   def ensure_order_payable
+    # A free order should never reach Paystack. If one is somehow still
+    # pending (e.g. fulfilment crashed), finish it here instead.
+    if @order.free? && @order.pending?
+      PaymentFulfillment.call(order: @order)
+      @order.reload
+    end
+
     if @order.paid?
       request.format.json? ? render(json: paid_json) : redirect_to(event_order_path(@event, @order))
       return
@@ -286,6 +303,14 @@ class OrdersController < ApplicationController
     else
       redirect_to path, alert: message
     end
+  end
+
+  # The ticket type being ordered, on the new/create pages.
+  def requested_ticket_type
+    id = params[:ticket_type_id].presence || params.dig(:order, :ticket_type_id).presence
+    return nil unless id
+
+    @event.ticket_types.find_by(id: id)
   end
 
   def card_reference
