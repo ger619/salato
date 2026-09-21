@@ -5,6 +5,8 @@ class ApplicationController < ActionController::Base
     redirect_to root_path, alert: exception.message
   end
 
+  rescue_from ActiveRecord::RecordNotFound, with: :redirect_to_root
+
   before_action :update_allowed_parameters, if: :devise_controller?
 
   def update_allowed_parameters
@@ -20,5 +22,11 @@ class ApplicationController < ActionController::Base
     end
 
     devise_parameter_sanitizer.permit(:invite, keys: %i[email first_name last_name phone_number role])
+  end
+
+  private
+
+  def redirect_to_root
+    redirect_to root_path, alert: 'The page you were looking for does not exist.'
   end
 end
