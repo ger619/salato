@@ -4,9 +4,14 @@
 # payment is confirmed. Enqueued by PaymentFulfillment, after the fulfilment
 # transaction has committed.
 #
-# One message, not two: the PDF goes out with a caption rather than a separate
-# text + document pair, so a retry can never leave the buyer with a duplicate
-# greeting.
+# One message, not two. By default it is a TEXT message with a link to the
+# buyer's tickets page, where they can download the PDF.
+#
+# Why not the PDF itself? Since 17 Sep 2026 OpenWA (whatsapp-web.js 1.34.7)
+# fails every media send with a 500 ("Data passed to getter must include an id
+# property"), while text sends still work. Once OpenWA ships an image with the
+# fix, set WHATSAPP_SEND_PDF=true in config/deploy.yml to go back to sending
+# the PDF with a caption.
 class WhatsappTicketDeliveryJob < ApplicationJob
   queue_as :default
 
@@ -53,12 +58,18 @@ class WhatsappTicketDeliveryJob < ApplicationJob
       return
     end
 
-    Whatsapp::Client.new.send_document(
-      chat_id: chat_id,
-      base64: Base64.strict_encode64(TicketPdf.generate_batch(tickets)),
-      filename: "#{order.reference}-tickets.pdf",
-      caption: caption(order, tickets)
-    )
+    client = Whatsapp::Client.new
+
+    if send_pdf?
+      client.send_document(
+        chat_id: chat_id,
+        base64: Base64.strict_encode64(TicketPdf.generate_batch(tickets)),
+        filename: "#{order.reference}-tickets.pdf",
+        caption: caption(order, tickets)
+      )
+    else
+      client.send_text(chat_id: chat_id, text: link_message(order, tickets))
+    end
 
     # update_column, not update!: this is a delivery receipt, not a state
     # change, and it must not fire validations or touch updated_at.
@@ -66,6 +77,40 @@ class WhatsappTicketDeliveryJob < ApplicationJob
   end
 
   private
+
+  def send_pdf?
+    ActiveModel::Type::Boolean.new.cast(ENV.fetch('WHATSAPP_SEND_PDF', 'false'))
+  end
+
+  # Same page the confirmation email links to. The order id is a UUID, so
+  # the link can't be guessed.
+  def tickets_url(order)
+    Rails.application.routes.url_helpers.event_order_url(
+      order.event,
+      order,
+      **Rails.application.config.action_mailer.default_url_options.to_h
+    )
+  end
+
+  def link_message(order, tickets)
+    event = order.event
+
+    <<~TEXT.strip
+      Hi #{first_name(order)} 👋
+
+      *#{event.name}*
+      #{event.start_at.strftime('%A %-d %B · %-I:%M %p')}
+      #{event.venue.presence || 'Venue to be announced'}
+
+      Your #{ticket_word(tickets)} ready. Open this link to view and download them:
+      #{tickets_url(order)}
+
+      Show the QR code at the gate — one entry each.
+
+      Ref: #{order.reference}
+      — Salato
+    TEXT
+  end
 
   def caption(order, tickets)
     event = order.event

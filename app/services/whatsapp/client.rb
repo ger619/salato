@@ -107,6 +107,9 @@ module Whatsapp
 
       case code
       when 409 then raise SessionNotReady, "session not ready (409): #{message}"
+      # OpenWA answers 400 while the session is still starting (e.g. right
+      # after a restart). That clears on its own, so let the job retry.
+      when 400 then raise(message.match?(/not active|start the session/i) ? SessionNotReady : Error, "OpenWA 400: #{message}")
       when 400..499 then raise Error, "OpenWA #{code}: #{message}"
       else raise AmbiguousSend, "OpenWA #{code}: #{message}"
       end
