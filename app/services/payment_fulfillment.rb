@@ -1,12 +1,14 @@
 class PaymentFulfillment
-  def self.call(order:, transaction:)
+  # transaction is the Paystack payload. It is nil for free orders,
+  # which are fulfilled straight from OrdersController#create.
+  def self.call(order:, transaction: nil)
     new(
       order: order,
       transaction: transaction
     ).call
   end
 
-  def initialize(order:, transaction:)
+  def initialize(order:, transaction: nil)
     @order = order
     @transaction = transaction
   end
@@ -66,6 +68,11 @@ class PaymentFulfillment
   end
 
   def validate_payment_amount!(order)
+    # Free orders have nothing to check against Paystack.
+    return if order.free?
+
+    raise 'Missing Paystack transaction for a paid order.' if @transaction.blank?
+
     expected = Paystack::Money.to_subunit(
       order.total_price
     )

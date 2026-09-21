@@ -1,8 +1,10 @@
 
 <% available = ticket_type.available_quantity.to_i %>
 <% ended     = event.sales_closed? %>
-<% no_payout = !event.payouts_ready? %>
+<% no_payout = !ticket_type.purchasable? %>
+<% free      = ticket_type.free? %>
 <% sold_out  = ended || no_payout || available.zero? %>
+
 <% if ended
      "SALES CLOSED"
    else
@@ -42,7 +44,7 @@
     <div>
       <p class="eyebrow text-ink-soft/55">Price</p>
       <p class="mt-1.5 font-display text-[26px] font-semibold leading-none <%= sold_out ? "text-ink-soft/50" : "grad-text" %>">
-        KES <%= number_with_delimiter(ticket_type.price.to_i) %>
+        <%= free ? "Free" : "KES #{number_with_delimiter(ticket_type.price.to_i)}" %>
       </p>
     </div>
 
@@ -53,8 +55,8 @@
       </span>
     <% else %>
       <%= link_to new_event_order_path(event.slug, ticket_type_id: ticket_type.id),
-            class: "shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_8px_24px_-10px_rgba(225,55,101,.9)]" do %>
-        Buy
+                  class: "shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-[15px] font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_8px_24px_-10px_rgba(225,55,101,.9)]" do %>
+        <%= free ? "Get ticket" : "Buy" %>
         <span class="sr-only"><%= ticket_type.name %></span>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
