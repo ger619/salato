@@ -311,7 +311,7 @@ accessories:
         # running Postgres, Redis, Puma and Sidekiq. If the
         # VPS starts swapping, switch to "baileys":
         # browserless WebSocket engine, same REST API.
-        ENGINE_TYPE: whatsapp-web.js
+        ENGINE_TYPE: baileys
 
         # Interactive API docs stay off in production. The
         # published image already defaults to off; this is

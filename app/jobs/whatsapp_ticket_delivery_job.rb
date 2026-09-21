@@ -1,17 +1,18 @@
 # app/jobs/whatsapp_ticket_delivery_job.rb
 #
-# Sends the order's ticket PDF to order.customer_phone over WhatsApp once the
+# Sends the order's tickets to order.customer_phone over WhatsApp once the
 # payment is confirmed. Enqueued by PaymentFulfillment, after the fulfilment
 # transaction has committed.
 #
-# One message, not two. By default it is a TEXT message with a link to the
-# buyer's tickets page, where they can download the PDF.
+# Mirrors the confirmation email: ONE WhatsApp message that IS the tickets
+# PDF (the same file the email attaches), with the event details as its
+# caption. No links — the buyer taps the PDF in the chat to open or save it.
+# One message, not two, so a retry can never leave a duplicate greeting.
 #
-# Why not the PDF itself? Since 17 Sep 2026 OpenWA (whatsapp-web.js 1.34.7)
-# fails every media send with a 500 ("Data passed to getter must include an id
-# property"), while text sends still work. Once OpenWA ships an image with the
-# fix, set WHATSAPP_SEND_PDF=true in config/deploy.yml to go back to sending
-# the PDF with a caption.
+# Needs OpenWA on the Baileys engine (config/deploy.yml, accessories.openwa):
+# on whatsapp-web.js 1.34.7 every PDF/image send has failed since WhatsApp
+# Web's 17 Sep 2026 update ("Data passed to getter must include an id
+# property").
 class WhatsappTicketDeliveryJob < ApplicationJob
   queue_as :default
 
@@ -58,18 +59,16 @@ class WhatsappTicketDeliveryJob < ApplicationJob
       return
     end
 
-    client = Whatsapp::Client.new
-
-    if send_pdf?
-      client.send_document(
-        chat_id: chat_id,
-        base64: Base64.strict_encode64(TicketPdf.generate_batch(tickets)),
-        filename: "#{order.reference}-tickets.pdf",
-        caption: caption(order, tickets)
-      )
-    else
-      client.send_text(chat_id: chat_id, text: link_message(order, tickets))
-    end
+    # Same PDF and same filename as the email attachment. Sent as a document
+    # (application/pdf), so WhatsApp shows it as a PDF file the buyer can open
+    # and save straight from the chat.
+    Whatsapp::Client.new.send_document(
+      chat_id: chat_id,
+      base64: Base64.strict_encode64(TicketPdf.generate_batch(tickets)),
+      filename: "#{order.reference}-tickets.pdf",
+      mimetype: 'application/pdf',
+      caption: caption(order, tickets)
+    )
 
     # update_column, not update!: this is a delivery receipt, not a state
     # change, and it must not fire validations or touch updated_at.
@@ -78,40 +77,7 @@ class WhatsappTicketDeliveryJob < ApplicationJob
 
   private
 
-  def send_pdf?
-    ActiveModel::Type::Boolean.new.cast(ENV.fetch('WHATSAPP_SEND_PDF', 'false'))
-  end
-
-  # Same page the confirmation email links to. The order id is a UUID, so
-  # the link can't be guessed.
-  def tickets_url(order)
-    Rails.application.routes.url_helpers.event_order_url(
-      order.event,
-      order,
-      **Rails.application.config.action_mailer.default_url_options.to_h
-    )
-  end
-
-  def link_message(order, tickets)
-    event = order.event
-
-    <<~TEXT.strip
-      Hi #{first_name(order)} 👋
-
-      *#{event.name}*
-      #{event.start_at.strftime('%A %-d %B · %-I:%M %p')}
-      #{event.venue.presence || 'Venue to be announced'}
-
-      Your #{ticket_word(tickets)} ready. Open this link to view and download them:
-      #{tickets_url(order)}
-
-      Show the QR code at the gate — one entry each.
-
-      Ref: #{order.reference}
-      — Salato
-    TEXT
-  end
-
+  # WhatsApp formatting: *bold*. Kept short — it is read on a phone.
   def caption(order, tickets)
     event = order.event
 
@@ -119,10 +85,11 @@ class WhatsappTicketDeliveryJob < ApplicationJob
       Hi #{first_name(order)} 👋
 
       *#{event.name}*
-      #{event.start_at.strftime('%A %-d %B · %-I:%M %p')}
-      #{event.venue.presence || 'Venue to be announced'}
+      📅 #{event.start_at.strftime('%A %-d %B · %-I:%M %p')}
+      📍 #{event.venue.presence || 'Venue to be announced'}
+      🎟️ #{tickets.size} × #{tickets.first.ticket_type&.name || 'Ticket'}
 
-      Your #{ticket_word(tickets)} attached. Show the QR code at the gate — one entry each.
+      Your #{ticket_word(tickets)} in the PDF above#{' — one page per ticket' if tickets.size > 1}. Show the QR code at the gate — one entry each.
 
       Ref: #{order.reference}
       — Salato
