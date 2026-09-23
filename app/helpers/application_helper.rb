@@ -7,12 +7,17 @@ module ApplicationHelper
   end
   alias nav_anchor_path nav_anchor
 
-  def mask_phone(phone, visible_from_end: 3)
+  def mask_phone(phone)
     return '—' if phone.blank?
 
-    phone = phone.to_s.strip
-    return '*' * phone.length if phone.length <= visible_from_end
+    digits = phone.to_s.gsub(/\D/, '') # keep numbers only
+    digits = "254#{digits[1..]}" if digits.start_with?('0') # 0701… → 254701…
 
-    phone[0...-visible_from_end] + ('*' * visible_from_end)
+    if digits.length == 12
+      "+#{digits[0, 3]} #{digits[3, 3]} *** #{digits[9, 3]}"
+    else
+      # Fallback for unexpected lengths: hide the middle, keep first 3 and last 3
+      "+#{digits[0, 3]} *** #{digits[-3..]}"
+    end
   end
 end

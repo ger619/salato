@@ -20,11 +20,12 @@ class TicketsController < ApplicationController
 
     if @query.present?
       q = "%#{@query.downcase}%"
-      scope = scope.joins(:event).where(
+      scope = scope.joins(:event, :order).where(
         <<~SQL.squish,
           LOWER(tickets.attendee_name) LIKE :q
           OR LOWER(tickets.attendee_email) LIKE :q
           OR LOWER(tickets.ticket_number) LIKE :q
+          OR orders.customer_phone LIKE :q
           OR LOWER(events.name) LIKE :q
         SQL
         q: q
