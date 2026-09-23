@@ -114,7 +114,8 @@
           <table class="w-full text-left text-[14px]">
             <thead>
               <tr class="border-b border-ink/8 text-[12px] text-ink2/70">
-                <th class="px-5 py-3.5 font-medium">Attendee</th>
+                <th class="px-5 py-3.5 font-medium">Attendee
+                <th class="px-5 py-3.5 font-medium">Phone Number</th>
                 <th class="px-5 py-3.5 font-medium">Event</th>
                 <th class="px-5 py-3.5 font-medium">Ticket type</th>
                 <th class="px-5 py-3.5 font-medium">Ticket number</th>
@@ -132,9 +133,12 @@
                     <p class="font-medium"><%= ticket.attendee_name %></p>
                     <% if ticket.respond_to?(:attendee_email) && ticket.attendee_email.present? %>
                       <p class="mt-0.5 text-[13px] text-ink2"><%= ticket.attendee_email %></p>
-                    <% end %>
-                    <% if ticket.respond_to?(:attendee_phone) && ticket.attendee_phone.present? %>
-                      <p class="mono mt-0.5 text-[12px] text-ink2/80"><%= ticket.attendee_phone %></p>
+                  <% end %>
+                  </td>
+                  <td class="px-5 py-4">
+                    <% if ticket.order.respond_to?(:customer_phone) && ticket.order.customer_phone.present? %>
+                      <p class="font-medium">
+                        <%= current_user.has_role?(:admin) ? ticket.order.customer_phone : mask_phone(ticket.order.customer_phone) %></p>
                     <% end %>
                   </td>
 
