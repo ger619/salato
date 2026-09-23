@@ -137,7 +137,8 @@
                   </td>
                   <td class="px-5 py-4">
                     <% if ticket.order.respond_to?(:customer_phone) && ticket.order.customer_phone.present? %>
-                      <p class="font-medium"><%= mask_phone(ticket.order.customer_phone) %></p>
+                      <p class="font-medium">
+                        <%= current_user.has_role?(:admin) ? ticket.order.customer_phone : mask_phone(ticket.order.customer_phone) %></p>
                     <% end %>
                   </td>
 
