@@ -26,7 +26,7 @@
 
       <div>
         <%= f.label :message, "Your message", class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= f.rich_text_area :message,
+        <%= f.text_area :message,
                         rows: 8,
                         maxlength: 1000,
                         placeholder: "Hi {{name}}, just a reminder that {{event}} is happening this Saturday. Gates open at 4pm. Carry your ticket QR code. See you there!",
