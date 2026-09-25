@@ -72,6 +72,6 @@ class UsersController < ApplicationController
   end
 
   def assignable_roles
-    UpdateAccess.assignable_roles(current_user)
+    Interactions::UpdateAccess.assignable_roles(current_user)
   end
 end
