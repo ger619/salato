@@ -19,6 +19,7 @@ class User < ApplicationRecord
                           join_table: :events_users # events they work the door on
 
   validates :first_name, :last_name, presence: true
+  validates :id_number, presence: true, length: { maximum: 20 }
 
   after_create :assign_default_role
 
