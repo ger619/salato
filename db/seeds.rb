@@ -79,32 +79,13 @@ end
 puts "Users:"
 
 admin = seed_user(
-  email: ENV.fetch("SEED_USER_EMAIL", "admin@salato.com"),
-  first_name: "Salato",
-  last_name: "Admin",
+  email: ENV.fetch("SEED_USER_EMAIL", "abolger254@gmail.com"),
+  first_name: "David",
+  last_name: "Ger",
   role: :admin,
-  phone_number: "+254 700 000 001",
+  phone_number: "+254701450691",
   status: true
 )
 
-seed_user(
-  email: "organiser@salato.com",
-  first_name: "David",
-  last_name: "Ger",
-  role: :organiser,
-  client: client,
-  phone_number: "+254 700 000 002",
-  status: false
-)
-
-seed_user(
-  email: "scanner@salato.com",
-  first_name: "Grace",
-  last_name: "Wanjiru",
-  role: :scanner,
-  client: client,
-  phone_number: "+254 700 000 003",
-  status: false
-)
 
 puts "Password for new seeded users: #{SEED_PASSWORD}"
