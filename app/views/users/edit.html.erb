@@ -1,12 +1,11 @@
 <% provide(:title, "Edit details for: #{@user.full_name.presence || @user.email}") %>
 <% admin = current_user.has_role?(:admin) %>
-<% can_edit = admin || current_user.has_role?('project manager') %>
+<% can_edit = admin || current_user.has_role?(:organiser) %>
 <% display_name = @user.full_name.presence || @user.email %>
 <% initials = display_name.to_s.split(/[\s@.]/).reject(&:blank?).first(2).map(&:first).join.upcase %>
 <% field = "block h-11 w-full rounded-xl border border-[#E4DDF0] bg-white px-3.5 text-sm text-[#150D3A] placeholder:text-[#150D3A]/35 transition focus:border-[#7620B1] focus:outline-none focus:ring-4 focus:ring-[#7620B1]/15" %>
 <% locked = "cursor-not-allowed bg-mist text-[#150D3A]/60 focus:ring-0 focus:border-[#E4DDF0]" %>
-<% hidden_roles = admin ? %w[editor creator] : %w[editor creator admin observer sales ceo] %>
-<% roles = Role.distinct.where.not(name: hidden_roles).order(:name) %>
+<% roles = assignable_roles %>
 
 <%= render 'shared/sidebar' %>
 
@@ -49,10 +48,16 @@
           </div>
 
           <div class="space-y-8 px-6 pb-8 pt-8 sm:px-8">
-            <% if @user.errors[:roles].any? %>
-              <p role="alert" class="rounded-xl border border-[#FC8027]/40 bg-[#FC8027]/10 px-4 py-3 text-sm font-medium text-[#9A3D06]">
-                <%= @user.errors.full_messages_for(:roles).to_sentence %>
-              </p>
+            <%# Every error, not just roles, so a failed save always says why. %>
+            <% if @user.errors.any? %>
+              <div role="alert" class="rounded-xl border border-[#FC8027]/40 bg-[#FC8027]/10 px-4 py-3 text-sm text-[#9A3D06]">
+                <p class="font-semibold">These changes weren't saved:</p>
+                <ul class="mt-1 list-disc pl-5">
+                  <% @user.errors.full_messages.uniq.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
             <% end %>
 
             <div>
@@ -76,7 +81,9 @@
 
             <fieldset>
               <legend class="font-['Outfit',sans-serif] text-base font-semibold">Roles</legend>
-              <p class="mt-0.5 text-sm text-[#150D3A]/60">Choose what this person can do in Salato.</p>
+              <p class="mt-0.5 text-sm text-[#150D3A]/60">
+                <%= admin ? "Choose what this person can do in Salato." : "You can give or remove organiser and scanner access." %>
+              </p>
               <div class="mt-3 flex flex-wrap gap-2">
                 <%= f.collection_check_boxes :role_ids, roles, :id, :name do |b| %>
                   <%= b.label class: "cursor-pointer select-none" do %>
@@ -100,14 +107,19 @@
               <%= f.label :client_id, "Client", class: "font-['Outfit',sans-serif] text-base font-semibold" %>
               <p class="mt-0.5 text-sm text-[#150D3A]/60">The organisation this person works for.</p>
               <div class="mt-3 sm:max-w-sm">
-                <%= f.collection_select :client_id, Client.order(:name), :id, :name,
-                                        { include_blank: "Select client" }, class: field %>
+                <% if admin %>
+                  <%= f.collection_select :client_id, Client.order(:name), :id, :name,
+                                          { include_blank: "Select client" }, class: field %>
+                <% else %>
+                  <p class="<%= field %> <%= locked %> flex items-center"><%= @user.client&.name || "No client" %></p>
+                  <p class="mt-2 text-xs text-[#150D3A]/55">Only admins can move people between clients.</p>
+                <% end %>
               </div>
             </div>
           </div>
 
           <div class="flex flex-col-reverse gap-3 border-t border-[#E4DDF0] bg-mist/60 px-6 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-8">
-            <%= link_to "Cancel", :back, class: "inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold text-[#150D3A]/70 transition hover:bg-white hover:text-[#150D3A]" %>
+            <%= link_to "Cancel", user_path(@user), class: "inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold text-[#150D3A]/70 transition hover:bg-white hover:text-[#150D3A]" %>
             <%= f.submit "Save", id: "button",
                          class: "h-11 cursor-pointer rounded-xl bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-7 font-['Outfit',sans-serif] text-sm font-semibold text-white shadow-[0_8px_20px_-8px_rgba(118,32,177,0.6)] transition hover:brightness-105 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7620B1]/25" %>
           </div>
@@ -117,7 +129,7 @@
         <div class="rounded-3xl bg-white p-8 text-center shadow-[0_1px_0_#E4DDF0]">
           <h1 class="font-['Outfit',sans-serif] text-xl font-semibold">You can't edit roles</h1>
           <p class="mt-1 text-sm text-[#150D3A]/60">Ask an admin to change roles or client access for <%= display_name %>.</p>
-          <%= link_to "Go back", :back, class: "mt-5 inline-flex h-11 items-center rounded-xl border border-[#E4DDF0] px-5 text-sm font-semibold hover:bg-mist" %>
+          <%= link_to "Go back", user_path(@user), class: "mt-5 inline-flex h-11 items-center rounded-xl border border-[#E4DDF0] px-5 text-sm font-semibold hover:bg-mist" %>
         </div>
       <% end %>
 
