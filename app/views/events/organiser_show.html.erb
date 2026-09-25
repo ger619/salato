@@ -80,6 +80,9 @@
                   class: "rounded-full px-4 py-2.5 text-sm font-medium text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8" %>
       <%= link_to "Edit event", edit_event_path(@event),
                   class: "rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-4 py-2.5 text-sm font-semibold text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8 transition hover:brightness-110" %>
+      <%= link_to "Message ticket holders",
+                  new_event_broadcast_path(@event, filters: request.query_parameters.slice("status", "ticket_type_id", "checked_in")),
+                  class: "rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-4 py-2.5 text-sm font-semibold text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8 transition hover:brightness-110" %>
     </div>
   </header>
 

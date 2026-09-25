@@ -22,6 +22,7 @@ class Event < ApplicationRecord
   has_many :ticket_types, dependent: :destroy
   has_many :orders, dependent: :destroy
   has_many :tickets, dependent: :destroy
+  has_many :broadcasts, dependent: :destroy
   has_and_belongs_to_many :users, join_table: :events_users
 
   # The poster. Without this declaration `event.poster` doesn't exist, the

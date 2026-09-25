@@ -1,0 +1,50 @@
+<%= render "shared/sidebar" %>
+<div class="app-main bg-mist">
+  <section class="app-inner">
+    <div class="mb-6">
+      <%= link_to "← Back to tickets", organiser_show_event_path(@event), class: "text-sm text-gray-500 hover:text-gray-700" %>
+      <h1 class="text-2xl font-semibold text-gray-900 mt-2">Message ticket holders</h1>
+      <p class="text-gray-600 mt-1"><%= @event.name %></p>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <p class="text-sm text-blue-900">
+        This message will be sent on WhatsApp to
+        <strong><%= @recipient_count %></strong>
+        <%= "person".pluralize(@recipient_count) %>
+        who bought tickets for this event.
+      </p>
+      <% if @recipient_count.zero? %>
+        <p class="text-sm text-blue-800 mt-2">No ticket holders match the current filters, so there's nobody to message yet.</p>
+      <% end %>
+    </div>
+
+    <%= form_with model: @broadcast, url: event_broadcasts_path(@event), local: true, class: "space-y-6" do |f| %>
+      <% @filters.each do |key, value| %>
+        <%= hidden_field_tag "filters[#{key}]", value %>
+      <% end %>
+
+      <div>
+        <%= f.label :message, "Your message", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.rich_text_area :message,
+                        rows: 8,
+                        maxlength: 1000,
+                        placeholder: "Hi {{name}}, just a reminder that {{event}} is happening this Saturday. Gates open at 4pm. Carry your ticket QR code. See you there!",
+                        class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        <p class="text-xs text-gray-500 mt-2">
+          Use <code class="bg-gray-100 px-1 rounded">{{name}}</code> for the ticket holder's first name and
+          <code class="bg-gray-100 px-1 rounded">{{event}}</code> for the event name. Maximum 1000 characters.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <%= f.submit "Send to #{@recipient_count} #{'person'.pluralize(@recipient_count)}",
+                     class: "rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-4 py-2.5 text-sm font-semibold text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8 transition hover:brightness-110",
+                     disabled: @recipient_count.zero?,
+                     data: { turbo_confirm: "Send this WhatsApp message to #{@recipient_count} ticket holders? This cannot be undone." } %>
+        <%= link_to "Cancel", organiser_show_event_path(@event),
+                    class: "rounded-full bg-gradient-to-r from-[#7620B1] to-[#FC8027] px-4 py-2.5 text-sm font-semibold text-[#7620B1] ring-1 ring-[#7620B1]/25 transition hover:bg-[#7620B1]/8 transition hover:brightness-110" %>
+      </div>
+    <% end %>
+  </section>
+</div>
