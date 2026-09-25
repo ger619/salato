@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_user, only: %i[edit]
   before_action :require_people_access!, only: %i[index show]
   def index
     users_scope = visible_users.includes(:roles).order(:first_name, :last_name, :email)
@@ -16,6 +17,10 @@ class UsersController < ApplicationController
     @users = users_scope.limit(@per_page).offset(offset)
   end
 
+
+  def edit; end
+
+
   def show
     @user = visible_users.includes(:roles).find(params[:id])
   end
@@ -27,6 +32,10 @@ class UsersController < ApplicationController
   end
 
   private
+
+  def set_user
+    @user = User.find(params[:id])
+  end
 
   # Admins see everyone. An organiser sees their own client's people only —
   # so this scope, not the view, is what keeps clients apart.
