@@ -48,7 +48,8 @@
                       outline-none focus:bg-white focus:ring-2 focus:ring-ink" %>
 
         <%= f.select :status,
-                     options_for_select(@statuses.map { |s| [s.to_s.humanize, s] }, @status),              { include_blank: "Any status" },
+                     options_for_select(@statuses.map { |s| [s.to_s.humanize, s] }, @status),
+                     { include_blank: "Any status" },
               class: "rounded-xl bg-mist px-4 py-3 text-[15px] ring-1 ring-ink/10
                       outline-none focus:bg-white focus:ring-2 focus:ring-ink" %>
 
@@ -63,6 +64,7 @@
                           font-bold text-ink2 ring-1 ring-ink/15 transition hover:bg-mist" %>
           <% end %>
         </div>
+
       </div>
     <% end %>
 

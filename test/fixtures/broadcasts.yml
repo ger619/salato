@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  event: one
+  user: one
+  message: MyText
+  filters: 
+  status: MyString
+  total_count: 1
+  sent_count: 1
+  failed_count: 1
+
+two:
+  event: two
+  user: two
+  message: MyText
+  filters: 
+  status: MyString
+  total_count: 1
+  sent_count: 1
+  failed_count: 1

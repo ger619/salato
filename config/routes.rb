@@ -53,6 +53,8 @@ Rails.application.routes.draw do
         get  :payment_status
       end
     end
+    resources :broadcasts, only: [:new, :create, :show]
+
   end
 
   get "/payments/:reference/callback",
@@ -67,6 +69,7 @@ Rails.application.routes.draw do
       get :download
     end
   end
+
 
 
   get "/verify",

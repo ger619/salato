@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_150323) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_110735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -51,6 +51,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_150323) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "broadcast_deliveries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "broadcast_id", null: false
+    t.datetime "created_at", null: false
+    t.text "error"
+    t.string "phone"
+    t.datetime "sent_at"
+    t.string "status"
+    t.uuid "ticket_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["broadcast_id"], name: "index_broadcast_deliveries_on_broadcast_id"
+    t.index ["ticket_id"], name: "index_broadcast_deliveries_on_ticket_id"
+  end
+
+  create_table "broadcasts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "event_id", null: false
+    t.integer "failed_count"
+    t.jsonb "filters"
+    t.text "message"
+    t.integer "sent_count"
+    t.string "status"
+    t.integer "total_count"
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["event_id"], name: "index_broadcasts_on_event_id"
+    t.index ["user_id"], name: "index_broadcasts_on_user_id"
   end
 
   create_table "clients", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -222,6 +250,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_150323) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "broadcast_deliveries", "broadcasts"
+  add_foreign_key "broadcast_deliveries", "tickets"
+  add_foreign_key "broadcasts", "events"
+  add_foreign_key "broadcasts", "users"
   add_foreign_key "events", "clients"
   add_foreign_key "events", "users"
   add_foreign_key "orders", "events"
