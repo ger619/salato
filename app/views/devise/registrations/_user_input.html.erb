@@ -57,6 +57,7 @@
   <div>
     <%= f.label :id_number, "ID Number / Passport", class: lbl %>
     <%= f.text_field :id_number, autocomplete: "off", required: true,
+                     maxlength: 20,
                      placeholder: "ID Number / Passport",
                      class: "#{field} h-11 py-0 leading-6" %>
   </div>
