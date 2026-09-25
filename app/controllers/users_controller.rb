@@ -29,7 +29,7 @@ class UsersController < ApplicationController
       actor: current_user,
       user: @user,
       profile: user_params.slice(:first_name, :last_name, :client_id),
-      role_ids: user_params[:role_ids]
+      role_ids: [user_params[:role_id]] # one role from the radio buttons
     )
 
     if saved
@@ -68,7 +68,7 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.expect(user: [:first_name, :last_name, :client_id, { role_ids: [] }])
+    params.expect(user: %i[first_name last_name client_id role_id])
   end
 
   def assignable_roles
