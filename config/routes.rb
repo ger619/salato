@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  devise_scope :user do
+    get "users/sign_in", to: redirect("/")
+  end
+
   devise_for :users, controllers:
     { sessions: 'sessions',
       invitations: 'invitations',
@@ -10,9 +14,7 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => '/sidekiq'
   end
 
-
   get "up" => "rails/health#show", as: :rails_health_check
-
 
   root "home#index"
 
@@ -70,8 +72,6 @@ Rails.application.routes.draw do
     end
   end
 
-
-
   get "/verify",
       to: "ticket_verifications#new",
       as: :verify
@@ -80,7 +80,6 @@ Rails.application.routes.draw do
        to: "ticket_verifications#lookup",
        as: :lookup_verification
 
-
   get "/verify/:token",
       to: "ticket_verifications#show",
       as: :verify_ticket
@@ -88,6 +87,5 @@ Rails.application.routes.draw do
   post "/verify/:token/check_in",
        to: "ticket_verifications#check_in",
        as: :check_in_ticket
-
 
 end
