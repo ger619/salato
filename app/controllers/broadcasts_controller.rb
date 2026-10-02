@@ -1,5 +1,6 @@
 # app/controllers/broadcasts_controller.rb
 class BroadcastsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_event
 
   def new
