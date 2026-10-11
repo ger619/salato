@@ -1,5 +1,5 @@
 class Event < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
   # Every event belongs to the client that owns it. Organisers inherit their
   # own client automatically; admins pick one in the form. Optional so events
   # created before the column existed still load.

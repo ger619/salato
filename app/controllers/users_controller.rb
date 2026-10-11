@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_people_access!, only: %i[index show edit update status]
-  before_action :set_user, only: %i[show edit update status]
+  before_action :require_people_access!, only: %i[index show edit update status destroy]
+  before_action :set_user, only: %i[show edit update status destroy]
 
   helper_method :assignable_roles
 
@@ -44,6 +44,20 @@ class UsersController < ApplicationController
 
     @user.toggle_boolean(:status)
     redirect_back fallback_location: user_path(@user), notice: 'User status was successfully updated.'
+  end
+
+  def destroy
+    if @user == current_user || @user.admin?
+      redirect_back fallback_location: users_path, alert: "You can't delete this user."
+      return
+    end
+
+    if @user.destroy
+      redirect_to users_path, notice: 'User was successfully deleted.'
+    else
+      redirect_back fallback_location: users_path,
+                    alert: @user.errors.full_messages.to_sentence.presence || 'User could not be deleted.'
+    end
   end
 
   private

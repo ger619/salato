@@ -13,7 +13,7 @@ class User < ApplicationRecord
 
   attr_accessor :role
 
-  has_many :events, dependent: :restrict_with_error # events they own
+  has_many :events, dependent: :nullify # preserve events when their owner is deleted
   has_and_belongs_to_many :staffed_events,
                           class_name: 'Event',
                           join_table: :events_users # events they work the door on

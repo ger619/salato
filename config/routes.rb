@@ -31,7 +31,7 @@ Rails.application.routes.draw do
   end
   resources :dashboard, only: %w[index]
   resources :ticket_types, only: %w[index show]
-  resources :users, only: %w[index new create show]
+  resources :users, only: %w[index new create show destroy]
   namespace :onboarding do
     resources :clients
   end

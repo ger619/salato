@@ -23,6 +23,10 @@
               <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Mobile</th>
               <th scope="col" class="eyebrow px-6 py-3 font-normal text-ink2/60">Roles</th>
               <th scope="col" class="eyebrow px-6 py-3 text-center font-normal text-ink2/60">Status</th>
+              <%# ---- Delete ---- %>
+              <% if (current_user.admin? || current_user.organiser?) && !@users.empty? %>
+                <th scope="col" class="eyebrow px-6 py-3 text-center font-normal text-ink2/60">Delete</th>
+              <% end %>
             </tr>
           </thead>
 
@@ -100,6 +104,18 @@
                     <% end %>
                   </td>
                 <% end %>
+                <!--Delete user -->
+                <td class="px-6 py-4">
+
+                  <%= button_to user_path(user),
+                              method: :delete,
+                              data: { turbo_confirm: "Delete #{user.full_name.presence || 'this user'}?" },
+                              class: "inline-flex items-center justify-center rounded-full p-1.5 text-ink2/40 transition hover:text-ink2/60" do %>
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M19 7L18.1327 19.1429C18.0579 20.1892 17.0851 21 16 21H8C6.91487 21 5.94208 20.1892 5.86734 19.1429L5 7M10 11V17M14 11V17M6 7H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  <% end %>
+                </td>
               </tr>
             <% end %>
           </tbody>
