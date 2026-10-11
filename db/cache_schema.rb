@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_25_110735) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_142643) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -111,7 +111,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_110735) do
     t.string "slug"
     t.datetime "start_at"
     t.datetime "updated_at", null: false
-    t.uuid "user_id", null: false
+    t.uuid "user_id"
     t.string "venue"
     t.index ["client_id"], name: "index_events_on_client_id"
     t.index ["slug"], name: "index_events_on_slug", unique: true
@@ -255,7 +255,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_110735) do
   add_foreign_key "broadcasts", "events"
   add_foreign_key "broadcasts", "users"
   add_foreign_key "events", "clients"
-  add_foreign_key "events", "users"
+  add_foreign_key "events", "users", on_delete: :nullify
   add_foreign_key "orders", "events"
   add_foreign_key "orders", "ticket_types"
   add_foreign_key "ticket_types", "events"
