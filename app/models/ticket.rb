@@ -2,6 +2,7 @@ class Ticket < ApplicationRecord
   belongs_to :event
   belongs_to :order
   belongs_to :ticket_type
+  has_many :broadcast_deliveries, dependent: :destroy
 
   STATUSES = %w[valid checked_in cancelled].freeze
   def self.filtered(params)
