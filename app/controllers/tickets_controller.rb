@@ -1,4 +1,6 @@
 class TicketsController < ApplicationController
+  before_action :authenticate_user!, only: :destroy
+  before_action :require_admin!, only: :destroy
   before_action :set_ticket, except: :index
   before_action :set_position, only: :show
 
@@ -59,7 +61,22 @@ class TicketsController < ApplicationController
     )
   end
 
+  def destroy
+    if @ticket.destroy
+      redirect_to tickets_path, notice: 'Ticket was successfully deleted.'
+    else
+      redirect_to tickets_path,
+                  alert: @ticket.errors.full_messages.to_sentence.presence || 'Ticket could not be deleted.'
+    end
+  end
+
   private
+
+  def require_admin!
+    return if current_user.has_role?(:admin)
+
+    redirect_to root_path, alert: "You don't have access to that."
+  end
 
   def set_ticket
     @ticket = Ticket

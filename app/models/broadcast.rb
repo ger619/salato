@@ -1,7 +1,7 @@
 # app/models/broadcast.rb
 class Broadcast < ApplicationRecord
   belongs_to :event
-  belongs_to :user
+  belongs_to :user, optional: true
   has_many :deliveries, class_name: 'BroadcastDelivery', dependent: :destroy
 
   validates :message, presence: true, length: { maximum: 1000 }

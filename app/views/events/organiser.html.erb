@@ -98,8 +98,15 @@
                 <% end %>
               </p>
 
-              <%= link_to "Edit", edit_event_path(event),
+              <div>
+                <%= link_to "Edit", edit_event_path(event),
                     class: "relative z-10 rounded-full px-3 py-1.5 text-sm font-medium text-[#7620B1] transition hover:bg-[#7620B1]/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7620B1]" %>
+                <% if current_user&.has_role?(:admin) %>
+                  <%= button_to "Delete", event_path(event), method: :delete,
+                        data: { turbo_confirm: "Delete #{event.name}?" },
+                        class: "relative z-10 rounded-full px-3 py-1.5 text-sm font-medium text-red-500 transition hover:bg-red-500/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" %>
+                <% end %>
+              </div>
             </div>
           </div>
         </article>
