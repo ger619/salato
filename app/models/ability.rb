@@ -9,6 +9,7 @@ class Ability
     elsif user.has_role? :organiser
       # Their own events, and everything hanging off them.
       can :manage, Event
+      cannot :destroy, Event
       can %i[create new], Broadcast
       can :manage, TicketType, event: { user_id: user.id }
       can :read, Order, event: { user_id: user.id }

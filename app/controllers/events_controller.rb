@@ -5,8 +5,9 @@ class EventsController < ApplicationController
 
   TEAM_ACTIONS = %i[organiser_show assign_user unassign_user].freeze
 
-  before_action :authenticate_user!, only: %i[new create edit update organiser] + TEAM_ACTIONS
-  before_action :set_owned_event, only: %i[edit update] + TEAM_ACTIONS
+  before_action :authenticate_user!, only: %i[new create edit update organiser destroy] + TEAM_ACTIONS
+  before_action :require_admin!, only: :destroy
+  before_action :set_owned_event, only: %i[edit update destroy] + TEAM_ACTIONS
   before_action :set_visible_event, only: %i[show]
   before_action :require_team_manager!, only: %i[assign_user unassign_user]
   load_and_authorize_resource
@@ -83,6 +84,24 @@ class EventsController < ApplicationController
     end
   end
 
+  def destroy
+    deleted = Event.transaction do
+      @event.tickets.destroy_all
+      @event.orders.destroy_all
+      @event.ticket_types.destroy_all
+      raise ActiveRecord::Rollback unless @event.destroy
+
+      true
+    end
+
+    if deleted
+      redirect_to organiser_events_path, notice: 'Event was successfully deleted.'
+    else
+      redirect_to organiser_events_path,
+                  alert: @event.errors.full_messages.to_sentence.presence || 'Event could not be deleted.'
+    end
+  end
+
   # The id is looked up *through* assignable_users, so an organiser who posts
   # an id the dropdown never offered — an admin, or someone from another
   # client — gets the same rejection as a tampered id. The client rule and the
@@ -133,6 +152,12 @@ class EventsController < ApplicationController
   end
 
   private
+
+  def require_admin!
+    return if current_user.has_role?(:admin)
+
+    redirect_to root_path, alert: "You don't have access to that."
+  end
 
   # Ownership itself is enforced by CanCanCan via load_and_authorize_resource,
   # which authorizes the @event this sets.
