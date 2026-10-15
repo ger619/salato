@@ -24,11 +24,11 @@
         </p>
 
         <div class="mt-8 flex flex-col sm:flex-row flex-wrap gap-3 reveal">
-          <button type="button" data-open-auth="signup"
-                  class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_10px_30px_-10px_rgba(225,55,101,.85)]">
+          <%= link_to new_user_registration_path,
+                      class: "inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-medium text-white grad-bg hover:brightness-110 transition shadow-[0_10px_30px_-10px_rgba(225,55,101,.85)]" do %>
             Create your first event
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
-          </button>
+          <% end %>
           <a href="#how" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-medium text-ink ring-1 ring-ink/15 hover:ring-ink/35 hover:bg-mist transition">See how it works</a>
         </div>
 
